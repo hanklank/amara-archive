@@ -1282,7 +1282,7 @@ div.workspace-tools {
         div.toolbox-inside .active{
           background-color: $lighter-blue;
         }
-        div.toolbox-inside > button {
+        div.toolbox-inside > .button-subs {
         outline: none;
         border-radius: 5px;
         background-image: url('../images/subtitle-editor/glyphicons_halflings_135_wrench.png');
@@ -1294,7 +1294,19 @@ div.workspace-tools {
         cursor: pointer;
         z-index: 70;
         }
-        div.toolbox-inside > .helper_margin{
+        div.toolbox-inside > .button-timing {
+        outline: none;
+        border-radius: 5px;
+        background-image: url('../images/subtitle-editor/glyphicons_halflings_022_time_large.png');
+        background-position: 10px center;
+        background-repeat: no-repeat;
+        position: absolute;
+        right: 55px;
+        padding: 5px 10px 20px 20px;
+        cursor: pointer;
+        z-index: 70;
+        }
+        div.toolbox-inside > .helper_margin {
           display:none;
           position: absolute;
           text-align: left;
@@ -1306,7 +1318,13 @@ div.workspace-tools {
         }
 
 
-        ul.toolbox-menu {
+        ul.toolbox-menu-subs {
+           right: -200px;
+	}
+        ul.toolbox-menu-timing {
+           right: -160px;
+	}
+        ul.toolbox-menu-subs, ul.toolbox-menu-timing {
            &:before {
                position: absolute;
                display: block;
@@ -1324,9 +1342,8 @@ div.workspace-tools {
            position: absolute;
            text-align: left;
            top: 0;
-           right: -200px;
            width: 200px;
-           z-index: 62;
+           z-index: 70;
            li { 
                list-style-type: none;
                display: inline-block;

@@ -384,21 +384,43 @@ var angular = angular || null;
             $event.stopPropagation();
             $scope.dialogManager.open('metadata');
         }
-        $scope.isToolboxMenuOpen = false;
-        $scope.onToolIconClicked = function($event) {
+        $scope.isTimingToolboxMenuOpen = false;
+        $scope.onTimingToolIconClicked = function($event) {
+            $event.preventDefault();
+            $event.stopPropagation();
+            // highlight tool icon
+            $(".timingIcon").toggleClass("active");
+            // expose toolbox menu
+            $(".toolbox-menu-timing").toggleClass("hidden");
+            $(".toolIcon").removeClass("active");
+            // expose toolbox menu
+            $(".toolbox-menu-subs").addClass("hidden");
+            $scope.isTimingToolboxMenuOpen = !$scope.isTimingToolboxMenuOpen;
+            if ($scope.isTimingToolboxMenuOpen) {
+                $window.onclick = function ($event) {
+                    $window.onclick = null;
+                    $scope.onTimingToolIconClicked($event);
+                };
+            }
+        }
+        $scope.isSubtitleToolboxMenuOpen = false;
+        $scope.onSubtitleToolIconClicked = function($event) {
             $event.preventDefault();
             $event.stopPropagation();
             // highlight tool icon
             $(".toolIcon").toggleClass("active");
             // expose toolbox menu
-            $(".toolbox-menu").toggleClass("hidden");
-            $scope.isToolboxMenuOpen = !$scope.isToolboxMenuOpen;
-            if ($scope.isToolboxMenuOpen) {
+            $(".toolbox-menu-subs").toggleClass("hidden");
+            $(".timingIcon").removeClass("active");
+            // expose toolbox menu
+            $(".toolbox-menu-timing").addClass("hidden");
+            $scope.isSubtitleToolboxMenuOpen = !$scope.isSubtitleToolboxMenuOpen;
+            if ($scope.isSubtitleToolboxMenuOpen) {
                 $window.onclick = function ($event) {
                     $window.onclick = null;
-                    $scope.onToolIconClicked($event);
+                    $scope.onSubtitleToolIconClicked($event);
                 };
-            } 
+            }
         }
         // Hide the loading modal after we are done with bootstrapping
         // everything
