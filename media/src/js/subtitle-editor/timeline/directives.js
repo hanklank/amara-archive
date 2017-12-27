@@ -92,7 +92,6 @@ var angular = angular || null;
         div.css('left', -durationToPixels(deltaTime, this.scale) + 'px');
     }
 
-
     module.directive('timelineTiming', ["displayTimeSecondsFilter", function(displayTimeSecondsFilter) {
         return function link(scope, elem, attrs) {
             var canvas = $(elem);
@@ -257,6 +256,8 @@ var angular = angular || null;
             }
 
             function handleMouseDown(evt, dragHandler) {
+                scope.handleAppMouseClick(evt);
+                if (evt.which == 3) return;
                 if(!scope.canSync) {
                     return false;
                 }
@@ -378,6 +379,14 @@ var angular = angular || null;
                 $('span', div).html(subtitle.content());
                 if(subtitle.isSynced()) {
                     div.removeClass('unsynced');
+                }
+            }
+
+            function handleMouseDownInContainer(evt) {
+                if (evt.which == 3) {
+                    var contextMenu = $('#context-menu');
+                    contextMenu.show();
+                    contextMenu.css({"left": evt.clientX, "top": evt.clientY});
                 }
             }
 
@@ -583,6 +592,7 @@ var angular = angular || null;
 
             // Handle drag and drop.
             timelineDiv.on('mousedown', handleMouseDownInTimeline);
+            container.on('mousedown', handleMouseDownInContainer);
             // Redraw the subtitles on window resize
             $(window).resize(function() {
                 containerWidth = (container.width() || container.parent().width());

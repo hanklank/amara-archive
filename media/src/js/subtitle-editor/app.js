@@ -577,7 +577,6 @@ var angular = angular || null;
             }
             $scope.handleAppKeyDown(evt);
         }
-
         $scope.handleAppKeyDown = function(evt) {
             // Reset the lock timer.
 	    var isDel = function(key) {
@@ -682,6 +681,7 @@ var angular = angular || null;
 
         $scope.handleAppMouseClick = function(evt) {
             // Reset the lock timer.
+            $('#context-menu').hide();
             $scope.minutesIdle = 0;
             $scope.$root.$emit("user-action");
         };
