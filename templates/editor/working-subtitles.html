@@ -29,6 +29,8 @@
                     {% trans "Timeline" %}
                 </a></li>
                 <li><a href="#" class="clear-timing" ng-click="showClearTimingModal($event)" title="Clear timing of all subtitles">{% trans "Clear timing" %}</a></li>
+		<li><a href="#" ng-click="shiftForward()" class="shift-forward">{% trans "Shift subs forward" %}</a></li>
+		<li><a href="#" ng-click="shiftBackward()" class="shift-backward">{% trans "Shift subs backward" %}</a></li>
             </ul>
         </div>
     </div>
