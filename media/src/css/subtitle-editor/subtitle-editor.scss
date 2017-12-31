@@ -1357,10 +1357,31 @@ div.workspace-tools {
         ul.toolbox-menu-subs {
            right: -200px;
 	}
-        ul.toolbox-menu-timing {
+        ul.toolbox-menu-timing, div.toolbox-menu-forward, div.toolbox-menu-backward {
            right: -160px;
 	}
-        ul.toolbox-menu-subs, ul.toolbox-menu-timing {
+        div.toolbox-menu-forward, div.toolbox-menu-backward {
+           width:100%;
+           color: #DDDDDD;
+           padding: 10px;
+           padding-left: 28px;
+	   h1 {
+	       text-decoration: underline;
+	    }
+	   form {
+	       display: inline-block;
+               p {
+                   font-size: 12px;
+                   line-height: 150%;
+                   margin-top: 0.5em;
+                   &.error {
+                     font-size: 10px;
+                     color: $reddish-pink;
+                   }
+	       }
+	   }
+	}
+        ul.toolbox-menu-subs, ul.toolbox-menu-timing, div.toolbox-menu-forward, div.toolbox-menu-backward {
            &:before {
                position: absolute;
                display: block;
