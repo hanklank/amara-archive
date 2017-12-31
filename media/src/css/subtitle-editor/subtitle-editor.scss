@@ -1379,6 +1379,11 @@ div.workspace-tools {
                      color: $reddish-pink;
                    }
 	       }
+               input[type="text"] {
+                 border-radius: 5px;
+                 padding: 0;
+                 margin: 5px 0;
+              }
 	   }
 	}
         ul.toolbox-menu-subs, ul.toolbox-menu-timing, div.toolbox-menu-forward, div.toolbox-menu-backward {
