@@ -145,7 +145,7 @@ $half-gutter-width: $gutter-width * .5;
   $size: nth($breakpoint, 2);
   $container: nth($breakpoint, 3);
   @media only screen and (min-width: $size) {
-    #page-header, #page-footer, .newgrid {
+    #page-footer, .newgrid {
       .container {
         width: $container;
       }

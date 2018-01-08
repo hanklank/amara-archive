@@ -1,6 +1,6 @@
 {% load i18n %}
 {% load url from future %}
-<div id="mainnav" role="navigation">
+<div id="mainnav" class="container" role="navigation">
   <a class="mainnav-brand" href="{% url "home" %}">{% include brand|default:"future/amara-brand.html" %}</a>
   {% include primarynav|default:"future/navigation/primarynav.html" %}
   {% if request.user.is_anonymous %}
