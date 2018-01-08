@@ -102,7 +102,7 @@ def begin(request, confirmed=True, redirect_to=None, on_failure=None, user_url=N
     
     consumer = Consumer(request.session, DjangoOpenIDStore())
     try:
-        auth_request = consumer.begin(user_url)
+        auth_request = consumer.begin(unicode(user_url))
     except DiscoveryFailure:
         return on_failure(request, _('The OpenID was invalid'))
     
