@@ -706,6 +706,7 @@ MEDIA_BUNDLES = {
     },
     'login.js': {
         'files': (
+            'src/js/site/login.js',
             'src/js/site/facebook.js',
         ),
     },
