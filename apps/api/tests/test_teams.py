@@ -106,7 +106,7 @@ class TeamAPITest(TeamAPITestBase):
             self.check_team_data(team_data, team_map[team_data['slug']])
 
     def test_get_details(self):
-        team = TeamFactory(admin=self.user)
+        team = TeamFactory(admin=self.user, workflow_type='S')
         response = self.client.get(self.detail_url(team))
         assert_equal(response.status_code, status.HTTP_200_OK)
         self.check_team_data(response.data, team)
@@ -204,11 +204,14 @@ class TeamAPITest(TeamAPITestBase):
         assert_equal(self.can_delete_team.call_args, None)
 
     def test_set_is_visible(self):
-        self.client.post(self.list_url, data={
+        response = self.client.post(self.list_url, data={
             'name': 'Test Team',
             'slug': 'test-team',
             'is_visible': False,
+            'type': 'simple',
         })
+        assert_equal(response.status_code, status.HTTP_201_CREATED,
+                     response.content)
         team = Team.objects.get(slug='test-team')
         assert_equal(team.team_visibility, TeamVisibility.PRIVATE)
         assert_equal(team.video_visibility, VideoVisibility.PRIVATE)
