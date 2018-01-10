@@ -237,19 +237,18 @@ $half-gutter-width: $gutter-width * .5;
 }
 // search icon
 i.icon {
-  line-height: 1;
-}
-i.icon.icon-search:before {
-  content: "\e91a";
-  /* use !important to prevent issues with browser extensions that change fonts */
   font-family: 'amara' !important;
-  speak: none;
   font-style: normal;
   font-weight: normal;
   font-variant: normal;
   text-transform: none;
   line-height: 1;
   vertical-align: middle;
+}
+i.icon.icon-search:before {
+  content: "\e91a";
+  /* use !important to prevent issues with browser extensions that change fonts */
+  speak: none;
 
   /* Better Font Rendering =========== */
   -webkit-font-smoothing: antialiased;
@@ -268,4 +267,7 @@ i.icon.icon-search:before {
 
 .visible-xs, .visible.sm {
   display: none;
+}
+.dropdown {
+  position:relative
 }
