@@ -114,7 +114,6 @@ class Message(models.Model):
     thread = models.PositiveIntegerField(blank=True, null=True, db_index=True)
     has_reply_for_author = models.BooleanField(default=False)
     has_reply_for_user = models.BooleanField(default=False)
-    hide_cookie_name = 'hide_new_messages'
 
     def validate_message_type(value):
         if value not in MESSAGE_TYPES:

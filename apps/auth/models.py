@@ -293,39 +293,39 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
         if '$' in self.username:
             raise ValidationError("usernames can't contain the '$' character")
 
-    def check_last_hidden_message_id(self, request):
-        if 'hide_new_messages' not in request.COOKIES:
-            return
-        try:
-            raw_cookie_value = request.COOKIES.get('hide_new_messages')
-            cookie_value = long(raw_cookie_value)
-        except (ValueError, TypeError):
-            logger.warn(
-                "Error reading the hide_new_messages cookie ({})".format(
-                    raw_cookie_value), exc_info=True)
-        if cookie_value and cookie_value != self.last_hidden_message_id:
-            self.set_last_hidden_message_id(cookie_value)
-
     def set_last_hidden_message_id(self, message_id):
         if message_id != self.last_hidden_message_id:
             self.last_hidden_message_id = message_id
             self.save()
 
-    def unread_messages(self, after_message_id=None):
+    def new_messages_count(self):
+        """
+        Number of messages we should show in the "You have XX new messages
+        alert"
+
+        These are messages that:
+          - Are unread
+          - Have come in after the last time the user hide that message,
+            or viewed their inbox
+
+        """
         from messages.models import Message
-        qs = Message.objects.for_user(self).filter(read=False)
-        if after_message_id is not None:
-            qs = qs.filter(id__gt=after_message_id)
-        return qs
+        qs = (Message.objects.for_user(self)
+              .filter(read=False, id__gt=self.last_hidden_message_id))
+        return qs.count()
 
-    @memoize
-    def unread_messages_count(self, after_message_id=None):
-        return self.unread_messages(after_message_id).count()
+    def last_message_id(self):
+        """
+        The id of the last message for the user.
 
-    @memoize
-    def last_unread_message_id(self, after_message_id=None):
-        qs = self.unread_messages(after_message_id).aggregate(max_id=Max('id'))
-        return qs['max_id']
+        Returns: message id, or 0 if there are no messages
+        """
+        from messages.models import Message
+        qs = Message.objects.for_user(self).order_by('-id')[:1]
+        if qs:
+            return qs[0].id
+        else:
+            return 0
 
     def tutorial_was_shown(self):
         CustomUser.objects.filter(pk=self.id).update(show_tutorial=False)
