@@ -26,5 +26,5 @@
   dockercfg_service: aws_generator
 - name: Deploy
   service: deploy-agent
-  tag: dev
+  tag: ^(dev|staging)
   command: "amara $CI_BRANCH $CI_COMMIT_ID"
