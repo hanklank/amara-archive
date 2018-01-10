@@ -176,6 +176,11 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
     pay_rate_code = models.CharField(max_length=3, blank=True, default='')
     can_send_messages = models.BooleanField(default=True)
     show_tutorial = models.BooleanField(default=True)
+    # Whenever a user hides the "You have XX new messages" alert, we record
+    # the id of the last message.  We don't show the alert again until the
+    # user has a message newer than that message.
+    last_hidden_message_id = models.PositiveIntegerField(blank=True,
+                                                         default=0)
     playback_mode = models.IntegerField(
         choices=PLAYBACK_MODE_CHOICES, default=PLAYBACK_MODE_STANDARD)
     created_by = models.ForeignKey('self', null=True, blank=True,
@@ -287,6 +292,22 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
     def clean(self):
         if '$' in self.username:
             raise ValidationError("usernames can't contain the '$' character")
+
+    def check_last_hidden_message_id(self, request):
+        try:
+            raw_cookie_value = request.COOKIES.get('hide_new_messages')
+            cookie_value = long(raw_cookie_value)
+        except ValueError:
+            logger.warn(
+                "Error reading the hide_new_messages cookie ({})".format(
+                    raw_cookie_value), exc_info=True)
+        if cookie_value and cookie_value != self.last_hidden_message_id:
+            self.set_last_hidden_message_id(cookie_value)
+
+    def set_last_hidden_message_id(self, message_id):
+        if message_id != self.last_hidden_message_id:
+            self.last_hidden_message_id = message_id
+            self.save()
 
     def unread_messages(self, after_message_id=None):
         from messages.models import Message

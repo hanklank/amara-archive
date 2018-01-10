@@ -87,6 +87,8 @@ def message(request, message_id):
                        template_name='messages/message.html',
                        template_object_name='message',
                        extra_context=extra_context)
+    if messages:
+        request.user.set_last_hidden_message_id(messages[0].id)
     try:
         last_message = messages[0]
         max_age = 60*60*24*365
@@ -133,6 +135,8 @@ def inbox(request, message_pk=None):
                        template_name='messages/inbox.html',
                        template_object_name='message',
                        extra_context=extra_context)
+    if qs:
+        request.user.set_last_hidden_message_id(qs[0].id)
     try:
         last_message = qs[:1].get()
         max_age = 60*60*24*365
