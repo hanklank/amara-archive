@@ -32,8 +32,7 @@ from teams.models import (
     LanguageManager, BillToClient
 )
 from utils.text import fmt
-from videos.models import SubtitleLanguage
-
+from videos.models import Video
 
 class ProjectManagerInline(admin.TabularInline):
     model = TeamMember.projects_managed.through
@@ -178,6 +177,17 @@ class WorkflowAdmin(admin.ModelAdmin):
     raw_id_fields = ('team', 'team_video', 'project')
     ordering = ('-created',)
 
+class TaskChangeList(ChangeList):
+    def get_query_set(self, request):
+        # Hijack the query attribute so we can handle it ourselves
+        query = self.query
+        self.query = None
+        qs = super(TaskChangeList, self).get_query_set(request)
+        if query:
+            qs = qs.filter(team_video__video__in=Video.objects.search(query))
+        self.query = query
+        return qs
+
 class TaskAdmin(admin.ModelAdmin):
     # We specifically pull old/new subtitle version, assignee, team_video, team,
     # and language out into properties to force extra queries per row.
@@ -200,6 +210,9 @@ class TaskAdmin(admin.ModelAdmin):
     readonly_fields = ('created', 'modified')
     ordering = ('-id',)
     list_per_page = 20
+
+    def get_changelist(self, request, **kwargs):
+        return TaskChangeList
 
     def old_subtitle_version_str(self, o):
         return unicode(o.subtitle_version) if o.subtitle_version else ''
