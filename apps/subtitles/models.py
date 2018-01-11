@@ -1376,6 +1376,7 @@ subtitles_subtitleversion.version_number = (
 
 ORIGIN_API = 'api'
 ORIGIN_IMPORTED = 'imported'
+ORIGIN_PROVIDER = 'provider'
 ORIGIN_LEGACY_EDITOR = 'web-legacy-editor'
 ORIGIN_ROLLBACK = 'rollback'
 ORIGIN_SCRIPTED = 'scripted'
@@ -1387,6 +1388,7 @@ SUBTITLE_VERSION_ORIGINS = (
     (ORIGIN_API, _("API")),
     (ORIGIN_LEGACY_EDITOR, _("Edited (legacy editor)")),
     (ORIGIN_IMPORTED, _("Imported")),
+    (ORIGIN_PROVIDER, _("Provider")),
     (ORIGIN_ROLLBACK, _("Rollback")),
     (ORIGIN_SCRIPTED, _("Scripted")),
     (ORIGIN_TERN, _("Tern")),

@@ -15,14 +15,14 @@
 #topnav {
   position: relative;
   height: 30px;
-  background: $gray-darker;
+  background: $gray-base;
   @include transition(.5s);
   ul {
     list-style: none;
     margin: 0;
     padding: 0;
     li {
-      display: inline-block;
+      float: left;
       margin: 0 -2px;
       padding: 0;
     }
@@ -53,7 +53,7 @@
       content: none;
     }
     li {
-      display: block;
+      float: none;
       &.separator {
         border-top: 1px solid $gray;
       }

@@ -50,6 +50,6 @@
   </li>
   {% endcache %}
   {% else %}
-  <li><a class="button" href="{% url "auth:login" %}?next={% firstof next request.path_info|urlencode %}">{% trans 'Login' %}</a></li>
+  <li><a class="button" href="{% url "auth:login" %}?next={% if next %}{{ next|urlencode }}{% else %}{{ request.path_info|urlencode }}{% endif %}">{% trans 'Login' %}</a></li>
   {% endif %}
 </ul>

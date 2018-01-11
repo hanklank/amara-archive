@@ -248,7 +248,7 @@ from teams import permissions as team_perms
 from teams.models import Team, TeamVideo, Project
 from subtitles.models import SubtitleLanguage
 from videos import metadata
-from videos.models import Video
+from videos.models import Video, URL_MAX_LENGTH
 from videos.types import video_type_registrar, VideoTypeError
 import videos.tasks
 
@@ -361,7 +361,9 @@ class VideoSerializer(serializers.Serializer):
     # Note we could try to use ModelSerializer, but we are so far from the
     # default implementation that it makes more sense to not inherit.
     id = serializers.CharField(source='video_id', read_only=True)
-    video_url = serializers.URLField(write_only=True, required=True)
+    video_url = serializers.URLField(write_only=True,
+                                     required=True,
+                                     max_length=URL_MAX_LENGTH)
     video_type = serializers.SerializerMethodField()
     primary_audio_language_code = LanguageCodeField(required=False,
                                                     allow_blank=True)
@@ -397,10 +399,10 @@ class VideoSerializer(serializers.Serializer):
     default_error_messages = {
         'project-without-team': "Can't specify project without team",
         'unknown-project': 'Unknown project: {project}',
-        'video-exists': 'Video already added for {url}',
-        'video-policy-error': ('Video for {url} not moved because it would '
+        'video-exists': u'Video already added for {url}',
+        'video-policy-error': (u'Video for {url} not moved because it would '
                                'conflict with the video policy for {team}'),
-        'invalid-url': 'Invalid URL: {url}',
+        'invalid-url': u'Invalid URL: {url}',
     }
 
     class Meta:
@@ -701,7 +703,7 @@ class VideoViewSet(mixins.CreateModelMixin,
 
 class VideoURLSerializer(serializers.Serializer):
     created = TimezoneAwareDateTimeField(read_only=True)
-    url = serializers.CharField()
+    url = serializers.URLField(max_length=URL_MAX_LENGTH)
     primary = serializers.BooleanField(required=False)
     original = serializers.BooleanField(required=False)
     id = serializers.IntegerField(read_only=True)
@@ -720,16 +722,19 @@ class VideoURLSerializer(serializers.Serializer):
         return vt.name
 
     def create(self, validated_data):
-        vt = video_type_registrar.video_type_for_url(validated_data['url'])
+        try:
+            new_url = self.context['video'].add_url(validated_data['url'], self.context['user'])
+        except Video.DuplicateUrlError as e:
+            raise serializers.ValidationError("DuplicateUrlError for url: {}".format(e.video_url))
 
-        new_url = self.context['video'].videourl_set.create(
-            url=validated_data['url'],
-            original=validated_data.get('original', False),
-            type=vt.abbreviation,
-            added_by=self.context['user'],
-        )
         if validated_data.get('primary'):
             new_url.make_primary(self.context['user'])
+
+        if ('original' in validated_data and
+            validated_data['original'] != new_url.original):
+            new_url.original = validated_data['original']
+            new_url.save()
+
         return new_url
 
     def update(self, video_url, validated_data):

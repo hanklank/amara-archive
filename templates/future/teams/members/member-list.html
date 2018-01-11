@@ -1,0 +1,72 @@
+{% load i18n i18n_tags forms %}
+{% load url from future %}
+<nav class="nav-actions">
+  <span class="pull-right">
+    {% if show_invite_link %}
+    <a href="{% url 'teams:invite' slug=team.slug %}" title="Invite member">Invite member</a>
+    {% endif %}
+    {% if show_add_link %}
+    <a href="{% url 'teams:add-members' slug=team.slug %}" title="Add members">Add members</a>
+    {% endif %}
+    {% if show_application_link %}
+    <a href="{% url 'teams:applications' slug=team.slug %}" title="Review applications">Review applications</a>
+    {% endif %}
+  </span>
+  {% if is_team_admin %}
+  <div class="checkbox">
+    <input id="select_all" type="checkbox" class="selectAll" data-target="#memberDirectory-selectList">
+    <label for="select_all" class="text-gray"><span></span>Select All</label>
+  </div>
+  {% endif %}
+</nav>
+
+{% if page %}
+<ul id="memberDirectory-selectList" class="selectList-members selectList" data-target="#memberDirectory-actionBar">
+  {% for member in page %}
+  <li>
+    {% if is_team_admin %}
+    <div class="checkbox">
+      {% if member.user == user %}
+      <input type="checkbox" class="disabled" disabled="disabled">
+      <label><span></span></label>
+      {% else %}
+      <input id="member-{{member.id}}" type="checkbox" value="{{member.id}}" class="selectList-checkbox">
+      <label for="member-{{member.id}}"><span></span></label>
+      {% endif %}
+    </div>
+    {% endif %}
+    <div>
+      <a href="{% url 'teams:member-profile' slug=team.slug username=member.user.username %}">
+        {{ member.user.avatar_tag_large }}
+      </a>
+    </div>
+    <div class="selectList-memberDetails">
+      <h3>
+        <a href="{% url 'teams:member-profile' slug=team.slug username=member.user.username %}">
+            {{member.user}}</a>
+      </h3>
+      <h3>({{member.user.username}})</h3>
+      <h4>{{ member.role }}</h4>
+      <p>{{ member.user.get_languages|to_localized_display_list }}<p>
+    </div>
+    <div class="selectList-itemActions">
+      <a href="{% url 'messages:new' %}?user={{ member.user.username }}"><i class="icon icon-mail"></i></a>
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+
+{% include "future/paginator.html" %}
+{% else %}
+<div class="zero-state">{% trans "No members" %}</div>
+{% endif %}
+{% if is_team_admin %}
+<div id="memberDirectory-actionBar" class="actionBar">
+  <form class="ajaxForm" method="GET" action="{{ request.path }}">
+    <input class="selectList-selection" type="hidden" name="selection">
+    <button class="button cta" type="submit" name="form" value="role">Change Role</button>
+    <button class="button cta" type="submit" name="form" value="remove">Remove</button>
+    <button class="button borderless deselectAll" data-target="#memberDirectory-selectList">Deselect</button>
+  </form>
+</div>
+{% endif %}

@@ -1,0 +1,31 @@
+{% load i18n forms %}
+<div class="modal-dialog" role="document">
+  <div class="modal-content">
+    <form class="ajaxForm" method="POST" action="{{ request.get_full_path }}" enctype="multipart/form-data">
+      <header class="dialogHeader">
+        <h4 class="dialogTitle">
+          {% blocktrans count count=selection_count %}
+          Editing {{ member }} ({{ username }})
+          {% plural %}
+          Editing {{ count }} users
+          {% endblocktrans %}
+        </h4>
+        <h5 class="dialogSubtitle">
+            {% blocktrans count count=selection_count %}
+            Change member role from {{ role }}
+            {% plural %}
+            Change member roles
+            {% endblocktrans %}
+        </h5>
+      </header>
+      <div class="modal-body">
+        {% csrf_token %}
+        {{ form.role|render_field }}
+      </div>
+      <div class="modal-footer">
+        <button class="button cta-reverse" data-dismiss="modal">Cancel</button>
+        <button class="button cta" type="submit">Change</button>
+      </div>
+    </form>
+  </div>
+</div>

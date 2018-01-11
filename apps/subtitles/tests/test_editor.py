@@ -111,9 +111,7 @@ class NotLoggedInEditor(TestCase):
         self.user = UserFactory()
         TeamMember.objects.create_first_member(team, self.user)
         TeamVideoFactory(team=team, video=self.team_video, added_by=self.user)
-        key = self.user.get_api_key()
-        self.user.api_key.key = self.user.api_key.generate_key()
-        self.user.api_key.save()
+        self.user.get_api_key()
         self.language_code = 'en'
         self.public_language = self.public_video.subtitle_language(self.language_code,
                                                      create=True)

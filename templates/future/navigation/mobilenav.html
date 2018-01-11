@@ -1,0 +1,32 @@
+{% load i18n %}
+{% load url from future %}
+<nav id="mobilenav" role="navigation">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#collapsible-menu">
+        <span class="sr-only">{% trans "Toggle navigation" %}</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="{% url "home" %}">{% include brand|default:"future/amara-brand.html" %}</a>
+    </div>
+    <div id="collapsible-menu" class="collapse">
+      {% if request.user.is_anonymous %}
+      <div class="top-buttons">
+        <a href="{% url "videos:create" %}" class="button button-lime">{% trans "Start Subtitling<span>For Free</span>" %}</a>
+      </div>
+      {% endif %}
+
+      {% include primarynav|default:"future/navigation/primarynav.html" %}
+      <nav class="appnav">
+        <ul class="nav">
+          <li>
+            <a href="{% url "videos:watch_page" %}">{% trans "Watch Videos" %}</a>
+          </li>
+        </ul>
+      </nav>
+
+      {% include "future/navigation/accessnav.html" %}
+      {% include "future/navigation/appnav.html" %}
+    </div>
+</nav>

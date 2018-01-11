@@ -195,43 +195,91 @@ def add_completed_subtitles_count(videos):
 @with_old_view(old_views.detail_members)
 @team_view
 def members(request, team):
-    member = team.get_member(request.user)
-
     filters_form = forms.MemberFiltersForm(request.GET)
-
-    if request.method == 'POST':
-        edit_form = forms.EditMembershipForm(member, request.POST)
-        if edit_form.is_valid():
-            edit_form.save()
-            return HttpResponseRedirect(request.path)
-        else:
-            logger.warning("Error updating team memership: %s (%s)",
-                           edit_form.errors.as_text(),
-                           request.POST)
-            messages.warning(request, _(u'Error updating membership'))
-    else:
-        edit_form = forms.EditMembershipForm(member)
-
+    form_name = request.GET.get('form', None)
+    is_team_admin = team.user_is_admin(request.user)
+    show_application_link = (is_team_admin and team.is_by_application())
     members = filters_form.update_qs(
         team.members.prefetch_related('user__userlanguage_set',
                           'projects_managed',
                           'languages_managed'))
 
-    paginator = AmaraPaginator(members, MEMBERS_PER_PAGE)
+    paginator = AmaraPaginatorFuture(members, MEMBERS_PER_PAGE)
     page = paginator.get_page(request)
+    next_page, prev_page = paginator.make_next_previous_page_links(page, request)
 
-    return render(request, 'new-teams/members.html', {
+    context = {
         'team': team,
+        'is_team_admin': is_team_admin,
+        'paginator': paginator,
         'page': page,
+        'next': next_page,
+        'previous': prev_page,
         'filters_form': filters_form,
-        'edit_form': edit_form,
         'show_invite_link': permissions.can_invite(team, request.user),
         'show_add_link': permissions.can_add_members(team, request.user),
-        'breadcrumbs': [
-            BreadCrumb(team, 'teams:dashboard', team.slug),
-            BreadCrumb(_('Members')),
-        ],
-    })
+        'show_application_link': show_application_link,
+    }
+
+    if form_name and is_team_admin:
+        return manage_members_form(request, team, form_name, members)
+
+    if not form_name and request.is_ajax():
+        response_renderer = AJAXResponseRenderer(request)
+        response_renderer.replace(
+            '#member-list-all',
+            'future/teams/members/member-list.html',
+            context
+        )
+        return response_renderer.render()
+
+    return render(request, 'future/teams/members/members.html', context)
+
+def manage_members_form(request, team, form_name, members):
+
+    try:
+        selection = request.GET['selection'].split('-')
+    except StandardError:
+        return HttpResponseBadRequest()
+
+    if form_name == 'role':
+        FormClass = forms.ChangeMemberRoleForm
+    elif form_name == 'remove':
+        FormClass = forms.RemoveMemberForm
+    else:
+        raise Http404()
+
+    all_selected = len(selection) >= MEMBERS_PER_PAGE
+    response_renderer = AJAXResponseRenderer(request)
+
+    if request.method == 'POST':
+        try:
+            form = FormClass(request.user, members, selection, all_selected,
+                             data=request.POST, files=request.FILES)
+        except Exception as e:
+            logger.error(e, exc_info=True)
+        if form.is_valid():
+            return render_management_form_submit(request, form)
+    else:
+        try:
+            form = FormClass(request.user, members, selection, all_selected)
+        except Exception as e:
+            logger.error(e, exc_info=True)
+
+    template_name = 'future/teams/members/forms/{}.html'.format(form_name)
+    modal_context = {
+        'form': form,
+        'team': team,
+        'selection_count': len(selection),
+        'single_selection': len(selection) == 1,
+    }
+    if modal_context['single_selection']:
+        modal_context['member'] = members.get(id=selection[0])
+        modal_context['username'] = modal_context['member'].user.username
+        modal_context['role'] = modal_context['member'].role
+
+    response_renderer.show_modal(template_name, modal_context)
+    return response_renderer.render()
 
 @with_old_view(old_views.applications)
 @team_view
@@ -310,7 +358,7 @@ def manage_application_form(request, team, form_name, applications):
         'single_selection': len(selection) == 1,
     }
     if modal_context['single_selection']:
-        modal_context['user'] = applications[0].user
+        modal_context['user'] = applications.get(id=selection[0]).user
     response_renderer.show_modal(template_name, modal_context)
     return response_renderer.render()
 

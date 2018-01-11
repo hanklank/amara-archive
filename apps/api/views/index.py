@@ -29,7 +29,9 @@ Index Resource
 
 from collections import OrderedDict
 
-from rest_framework.decorators import api_view
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
@@ -53,3 +55,13 @@ def index(request):
         (name, reverse(view_name, request=request))
         for name, view_name in INDEX_ENDPOINTS
     ))
+
+@api_view(['GET', 'HEAD', 'POST', 'DELETE', 'PUT'])
+@permission_classes([AllowAny])
+def not_found(request):
+    """
+    Resource not found
+    """
+    return Response({
+        'path': request.path,
+    }, status=status.HTTP_404_NOT_FOUND)

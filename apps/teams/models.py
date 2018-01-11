@@ -70,7 +70,6 @@ from subtitles.models import (
     SubtitleVersion as NewSubtitleVersion,
     SubtitleLanguage as NewSubtitleLanguage,
     SubtitleNoteBase,
-    ORIGIN_IMPORTED
 )
 from subtitles import pipeline
 
@@ -1025,7 +1024,7 @@ class ProjectManager(models.Manager):
         """
         if hasattr(team_identifier, "pk"):
             team = team_identifier
-        elif isinstance(team_identifier, int):
+        elif isinstance(team_identifier, (int, long)):
             team = Team.objects.get(pk=team_identifier)
         elif isinstance(team_identifier, str):
             team = Team.objects.get(slug=team_identifier)
@@ -1237,6 +1236,8 @@ class TeamVideo(models.Model):
         self.video.cache.invalidate()
         self.video.clear_team_video_cache()
         Team.cache.invalidate_by_pk(self.team_id)
+
+        self.video.teamvideo = self
 
         assert self.project.team == self.team, \
                     "%s: Team (%s) is not equal to project's (%s) team (%s)"\
@@ -1527,6 +1528,9 @@ class TeamMemberManager(models.Manager):
     def admins(self):
         return self.filter(role__in=(ROLE_OWNER, ROLE_ADMIN))
 
+    def owners(self):
+        return self.filter(role=ROLE_OWNER)
+
     def members_from_users(self, team, users):
         return self.filter(team=team, user__in=users)
 
@@ -1571,6 +1575,15 @@ class TeamMember(models.Model):
     def leave_team(self):
         member_leave.send(sender=self)
         notifier.team_member_leave(self.team_id, self.user_id)
+
+    def change_role(self, new_role):
+        if new_role == self.role:
+            return
+        else:
+            self.role = new_role
+            self.save()
+            if new_role in (ROLE_MANAGER, ROLE_ADMIN):
+                notifier.team_member_promoted(self.team_id, self.user_id, new_role)
 
     def project_narrowings(self):
         """Return any project narrowings applied to this member."""
@@ -3649,6 +3662,10 @@ class BillingRecordManager(models.Manager):
 
         if not tv:
             celery_logger.debug('not a team video')
+            return
+
+        if tv.team.deleted:
+            celery_logger.debug('Cannot create billing record for deleted team')
             return
 
         if not language.is_complete_and_synced(public=False):

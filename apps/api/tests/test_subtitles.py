@@ -405,9 +405,9 @@ class SubtitlesSerializerTest(TestCase):
         }
         with assert_raises(ValidationError):
             self.run_create(data)
-        data['subtitles_url'] = "http://www.maxovahra.com/TAP_MAXSGAME_SUBS_GR.srt"
+        data['subtitles_url'] = "https://s3.amazonaws.com/pculture-test-data/simple.srt"
         version = self.run_create(data)
-        #assert_equal(version.get_subtitles(), subtitles)
+        assert_equal(len(version.get_subtitles()), 19)
         assert_equal(version.video, self.video)
         assert_equal(version.language_code, 'en')
         assert_equal(version.title, data['title'])

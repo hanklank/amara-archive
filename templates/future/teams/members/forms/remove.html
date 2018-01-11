@@ -1,0 +1,21 @@
+{% load i18n forms %}
+<div class="modal-dialog modal-sm" role="document">
+  <div class="modal-content">
+    <div class="dialogHeader text-center">
+      <h4 class="dialogTitle">
+        {% blocktrans count count=selection_count %}
+        Are you sure that you want to remove {{ member }} ({{ username }}) from {{ team }}?
+        {% plural %}
+        Are you sure that you want to remove {{ count }} members from {{ team }}?
+        {% endblocktrans %}
+      </h4>
+    </div>
+    <span style="padding: 20px;"></span>
+    <form class="ajaxForm text-center" method="POST" action="{{ request.get_full_path }}" enctype="multipart/form-data">
+      {% csrf_token %}
+      {% include "future/forms/non-field-errors.html" %}
+      <button class="button cta-reverse" data-dismiss="modal">Cancel</button>
+      <button class="button cta">Remove</button>
+    </form>
+  </div>
+</div>

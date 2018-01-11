@@ -395,7 +395,7 @@ def can_move_videos(team, user):
 
 def can_move_videos_to(user, exclude_teams=None):
     qs = (TeamMember.objects.admins()
-          .filter(user=user)
+          .filter(user=user, team__deleted=False)
           .select_related('team'))
     if exclude_teams:
         qs = qs.exclude(team__in=exclude_teams)

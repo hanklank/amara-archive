@@ -58,6 +58,7 @@ from teams.permissions import (
     can_add_video_somewhere
 )
 from teams.permissions_const import ROLE_NAMES
+from teams.signals import member_remove
 from teams.workflows import TeamWorkflow
 from ui.forms import (FiltersForm, ManagementForm, AmaraChoiceField,
                       AmaraRadioSelect, SearchField, AmaraClearableFileInput, AmaraFileInput)
@@ -500,7 +501,8 @@ class AddMultipleTeamVideoForm(forms.Form):
         video_urls = self.cleaned_data['video_urls'].split("\n")
         # See if any error happen when we create our videos
         for video_url in video_urls:
-            if len(video_url.strip()) == 0:
+            video_url = video_url.strip()
+            if len(video_url) == 0:
                 continue
             try:
                 Video.add(video_url, self.user, self.setup_video, self.team)
@@ -1250,6 +1252,9 @@ class VideoFiltersForm(FiltersForm):
 
         qs = Video.objects.filter(teamvideo__team=self.team)
 
+        if not (self.is_bound and self.is_valid()):
+            return qs.order_by('-created')
+
         if q:
             qs = qs.search(q)
         if project:
@@ -1375,18 +1380,18 @@ class MemberFiltersForm(forms.Form):
         ('any', _('Any language')),
     ] + get_language_choices()
 
-    q = forms.CharField(label=_('Search'), required=False)
+    q = SearchField(label=_('Search'), required=False)
 
-    role = forms.ChoiceField(choices=[
+    role = AmaraChoiceField(choices=[
         ('any', _('All roles')),
         (TeamMember.ROLE_ADMIN, _('Admins')),
         (TeamMember.ROLE_MANAGER, _('Managers')),
         (TeamMember.ROLE_CONTRIBUTOR, _('Contributors')),
     ], initial='any', required=False)
-    language = forms.ChoiceField(choices=LANGUAGE_CHOICES,
+    language = AmaraChoiceField(choices=LANGUAGE_CHOICES,
                                  label=_('Language spoken'),
                                  initial='any', required=False)
-    sort = forms.ChoiceField(choices=[
+    sort = AmaraChoiceField(label="", border=True, choices=[
         ('recent', _('Date joined, most recent')),
         ('oldest', _('Date joined, oldest')),
     ], initial='recent', required=False)
@@ -1403,12 +1408,8 @@ class MemberFiltersForm(forms.Form):
         return data if data else None
 
     def update_qs(self, qs):
-        if not self.is_bound:
-            data = {}
-        elif not self.is_valid():
-            # we should never get here
-            logger.warn("Invalid member filters: %s", self.data)
-            data = {}
+        if not (self.is_bound and self.is_valid()):
+            return qs.order_by('-created')
         else:
             data = self.cleaned_data
 
@@ -1425,13 +1426,13 @@ class MemberFiltersForm(forms.Form):
                                | Q(user__email__icontains=term)
                                | Q(user__username__icontains=term)
                                | Q(user__biography__icontains=term))
-        if role != 'any':
+        if role and role != 'any':
             if role != TeamMember.ROLE_ADMIN:
                 qs = qs.filter(role=role)
             else:
                 qs = qs.filter(Q(role=TeamMember.ROLE_ADMIN)|
                                Q(role=TeamMember.ROLE_OWNER))
-        if language != 'any':
+        if language and language != 'any':
             qs = qs.filter(user__userlanguage__language=language)
         if sort == 'oldest':
             qs = qs.order_by('created')
@@ -1484,6 +1485,7 @@ class ApproveApplicationForm(ManagementForm):
         for application in applications:
             try:
                 application.approve(self.user, "web UI")
+                self.approved_count += 1
             except ApplicationInvalidException:
                 self.invalid_count += 1
                 _(u'Application already processed.')
@@ -1493,7 +1495,8 @@ class ApproveApplicationForm(ManagementForm):
 
     def message(self):
         if self.approved_count:
-            return fmt(self.ungettext('%(count)s application has been approved',
+            return fmt(self.ungettext('Application has been approved',
+                                      '%(count)s application has been approved',
                                       '%(count)s applications have been approved',
                                       self.approved_count), count=self.approved_count)
         else:
@@ -1515,7 +1518,6 @@ class ApproveApplicationForm(ManagementForm):
                 self.error_count), count=self.error_count))
         return errors
 
-
 class DenyApplicationForm(ManagementForm):
 
     name = "deny_application"
@@ -1534,6 +1536,7 @@ class DenyApplicationForm(ManagementForm):
         for application in applications:
             try:
                 application.deny(self.user, "web UI")
+                self.denied_count += 1
             except ApplicationInvalidException:
                 self.invalid_count += 1
                 _(u'Application already processed.')
@@ -1543,7 +1546,8 @@ class DenyApplicationForm(ManagementForm):
 
     def message(self):
         if self.denied_count:
-            return fmt(self.ungettext('%(count)s application has been denied',
+            return fmt(self.ungettext('Application has been denied',
+                                      '%(count)s application has been denied',
                                       '%(count)s applications have been denied',
                                       self.denied_count), count=self.denied_count)
         else:
@@ -1562,6 +1566,143 @@ class DenyApplicationForm(ManagementForm):
                 "Application could not be processed",
                 "%(count)s application could not be processed",
                 "%(count)s applications could not be processed",
+                self.error_count), count=self.error_count))
+        return errors
+
+class ChangeMemberRoleForm(ManagementForm):
+    name = "change_role"
+    label = _("Change Role")
+
+    role = AmaraChoiceField(choices=[
+                ('', _("Don't change")),
+                (TeamMember.ROLE_CONTRIBUTOR, _('Contributor')),
+                (TeamMember.ROLE_MANAGER, _('Manager')),
+                (TeamMember.ROLE_ADMIN, _('Admin')),
+           ], initial='', label=_('Member Role'))
+
+    def __init__(self, user, queryset, selection, all_selected,
+                 data=None, files=None):
+        self.user = user
+        super(ChangeMemberRoleForm, self).__init__(
+            queryset, selection, all_selected, data=data, files=files)
+
+    def would_remove_last_owner(self, member, role):
+        if role == TeamMember.ROLE_OWNER:
+            return False
+        elif not member.role == TeamMember.ROLE_OWNER:
+            return False
+        else:
+            team_owners = member.team.members.owners()
+            return (len(team_owners) <= 1)
+
+    def perform_submit(self, members):
+        self.error_count = 0
+        self.only_owner_count = 0
+        self.changed_count = 0
+
+        if self.cleaned_data['role'] != '':
+            for member in members:
+                # check if user is last owner on team
+                if self.would_remove_last_owner(member, self.cleaned_data['role']):
+                    self.only_owner_count += 1
+                else:
+                    try:
+                        member.change_role(self.cleaned_data['role'])
+                        self.changed_count += 1
+                    except Exception as e:
+                        logger.error(e, exc_info=True)
+                        self.error_count += 1
+
+    def message(self):
+        if self.changed_count:
+            return fmt(self.ungettext('Member role has been updated',
+                                      '%(count)s member role has been updated',
+                                      '%(count)s member roles have been updated',
+                                      self.changed_count), count=self.changed_count)
+        else:
+            return None
+
+    def error_messages(self):
+        errors = []
+        if self.only_owner_count:
+            errors.append(fmt(self.ungettext(
+            "Could not change the member role because there would be no owners left in the team",
+            "Could not change %(count)s member role because there would be no owners left in the team",
+            "Could not change %(count)s member roles because there would be no owners left in the team",
+            self.only_owner_count), count=self.only_owner_count))
+        if self.error_count:
+            errors.append(fmt(self.ungettext(
+                "Member could not be edited",
+                "%(count)s member could not be edited",
+                "%(count)s members could not be edited",
+                self.error_count), count=self.error_count))
+        return errors
+
+class RemoveMemberForm(ManagementForm):
+    name = "remove_member"
+    label = _("Remove Member")
+
+    def __init__(self, user, queryset, selection, all_selected,
+                 data=None, files=None):
+        self.user = user
+        super(RemoveMemberForm, self).__init__(
+            queryset, selection, all_selected, data=data, files=files)
+
+    def would_remove_last_owner(self, members):
+        # if no owners are going to be removed
+        selected_owners = [member for member in members if member.role == TeamMember.ROLE_OWNER]
+        if not selected_owners:
+            return False
+        else:
+            team_owners = members[0].team.members.owners()
+            return (len(team_owners) - len(selected_owners) <= 1)
+
+    def perform_submit(self, members):
+        self.error_count = 0
+        self.only_owner_count = 0
+        self.removed_count = 0
+
+        # convert generator to list
+        members = list(members)
+
+        # if there would be no more members left on the team
+        if self.would_remove_last_owner(members):
+            self.only_owner_count += len(members)
+            return
+
+        for member in members:
+            try:
+                member.delete()
+                member_remove.send(sender=member)
+                for app in member.team.applications.filter(user=member.user):
+                    app.on_member_removed(self.user, "web UI")
+                self.removed_count += 1
+            except Exception as e:
+                logger.warn(e, exc_info=True)
+                self.error_count += 1
+
+    def message(self):
+        if self.removed_count:
+            return fmt(self.ungettext('User has been removed',
+                                      '%(count)s user has been removed',
+                                      '%(count)s users have been removed',
+                                      self.removed_count), count=self.removed_count)
+        else:
+            return None
+
+    def error_messages(self):
+        errors = []
+        if self.only_owner_count:
+            errors.append(fmt(self.ungettext(
+            "Could not remove the user because there would be no owners left in the team",
+            "Could not remove %(count)s user because there would be no owners left in the team",
+            "Could not remove %(count)s users because there would be no owners left in the team",
+            self.only_owner_count), count=self.only_owner_count))
+        if self.error_count:
+            errors.append(fmt(self.ungettext(
+                "Member could not be removed",
+                "%(count)s member could not be removed",
+                "%(count)s members could not be removed",
                 self.error_count), count=self.error_count))
         return errors
 
@@ -1884,9 +2025,7 @@ class MoveVideosForm(VideoManagementForm):
     def setup_fields(self):
         dest_teams = permissions.can_move_videos_to(self.user)
         dest_teams.sort(key=lambda t: t.name)
-        self.fields['new_team'].choices = [
-            (dest.id, dest.name) for dest in dest_teams
-        ]
+        self.fields['new_team'].choices = [(dest.id, dest.name) for dest in dest_teams]
         self.setup_project_field(dest_teams)
 
     def setup_project_field(self, dest_teams):
