@@ -58,6 +58,7 @@ from teams.permissions import (
     can_add_video_somewhere
 )
 from teams.permissions_const import ROLE_NAMES
+from teams.signals import member_remove
 from teams.workflows import TeamWorkflow
 from ui.forms import (FiltersForm, ManagementForm, AmaraChoiceField,
                       AmaraRadioSelect, SearchField, AmaraClearableFileInput, AmaraFileInput)
@@ -500,7 +501,8 @@ class AddMultipleTeamVideoForm(forms.Form):
         video_urls = self.cleaned_data['video_urls'].split("\n")
         # See if any error happen when we create our videos
         for video_url in video_urls:
-            if len(video_url.strip()) == 0:
+            video_url = video_url.strip()
+            if len(video_url) == 0:
                 continue
             try:
                 Video.add(video_url, self.user, self.setup_video, self.team)
@@ -1491,7 +1493,7 @@ class ApproveApplicationForm(ManagementForm):
 
     def message(self):
         if self.approved_count:
-            return fmt(self.ungettext('Application as been approved',
+            return fmt(self.ungettext('Application has been approved',
                                       '%(count)s application has been approved',
                                       '%(count)s applications have been approved',
                                       self.approved_count), count=self.approved_count)
@@ -1603,8 +1605,7 @@ class ChangeMemberRoleForm(ManagementForm):
                     self.only_owner_count += 1
                 else:
                     try:
-                        member.role = self.cleaned_data['role']
-                        member.save()
+                        member.change_role(self.cleaned_data['role'])
                         self.changed_count += 1
                     except Exception as e:
                         logger.error(e, exc_info=True)
@@ -1670,6 +1671,9 @@ class RemoveMemberForm(ManagementForm):
         for member in members:
             try:
                 member.delete()
+                member_remove.send(sender=member)
+                for app in member.team.applications.filter(user=member.user):
+                    app.on_member_removed(self.user, "web UI")
                 self.removed_count += 1
             except Exception as e:
                 logger.warn(e, exc_info=True)
