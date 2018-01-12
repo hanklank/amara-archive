@@ -1216,7 +1216,6 @@
                 '&lt;div class="amara-embed" data-height="480px" data-width="854px" data-url="{{ original_video_url }}"&gt;&lt;/div&gt;' +
                 '                        </pre>' +
                 '                        <ul>' +
-                '                            <li>Scale down size depending on container or display (responsive): <code>data-resizable="true"</code>.</li>' +
                 '                            <li>Hide order subtitles menu item: <code>data-hide-order="true"</code>.</li>' +
                 '                            <li>Set initial active subtitle language: <code>data-initial-language="en"</code>.</li>' +
                 '                            <li>Display subtitles by default: <code>data-show-subtitles-default="true"</code>.</li>' +
