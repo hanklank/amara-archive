@@ -14,7 +14,7 @@
     <div class="row">
       <div class="col-xs-12 col-sm-8">
         <div class="content">
-          {% include "future/videos/embed.html" with width=848 height=477 url=player_url team=video.get_team %}
+          {% include "future/videos/embed.html" with url=player_url team=video.get_team %}
           <h2>{{ video.title_display }}</h2>
           <ul class="nav nav-tabs" role="tablist">
             <li role="presentation"{% if tab == "info" %} class="active"{% endif %}><a href="#video_info" aria-controls="video_info" role="tab" data-toggle="tab">{% trans "Video info" %}</a></li>
@@ -83,7 +83,7 @@
       <p>
         {% trans "Paste this inside your HTML body, where you want to include the widget, with the width and height of your choosing:" %}
         <pre>
-&lt;div class="amara-embed" data-height="{{ height }}px" data-width="{{ width }}px" data-url="{{ player_url }}" {% if team %}data-team="{{ team.slug}}"{% else %}data-team="null"{% endif %}&gt;&lt;/div&gt;
+&lt;div class="amara-embed" data-width="{{ width }}px" data-url="{{ player_url }}" {% if team %}data-team="{{ team.slug}}"{% else %}data-team="null"{% endif %}&gt;&lt;/div&gt;
         </pre>
       </p>
     </div>
