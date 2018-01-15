@@ -29,7 +29,7 @@ from django.core.files.base import ContentFile
 from django.core.urlresolvers import reverse
 from django.core.validators import EMPTY_VALUES
 from django.db.models import Q
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from django.forms.formsets import formset_factory
 from django.forms.util import ErrorDict
 from django.shortcuts import redirect
@@ -1814,8 +1814,11 @@ class ApplicationForm(forms.Form):
         return self.cleaned_data
 
     def save(self):
-        self.application.note = self.cleaned_data['about_you']
-        self.application.save()
+        try:
+            self.application.note = self.cleaned_data['about_you']
+            self.application.save()
+        except IntegrityError as e:
+            raise forms.ValidationError(e.__cause__, code='duplicate')
         languages = []
         for i in xrange(1, 7):
             value = self.cleaned_data['language{}'.format(i)]
