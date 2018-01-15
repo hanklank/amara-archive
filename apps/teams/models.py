@@ -1544,6 +1544,15 @@ class TeamMember(models.Model):
         member_leave.send(sender=self)
         notifier.team_member_leave(self.team_id, self.user_id)
 
+    def change_role(self, new_role):
+        if new_role == self.role:
+            return
+        else:
+            self.role = new_role
+            self.save()
+            if new_role in (ROLE_MANAGER, ROLE_ADMIN):
+                notifier.team_member_promoted(self.team_id, self.user_id, new_role)
+
     def project_narrowings(self):
         """Return any project narrowings applied to this member."""
         return self.narrowings.filter(project__isnull=False)

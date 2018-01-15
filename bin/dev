@@ -512,6 +512,8 @@ def run_manage(args, **kwargs):
         cmdline = ['docker-compose', 'run', '--rm', 'app', 'manage']
     subprocess.call(cmdline + args, **kwargs)
 
+# If you update this, make sure to also change the value in
+# codeship-services.yml
 NODE_IMAGE = 'node:9.0.0'
 def run_node(command):
     """
