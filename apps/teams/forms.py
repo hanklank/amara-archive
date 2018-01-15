@@ -1922,10 +1922,26 @@ class DeleteVideosForm(VideoManagementForm):
     permissions_check = staticmethod(permissions.can_remove_videos)
     css_class = 'cta-reverse'
 
-    delete = forms.BooleanField(
-        label=_('Delete entirely'), required=False, initial=False,
-        help_text=_('Delete videos rather than moving them to the '
-                    'public area'))
+    DELETE_CHOICES = (
+        ('', _('Just remove from team')),
+        ('yes', _('Delete entirely')),
+    )
+    DELETE_HELP_TEXT = (
+        ('', _('Remove the video(s) from team into the public area of '
+               'Amara.  All existing subtitles will remain on site and '
+               'can be edited by any user.')),
+        ('yes', _('Permanently delete the video(s) and all associated '
+                  'subtitles and subtitle requests from Amara. '
+                  '<em>Important: </em> this action is irreversible, so use it '
+                  'with care.')),
+    )
+
+
+    delete = AmaraChoiceField(
+        label=_('Delete entirely'), choices=DELETE_CHOICES,
+        choice_help_text=DELETE_HELP_TEXT, required=False, initial='',
+        widget=AmaraRadioSelect,
+    )
     verify = forms.CharField(required=False, label=_('Are you sure?'))
 
     permissions_check = staticmethod(permissions.new_can_remove_videos)
@@ -1942,7 +1958,7 @@ class DeleteVideosForm(VideoManagementForm):
     def clean_verify(self):
         verify = self.cleaned_data.get('verify')
         delete = self.cleaned_data.get('delete')
-        if delete and verify != unicode(self.VERIFY_STRING):
+        if delete == 'yes' and verify != unicode(self.VERIFY_STRING):
             raise forms.ValidationError(self.fields['verify'].help_text)
 
     def perform_submit(self, qs):
@@ -1953,7 +1969,7 @@ class DeleteVideosForm(VideoManagementForm):
 
         for video in qs:
             team_video = video.teamvideo
-            if delete:
+            if delete == 'yes':
                 team_video.delete()
                 video.delete(self.user)
             else:
@@ -1970,7 +1986,7 @@ class DeleteVideosForm(VideoManagementForm):
     def message(self):
         if self.success_count == 0:
             return None
-        if self.cleaned_data.get('delete'):
+        if self.cleaned_data.get('delete') == 'yes':
             msg = self.ungettext(
                 'Video has been deleted.',
                 '%(count)s video has been deleted.',
