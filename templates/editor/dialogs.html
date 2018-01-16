@@ -435,4 +435,79 @@
             <button ng-click="onClose($event)">{% trans "Close Editor" %}</button>
         </footer>
     </aside>
+    <aside modal-dialog="shift-forward" class="modal" ng-controller="ShiftForwardController">
+      <h3>{% trans "Shift subtitles forward" %}</h3>
+      <form id="forward">
+        <fieldset>
+          <input type="radio" name="subs-to-shift" value="all" checked>{% trans "All subtitles" %}<br>
+          <input type="radio" name="subs-to-shift" value="after">{% trans "All subtitles on or after" %}<br>
+          <input type="text" placeholder= "0:00:00.0" name="start-from" size="10">h:mm:ss:ms<br>
+          <p class="error" ng-show="startFromError">
+          {% trans "Incorrect time format" %}
+          </p>
+        </fieldset>
+        <fieldset>
+          <h2>{% trans "Shift amount" %}</h2>
+          <div>
+            <input type="text" name="hour" size="4"></input>
+            <label for="hour">hr</label>
+          </div>
+          <div>
+            <input type="text" name="minutes" size="4"></input>
+            <label for="minutes">mm</label>
+          </div>
+          <div>
+            <input type="text" name="seconds" size="4"></input>
+            <label for="seconds">ss</label>
+          </div>
+          <div>
+            <input type="text" name="mseconds" size="4"></input>
+            <label for="mseconds">ms</label>
+          </div>
+          <p class="error" ng-show="shiftAmountError">
+          {% trans "Some subtitles would be placed outside the video length" %}
+          </p>
+        </fieldset>
+        <footer class="buttons">
+          <button ng-click="doShiftForward($event)" ng-disabled="!dataValid()">{% trans "Shift" %}</button>
+          <button ng-click="dialogManager.onCloseClick($event)">{% trans "Cancel" %}</button>
+        </footer>
+      </form>
+    </aside>
+    <aside modal-dialog="shift-backward" class="modal" ng-controller="ShiftBackwardController">
+      <h3>{% trans "Shift subtitles backward" %}</h3>
+      <form id="backward">
+        <fieldset>
+          <input type="radio" name="subs-to-shift" value="all" checked>{% trans "All subtitles" %}<br>
+          <input type="radio" name="subs-to-shift" value="after">{% trans "All subtitles on or after" %}
+          <input type="text" placeholder= "0:00:00.0" name="start-from" size="10">h:mm:ss:ms<br>
+          <p class="error" ng-show="startFromError">
+          {% trans "Incorrect time format" %}
+          </p>
+        </fieldset>
+        <fieldset>
+          <h2>{% trans "Shift amount" %}</h2>
+          <div>
+            <input type="text" name="hour" size="4"></input>
+            <label for="hour">hr</label>
+          </div>
+          <div>
+            <input type="text" name="minutes" size="4"></input>
+            <label for="minutes">mm</label>
+          </div>
+          <div>
+            <input type="text" name="seconds" size="4"></input>
+            <label for="seconds">ss</label>
+          </div>
+          <div>
+            <input type="text" name="mseconds" size="4"></input>
+            <label for="mseconds">ms</label>
+          </div>
+        </fieldset>
+      </form>
+      <footer class="buttons">
+        <button ng-click="doShiftBackward($event)" ng-disabled="!dataValid()">{% trans "Shift" %}</button>
+        <button ng-click="dialogManager.onCloseClick($event)">{% trans "Cancel" %}</button>
+      </footer>
+    </aside>
 </div>

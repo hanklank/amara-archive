@@ -5,7 +5,7 @@
         Editing {{ language }}&hellip;
         {% endblocktrans %}
     </div>
-    <div class="toolbox">
+    <div class="toolbox" ng-controller="ToolbarController">
         <div class="toolbox-inside">
             <button class="toolIcon button-subs" href="#" ng-click="onSubtitleToolIconClicked($event)" title="{% trans 'Subtitle tools' %}" aria-label="Tools"><span class="clippedAndHidden">Tools</span></button>
             <button class="timingIcon button-timing" href="#" ng-click="onTimingToolIconClicked($event)" title="{% trans 'Timing tools' %}" aria-label="Tools"><span class="clippedAndHidden">Tools</span></button>
@@ -29,78 +29,9 @@
                     {% trans "Timeline" %}
                 </a></li>
                 <li><a href="#" class="clear-timing" ng-click="showClearTimingModal($event)" title="Clear timing of all subtitles">{% trans "Clear timing" %}</a></li>
-		<li><a href="#" ng-click="shiftForward($event)" class="shift-forward">{% trans "Shift subs forward" %}</a></li>
-		<li><a href="#" ng-click="shiftBackward($event)" class="shift-backward">{% trans "Shift subs backward" %}</a></li>
+		<li><a href="#" ng-click="showShiftForwardModal($event)" class="shift-forward">{% trans "Shift subs forward" %}</a></li>
+		<li><a href="#" ng-click="showShiftForwardModal($event)" class="shift-backward">{% trans "Shift subs backward" %}</a></li>
             </ul>
-	    <div class="toolbox-menu-forward hidden">
-	      <h1>{% trans "Shift subtitles forward" %}</h1>
-	      <form id="forward">
-		<fieldset>
-		  <input type="radio" name="subs-to-shift" value="all" checked>{% trans "All subtitles" %}<br>
-		  <input type="radio" name="subs-to-shift" value="after">{% trans "All subtitles on or after" %}<br>
-		  <input type="text" placeholder= "0:00:00.0" name="start-from" size="10">h:mm:ss:ms<br>
-		  <p class="error" ng-show="startFromError">
-		    {% trans "Incorrect time format" %}
-		  </p>
-		</fieldset>
-		<fieldset>
-		  <h2>{% trans "Shift amount" %}</h2>
-		  <div>
-		    <input type="text" name="hour" size="4"></input>
-		    <label for="hour">hr</label>
-		  </div>
-		  <div>
-		    <input type="text" name="minutes" size="4"></input>
-		    <label for="minutes">mm</label>
-		  </div>
-		  <div>
-		    <input type="text" name="seconds" size="4"></input>
-		    <label for="seconds">ss</label>
-		  </div>
-		  <div>
-		    <input type="text" name="mseconds" size="4"></input>
-		    <label for="mseconds">ms</label>
-		  </div>
-		  <p class="error" ng-show="shiftAmountError">
-		    {% trans "Some subtitles would be placed outside the video length" %}
-		  </p>
-		</fieldset>
-		<button ng-click="doShiftForward($event)">{% trans "Shift" %}</button>
-	      </form>
-	    </div>
-	    <div class="toolbox-menu-backward hidden">
-	      <h1>{% trans "Shift subtitles backward" %}</h1>
-	      <form id="backward">
-		<fieldset>
-		  <input type="radio" name="subs-to-shift" value="all" checked>{% trans "All subtitles" %}<br>
-		  <input type="radio" name="subs-to-shift" value="after">{% trans "All subtitles on or after" %}
-		  <input type="text" placeholder= "0:00:00.0" name="start-from" size="10">h:mm:ss:ms<br>
-		  <p class="error" ng-show="startFromError">
-		    {% trans "Incorrect time format" %}
-		  </p>
-		</fieldset>
-		<fieldset>
-		  <h2>{% trans "Shift amount" %}</h2>
-		  <div>
-		    <input type="text" name="hour" size="4"></input>
-		    <label for="hour">hr</label>
-		  </div>
-		  <div>
-		    <input type="text" name="minutes" size="4"></input>
-		    <label for="minutes">mm</label>
-		  </div>
-		  <div>
-		    <input type="text" name="seconds" size="4"></input>
-		    <label for="seconds">ss</label>
-		  </div>
-		  <div>
-		    <input type="text" name="mseconds" size="4"></input>
-		    <label for="mseconds">ms</label>
-		  </div>
-		</fieldset>
-		<button ng-click="doShiftBackward($event)">{% trans "Shift" %}</button>
-	      </form>
-	    </div>
         </div>
     </div>
 </div>

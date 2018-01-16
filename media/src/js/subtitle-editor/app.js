@@ -28,6 +28,8 @@ var angular = angular || null;
         'amara.SubtitleEditor.preferences',
         'amara.SubtitleEditor.notes',
         'amara.SubtitleEditor.session',
+        'amara.SubtitleEditor.shifttime',
+        'amara.SubtitleEditor.toolbar',
         'amara.SubtitleEditor.workflow',
         'amara.SubtitleEditor.subtitles.controllers',
         'amara.SubtitleEditor.subtitles.directives',
@@ -214,6 +216,18 @@ var angular = angular || null;
             $event.preventDefault();
         };
 
+        $scope.showShiftForwardModal = function($event) {
+            $scope.dialogManager.open('shift-forward');
+            $event.stopPropagation();
+            $event.preventDefault();
+        };
+
+        $scope.showShiftBackwardModal = function($event) {
+            $scope.dialogManager.open('shift-backward');
+            $event.stopPropagation();
+            $event.preventDefault();
+        };
+
         // Required by ajax plugin but not present in our version of
         // jQuery
         jQuery.extend({
@@ -384,111 +398,6 @@ var angular = angular || null;
             $event.stopPropagation();
             $scope.dialogManager.open('metadata');
         }
-        $scope.onTimingToolIconClicked = function($event) {
-            $scope.showMenu($event, "timing");
-        };
-	$scope.onSubtitleToolIconClicked = function($event) {
-            $scope.showMenu($event, "tool");
-        };
-        $scope.shiftAmountError = false;
-        $scope.startFromError = false;
-        $scope.shiftForward = function($event) {
-            $scope.showMenu($event, "forward");
-        };
-        $scope.shiftBackward = function($event) {
-            $scope.showMenu($event, "backward");
-        };
-        $scope.showMenu = function($event, menu) {
-            $event.preventDefault();
-            $event.stopPropagation();
-            var icons = {'timing': '.timingIcon', 'tool': '.toolIcon', 'forward': '.timingIcon', 'backward': '.timingIcon'};
-            var menus = {'timing': '.toolbox-menu-timing', 'tool': '.toolbox-menu-subs', 'forward': '.toolbox-menu-forward', 'backward': '.toolbox-menu-backward'};
-            for (var key in icons) {
-                $(icons[key]).removeClass("active");
-            }
-            if (menu) {
-                $(icons[menu]).addClass("active");
-            }
-            for (var key in menus) {
-                $(menus[key]).addClass("hidden");
-            }
-            if (menu) {
-                $(menus[menu]).removeClass("hidden");
-            }
-            if (menu) {
-                $window.onclick = function ($event) {
-		    if (!($('div.toolbox-menu-forward').has($event.target).length || $('div.toolbox-menu-backward').has($event.target).length)) {
-                        $window.onclick = null;
-			$scope.showMenu($event, "");
-		    }
-                };
-            }
-	    $('#context-menu').hide();
-            $scope.shiftAmountError = false;
-            $scope.startFromError = false;
-        };
-        $scope.doShift = function(from, amount) {
-            var nextWorkingSubtitle = $scope.workingSubtitles.subtitleList.firstSubtitle();
-            while (nextWorkingSubtitle) {
-                if (nextWorkingSubtitle.startTime >= from) {
-                    $scope.workingSubtitles.subtitleList.updateSubtitleTime(nextWorkingSubtitle,
-                                                                        nextWorkingSubtitle.startTime + amount,
-                                                                        nextWorkingSubtitle.endTime + amount);
-                }
-                nextWorkingSubtitle = $scope.workingSubtitles.subtitleList.nextSubtitle(nextWorkingSubtitle);
-            }
-            $scope.$root.$emit('work-done');
-        };
-        $scope.doShiftForward = function($event) {
-            $scope.shiftAmountError = false;
-            $scope.startFromError = false;
-            var subsToShift = $("#forward input[name=subs-to-shift]:checked").val();
-            var from = 0;
-            if (subsToShift == "after") {
-                var startFrom = $("#forward input[name=start-from]").val();
-                var re = /(\d+)\:(\d+)\:(\d+)\.(\d{1,3})/;
-                var parsed = re.exec(startFrom);
-                if (parsed) {
-                    from = parseInt(parsed[4].padEnd(3,"0")) + 1000 * (parseInt(parsed[3]) + 60 * (parseInt(parsed[2]) + 60 * parseInt(parsed[1])));
-                } else {
-                    $scope.startFromError = true;
-                    return;
-                }
-            }
-            var shiftAmount = parseInt($("#forward input[name=mseconds]").val() || "0") + 1000 * (parseInt($("#forward input[name=seconds]").val() || 0) + 60 * (parseInt($("#forward input[name=minutes]").val() || 0) + 60 * parseInt($("#forward input[name=hours]").val() || 0)));
-            if (isNaN(shiftAmount)) {
-                $scope.shiftAmountError = true;
-                return;
-            } else {
-                $scope.doShift(from, shiftAmount);
-                $scope.showMenu($event, "");
-            }
-        };
-        $scope.doShiftBackward = function($event) {
-            $scope.shiftAmountError = false;
-            $scope.startFromError = false;
-            var subsToShift = $("#backward input[name=subs-to-shift]:checked").val();
-            var from = 0;
-            if (subsToShift == "after") {
-                var startFrom = $("#backward input[name=start-from]").val();
-                var re = /(\d+)\:(\d+)\:(\d+)\.(\d{1,3})/;
-                var parsed = re.exec(startFrom);
-                if (parsed) {
-                    from = parseInt(parsed[4].padEnd(3,"0")) + 1000 * (parseInt(parsed[3]) + 60 * (parseInt(parsed[2]) + 60 * parseInt(parsed[1])));
-                } else {
-                    $scope.startFromError = true;
-                    return;
-                }
-            }
-            var shiftAmount = parseInt($("#backward input[name=mseconds]").val() || "0") + 1000 * (parseInt($("#backward input[name=seconds]").val() || 0) + 60 * (parseInt($("#backward input[name=minutes]").val() || 0) + 60 * parseInt($("#backward input[name=hours]").val() || 0)));
-            if (isNaN(shiftAmount)) {
-                $scope.shiftAmountError = true;
-                return;
-            } else {
-                $scope.doShift(from, -shiftAmount);
-                $scope.showMenu($event, "");
-            }
-        };
         // Hide the loading modal after we are done with bootstrapping
         // everything
         $scope.$evalAsync(function() {
