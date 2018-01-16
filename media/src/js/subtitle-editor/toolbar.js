@@ -83,6 +83,9 @@ var angular = angular || null;
             $event.preventDefault();
             $event.stopPropagation();
         };
+        $scope.$root.$on('dialog-opened', function() {
+            hideCurrentMenu();
+        });
     }]);
 
 }).call(this);

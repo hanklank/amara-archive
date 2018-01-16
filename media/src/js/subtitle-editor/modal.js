@@ -155,6 +155,7 @@
             open: function(dialogName) {
                 VideoPlayer.pause();
                 stack.push(dialogName);
+                $scope.$emit('dialog-opened');
             },
             close: function() {
                 stack.pop();
@@ -163,6 +164,7 @@
                 } else {
                     this.generic = null;
                 }
+                $scope.$emit('dialog-closed');
             },
             onCloseClick: function($event) {
                 $event.stopPropagation();
