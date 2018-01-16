@@ -62,7 +62,7 @@
 {% endif %}
 {% if is_team_admin %}
 <div id="memberDirectory-actionBar" class="actionBar">
-  <form class="ajaxForm" method="GET" action="{{ request.path }}">
+  <form class="ajaxForm copyQuery" method="GET" action="{{ request.path }}">
     <input class="selectList-selection" type="hidden" name="selection">
     <button class="button cta" type="submit" name="form" value="role">Change Role</button>
     <button class="button cta" type="submit" name="form" value="remove">Remove</button>
