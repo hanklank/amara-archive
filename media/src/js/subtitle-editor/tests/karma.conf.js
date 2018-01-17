@@ -20,7 +20,7 @@ module.exports = function(config) {
         'third-party/angular-mocks.*.js',
         'third-party/angular-cookies.js',
         'third-party/jquery.autosize.js',
-        'third-party/underscore.1.4.4.js',
+        'third-party/underscore.1.8.3.js',
         'third-party/popcorn.js',
         'dfxp/dfxp.js',
         'tests/*.tests.js',
