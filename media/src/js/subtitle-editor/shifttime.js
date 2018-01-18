@@ -25,81 +25,151 @@ var angular = angular || null;
 (function() {
     var module = angular.module('amara.SubtitleEditor.shifttime', []);
 
-    module.controller("ShiftForwardController", ['$scope', function($scope) {
-        $scope.shiftAmountError = false;
-        $scope.startFromError = false;
-        $scope.shiftForward = function($event) {
-        };
-        $scope.shiftBackward = function($event) {
-        };
+    module.controller("ShiftForwardController", ['$scope', 'formatTime', function($scope, formatTime) {
+        function getLastSubtitle() {
+            return $scope.workingSubtitles.subtitleList.lastSyncedSubtitle();
+        }
 
-        $scope.doShift = function(from, amount) {
-            var nextWorkingSubtitle = $scope.workingSubtitles.subtitleList.firstSubtitle();
-            while (nextWorkingSubtitle) {
-                if (nextWorkingSubtitle.startTime >= from) {
-                    $scope.workingSubtitles.subtitleList.updateSubtitleTime(nextWorkingSubtitle,
-                                                                        nextWorkingSubtitle.startTime + amount,
-                                                                        nextWorkingSubtitle.endTime + amount);
+        function getStartTime() {
+            if($scope.subsToShift == 'all') {
+                return 0;
+            } else {
+                return $scope.startTime;
+            }
+        }
+
+        $scope.validateForm = function() {
+            var lastSubtitle = getLastSubtitle();
+            var startTime = getStartTime();
+            $scope.dataValid = false;
+            if($scope.amount == 0 || isNaN($scope.amount) || isNaN(startTime)) {
+                $scope.helpText = gettext('Shift subtitles forward in bulk by a set amount of time.  This feature is useful when you edit the video and insert a new segment after already creating subtitles.');
+                $scope.helpTextError = false;
+            } else if(!lastSubtitle) {
+                $scope.helpText = gettext('No subtitles to shift');
+                $scope.helpTextError = true;
+            } else if(lastSubtitle.startTime < $scope.startTime) {
+                $scope.helpText = gettext('Start time after last subtitle');
+                $scope.helpTextError = true;
+            } else if(lastSubtitle.startTime + $scope.amount > $scope.timeline.duration) {
+                $scope.helpText = gettext('Shift amount would place the last subtitle past the end of the video');
+                $scope.helpTextError = true;
+            } else {
+                if(startTime > 0) {
+                    var helpTextTemplate = gettext('Shift subtitles starting at %(start_time)s forward by %(amount)s');
+                } else {
+                    var helpTextTemplate = gettext('Shift all subtitles forward by %(amount)s');
                 }
-                nextWorkingSubtitle = $scope.workingSubtitles.subtitleList.nextSubtitle(nextWorkingSubtitle);
+                $scope.helpText = interpolate(helpTextTemplate, {
+                    start_time: formatTime(startTime),
+                    amount: formatTime($scope.amount)
+                }, true);
+                $scope.helpTextError = false;
+                $scope.dataValid = true;
+            }
+        }
+
+        $scope.onShiftClick = function($event) {
+            var startTime = getStartTime();
+            var amount = $scope.amount;
+            var subtitleList = $scope.workingSubtitles.subtitleList;
+
+            var i = 0;
+            while(i < subtitleList.syncedCount) {
+                var sub = subtitleList.subtitles[i];
+                if(sub.startTime >= startTime) {
+                    $scope.workingSubtitles.subtitleList.updateSubtitleTime(sub,
+                            sub.startTime + amount,
+                            sub.endTime + amount);
+                }
+                i++;
             }
             $scope.$root.$emit('work-done');
+            $scope.dialogManager.close();
+
+            $event.preventDefault();
+            $event.stopPropagation();
         };
-        $scope.doShiftForward = function($event) {
-            $scope.shiftAmountError = false;
-            $scope.startFromError = false;
-            var subsToShift = $("#forward input[name=subs-to-shift]:checked").val();
-            var from = 0;
-            if (subsToShift == "after") {
-                var startFrom = $("#forward input[name=start-from]").val();
-                var re = /(\d+)\:(\d+)\:(\d+)\.(\d{1,3})/;
-                var parsed = re.exec(startFrom);
-                if (parsed) {
-                    from = parseInt(parsed[4].padEnd(3,"0")) + 1000 * (parseInt(parsed[3]) + 60 * (parseInt(parsed[2]) + 60 * parseInt(parsed[1])));
-                } else {
-                    $scope.startFromError = true;
-                    return;
-                }
-            }
-            var shiftAmount = parseInt($("#forward input[name=mseconds]").val() || "0") + 1000 * (parseInt($("#forward input[name=seconds]").val() || 0) + 60 * (parseInt($("#forward input[name=minutes]").val() || 0) + 60 * parseInt($("#forward input[name=hours]").val() || 0)));
-            if (isNaN(shiftAmount)) {
-                $scope.shiftAmountError = true;
-                return;
-            } else {
-                $scope.doShift(from, shiftAmount);
-            }
-        };
-        $scope.doShiftBackward = function($event) {
-            $scope.shiftAmountError = false;
-            $scope.startFromError = false;
-            var subsToShift = $("#backward input[name=subs-to-shift]:checked").val();
-            var from = 0;
-            if (subsToShift == "after") {
-                var startFrom = $("#backward input[name=start-from]").val();
-                var re = /(\d+)\:(\d+)\:(\d+)\.(\d{1,3})/;
-                var parsed = re.exec(startFrom);
-                if (parsed) {
-                    from = parseInt(parsed[4].padEnd(3,"0")) + 1000 * (parseInt(parsed[3]) + 60 * (parseInt(parsed[2]) + 60 * parseInt(parsed[1])));
-                } else {
-                    $scope.startFromError = true;
-                    return;
-                }
-            }
-            var shiftAmount = parseInt($("#backward input[name=mseconds]").val() || "0") + 1000 * (parseInt($("#backward input[name=seconds]").val() || 0) + 60 * (parseInt($("#backward input[name=minutes]").val() || 0) + 60 * parseInt($("#backward input[name=hours]").val() || 0)));
-            if (isNaN(shiftAmount)) {
-                $scope.shiftAmountError = true;
-                return;
-            } else {
-                $scope.doShift(from, -shiftAmount);
-            }
-        };
-        $scope.dataValid = function() {
-            return false;
+
+        function reset() {
+            $scope.subsToShift = 'all';
+            $scope.startTime = 0;
+            $scope.amount = 0;
+            $scope.validateForm();
         }
+        $scope.$root.$on('dialog-opened', function(evt, dialogName) {
+            if(dialogName == 'shift-forward') {
+                reset();
+            }
+        });
+        reset();
     }]);
-    module.controller("ShiftBackwardController", ['$scope', function($scope) {
-        $scope.dataValid = function() {
-            return false;
+    module.controller("ShiftBackwardController", ['$scope', 'formatTime', function($scope, formatTime) {
+        $scope.validateForm = function() {
+            $scope.dataValid = false;
+
+            if(isNaN($scope.startTime) || isNaN($scope.endTime) || ($scope.startTime == 0 && $scope.endTime == 0)) {
+                $scope.helpText = gettext('Delete all subtitles in a time range, and shift subtitles afterwards back by the duration.  This feature is useful when you edit the video and delete a segment after already creating subtitles.');
+                $scope.helpTextError = false;
+            } else if(!$scope.workingSubtitles.subtitleList.lastSyncedSubtitle()) {
+                $scope.helpText = gettext('No subtitles to shift');
+                $scope.helpTextError = true;
+            } else if($scope.endTime <= $scope.startTime) {
+                $scope.helpText = gettext('Start time not after end time');
+                $scope.helpTextError = true;
+            } else if($scope.startTime > $scope.timeline.duration) {
+                $scope.helpText = gettext('Start time exceeds the video duration');
+                $scope.helpTextError = true;
+            } else {
+                var helpTextTemplate = gettext('Delete subtitles between %(start_time)s and %(end_time)s.  Shift subtitles after that back by %(amount)s');
+                $scope.helpText = interpolate(helpTextTemplate, {
+                    start_time: formatTime($scope.startTime, {longFormat: true}),
+                    end_time: formatTime($scope.endTime, {longFormat: true}),
+                    amount: formatTime($scope.endTime - $scope.startTime),
+                }, true);
+                $scope.helpTextError = false;
+                $scope.dataValid = true;
+            }
         }
+
+        $scope.onShiftClick = function($event) {
+            var startTime = $scope.startTime;
+            var endTime = $scope.endTime;
+            var amount = endTime - startTime;
+            var subtitleList = $scope.workingSubtitles.subtitleList;
+
+            var i = 0;
+            while(i < subtitleList.syncedCount) {
+                var sub = subtitleList.subtitles[i];
+                if(sub.startTime >= startTime) {
+                    if(sub.startTime < endTime) {
+                        $scope.workingSubtitles.subtitleList.removeSubtitle(sub);
+                        continue; // avoid incrementing i, since we removed a subtitle
+                    } else {
+                        $scope.workingSubtitles.subtitleList.updateSubtitleTime(sub,
+                            sub.startTime - amount,
+                            sub.endTime - amount);
+                    }
+                }
+                i++;
+            }
+            $scope.$root.$emit('work-done');
+            $scope.dialogManager.close();
+
+            $event.preventDefault();
+            $event.stopPropagation();
+        };
+
+        function reset() {
+            $scope.startTime = 0;
+            $scope.endTime = 0;
+            $scope.validateForm();
+        }
+        $scope.$root.$on('dialog-opened', function(evt, dialogName) {
+            if(dialogName == 'shift-backward') {
+                reset();
+            }
+        });
+        reset();
     }]);
 }).call(this);

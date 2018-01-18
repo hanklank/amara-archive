@@ -437,77 +437,39 @@
     </aside>
     <aside modal-dialog="shift-forward" class="modal" ng-controller="ShiftForwardController">
       <h3>{% trans "Shift subtitles forward" %}</h3>
-      <form id="forward">
-        <fieldset>
-          <input type="radio" name="subs-to-shift" value="all" checked>{% trans "All subtitles" %}<br>
-          <input type="radio" name="subs-to-shift" value="after">{% trans "All subtitles on or after" %}<br>
-          <input type="text" placeholder= "0:00:00.0" name="start-from" size="10">h:mm:ss:ms<br>
-          <p class="error" ng-show="startFromError">
-          {% trans "Incorrect time format" %}
-          </p>
-        </fieldset>
-        <fieldset>
-          <h2>{% trans "Shift amount" %}</h2>
-          <div>
-            <input type="text" name="hour" size="4"></input>
-            <label for="hour">hr</label>
-          </div>
-          <div>
-            <input type="text" name="minutes" size="4"></input>
-            <label for="minutes">mm</label>
-          </div>
-          <div>
-            <input type="text" name="seconds" size="4"></input>
-            <label for="seconds">ss</label>
-          </div>
-          <div>
-            <input type="text" name="mseconds" size="4"></input>
-            <label for="mseconds">ms</label>
-          </div>
-          <p class="error" ng-show="shiftAmountError">
-          {% trans "Some subtitles would be placed outside the video length" %}
-          </p>
-        </fieldset>
+      <form>
+        <div class="formControl radioGroup">
+          <label class="radioGroup-choice"><input type="radio" ng-model="subsToShift" ng-change="validateForm()" value="all">{% trans "Shift all subtitles" %}</label>
+          <label class="radioGroup-choice"><input type="radio" ng-model="subsToShift" ng-change="validateForm()" value="after">{% trans "Shift subtitles starting from:" %}</label>
+          <div class="durationPicker" duration-picker ng-change="validateForm()" ng-model="startTime" ng-disable="subsToShift == 'all'"></div>
+        </div>
+        <div class="formControl">
+          <label>{% trans "Shift amount" %}</label>
+          <div class="durationPicker" ng-model="amount" ng-change="validateForm()" duration-picker></div>
+        </div>
+        <p class="formHelp min-lines-3" ng-bind="helpText" ng-class="helpTextError ? 'error' : ''"></p>
         <footer class="buttons">
-          <button ng-click="doShiftForward($event)" ng-disabled="!dataValid()">{% trans "Shift" %}</button>
+          <button ng-click="onShiftClick($event)" ng-disabled="!dataValid">{% trans "Shift" %}</button>
           <button ng-click="dialogManager.onCloseClick($event)">{% trans "Cancel" %}</button>
         </footer>
       </form>
     </aside>
     <aside modal-dialog="shift-backward" class="modal" ng-controller="ShiftBackwardController">
       <h3>{% trans "Shift subtitles backward" %}</h3>
-      <form id="backward">
-        <fieldset>
-          <input type="radio" name="subs-to-shift" value="all" checked>{% trans "All subtitles" %}<br>
-          <input type="radio" name="subs-to-shift" value="after">{% trans "All subtitles on or after" %}
-          <input type="text" placeholder= "0:00:00.0" name="start-from" size="10">h:mm:ss:ms<br>
-          <p class="error" ng-show="startFromError">
-          {% trans "Incorrect time format" %}
-          </p>
-        </fieldset>
-        <fieldset>
-          <h2>{% trans "Shift amount" %}</h2>
-          <div>
-            <input type="text" name="hour" size="4"></input>
-            <label for="hour">hr</label>
-          </div>
-          <div>
-            <input type="text" name="minutes" size="4"></input>
-            <label for="minutes">mm</label>
-          </div>
-          <div>
-            <input type="text" name="seconds" size="4"></input>
-            <label for="seconds">ss</label>
-          </div>
-          <div>
-            <input type="text" name="mseconds" size="4"></input>
-            <label for="mseconds">ms</label>
-          </div>
-        </fieldset>
+      <form>
+        <div class="formControl">
+          <label>{% trans "Start time" %}</label>
+          <div class="durationPicker" ng-model="startTime" ng-change="validateForm()" duration-picker></div>
+        </div>
+        <div class="formControl">
+          <label>{% trans "End time" %}</label>
+          <div class="durationPicker" ng-model="endTime" ng-change="validateForm()" duration-picker></div>
+        </div>
+        <p class="formHelp min-lines-3" ng-bind="helpText" ng-class="helpTextError ? 'error' : ''"></p>
+        <footer class="buttons">
+          <button ng-click="onShiftClick($event)" ng-disabled="!dataValid">{% trans "Shift" %}</button>
+          <button ng-click="dialogManager.onCloseClick($event)">{% trans "Cancel" %}</button>
+        </footer>
       </form>
-      <footer class="buttons">
-        <button ng-click="doShiftBackward($event)" ng-disabled="!dataValid()">{% trans "Shift" %}</button>
-        <button ng-click="dialogManager.onCloseClick($event)">{% trans "Cancel" %}</button>
-      </footer>
     </aside>
 </div>

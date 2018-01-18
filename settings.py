@@ -620,6 +620,8 @@ MEDIA_BUNDLES = {
             #'src/js/popcorn/popcorn.netflix.js',
             'src/js/subtitle-editor/app.js',
             'src/js/subtitle-editor/dom.js',
+            'src/js/subtitle-editor/durationpicker.js',
+            'src/js/subtitle-editor/gettext.js',
             'src/js/subtitle-editor/help.js',
             'src/js/subtitle-editor/lock.js',
             'src/js/subtitle-editor/preferences.js',

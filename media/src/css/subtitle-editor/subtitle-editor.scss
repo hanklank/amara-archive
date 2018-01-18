@@ -80,6 +80,8 @@ $tutorial-banner-height: 50px;
 $tutorial-play-height: 70px;
 $tutorial-top: 540px;
 
+$line-height-text: 1.2;
+
 // Mixins
 @mixin border-radius($radius: 5px) {
     -webkit-background-clip: padding-box;
@@ -192,6 +194,7 @@ body {
     &.loading-finished {
         background: $dark-grey;
     }
+    line-height: $line-height-text;
 }
 html, body {
     overflow: hidden;
@@ -2132,4 +2135,57 @@ div.sub-toolbox {
             }
         }
     }
+}
+
+// Forms and fields
+label {
+    display: block;
+    font-size: 14px;
+}
+
+.formControl {
+    padding-bottom: 20px;
+}
+
+input {
+    color: $dark-grey;
+    background: $light-grey;
+    border: none;
+}
+input[disabled] {
+    color: lighten($dark-grey, 40%);
+    background: $medium-grey;
+}
+.durationPicker {
+    background: $light-grey;
+    color: $medium-grey;
+    display: inline-block;
+
+    &.disabled {
+        color: lighten($dark-grey, 40%);
+        background: $medium-grey;
+    }
+}
+.durationPicker-input {
+    margin-left: 8px;
+    margin-right: 1px;
+    text-align: right;
+    &:first-of-type {
+        margin-left: 0;
+    }
+    &.invalid {
+        color: $reddish-pink;
+    }
+}
+
+.formHelp {
+    font-size: 14px;
+}
+
+.min-lines-3 {
+    min-height: ($line-height-text * 3) * 1em;
+}
+
+.min-lines-2 {
+    min-height: ($line-height-text * 3) * 1em;
 }

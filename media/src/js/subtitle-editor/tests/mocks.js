@@ -194,4 +194,15 @@
         };
         return mockTimeout;
     });
+
+    module.value('gettext', jasmine.createSpy().and.callFake(function(text) { return text; }));
+    module.value('pgettext', jasmine.createSpy().and.callFake(function(context, text) { return text; }));
+    module.value('interpolate', function(text, data, named) {
+        // It's not so easy to implement interpolate.  Just return the raw data so it can be checked
+        return {
+            text: text,
+            data: data,
+            named: Boolean(named)
+        };
+    });
 }).call(this);
