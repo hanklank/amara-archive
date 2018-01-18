@@ -1642,7 +1642,7 @@ class SubtitleVersion(models.Model):
 
         if self.is_public() and self.is_for_primary_audio_language():
             self._set_video_data()
-        elif video_needs_save:
+        if video_needs_save:
             self.video.save()
 
     def is_rtl(self):
@@ -1986,8 +1986,10 @@ class SubtitleVersion(models.Model):
         if self.duration and not self.video.duration:
             changed = True
             self.video.duration = self.duration
-        if changed:
+        if self.video.get_metadata() != self.get_metadata():
             self.video.update_metadata(self.get_metadata(), commit=False)
+            changed = True
+        if changed:
             self.video.save()
 
     def unpublish(self, delete=False, signal=True):
