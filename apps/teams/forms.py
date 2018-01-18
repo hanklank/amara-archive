@@ -1933,15 +1933,15 @@ class DeleteVideosForm(VideoManagementForm):
         ('', _('Remove the video(s) from team into the public area of '
                'Amara.  All existing subtitles will remain on site and '
                'can be edited by any user.')),
-        ('yes', _('Permanently delete the video(s) and all associated '
+        ('yes', mark_safe(_('Permanently delete the video(s) and all associated '
                   'subtitles and subtitle requests from Amara. '
                   '<em>Important: </em> this action is irreversible, so use it '
-                  'with care.')),
+                  'with care.'))),
     )
 
 
     delete = AmaraChoiceField(
-        label=_('Delete entirely'), choices=DELETE_CHOICES,
+        label='', choices=DELETE_CHOICES,
         choice_help_text=DELETE_HELP_TEXT, required=False, initial='',
         widget=AmaraRadioSelect,
     )
