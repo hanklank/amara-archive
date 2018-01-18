@@ -29,7 +29,7 @@ from django.core.files.base import ContentFile
 from django.core.urlresolvers import reverse
 from django.core.validators import EMPTY_VALUES
 from django.db.models import Q
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from django.forms.formsets import formset_factory
 from django.forms.util import ErrorDict
 from django.shortcuts import redirect
@@ -58,6 +58,7 @@ from teams.permissions import (
     can_add_video_somewhere
 )
 from teams.permissions_const import ROLE_NAMES
+from teams.signals import member_remove
 from teams.workflows import TeamWorkflow
 from ui.forms import (FiltersForm, ManagementForm, AmaraChoiceField,
                       AmaraRadioSelect, SearchField, AmaraClearableFileInput, AmaraFileInput)
@@ -919,7 +920,7 @@ class AddMembersForm(forms.Form):
 
 class InviteForm(forms.Form):
     username = UserAutocompleteField(error_messages={
-        'invalid': _(u'User is already a member of this team'),
+        'invalid': _(u'User has a pending invite or is already a member of this team'),
     })
     message = forms.CharField(required=False,
                               widget=forms.Textarea(attrs={'rows': 4}),
@@ -1492,7 +1493,7 @@ class ApproveApplicationForm(ManagementForm):
 
     def message(self):
         if self.approved_count:
-            return fmt(self.ungettext('Application as been approved',
+            return fmt(self.ungettext('Application has been approved',
                                       '%(count)s application has been approved',
                                       '%(count)s applications have been approved',
                                       self.approved_count), count=self.approved_count)
@@ -1604,8 +1605,7 @@ class ChangeMemberRoleForm(ManagementForm):
                     self.only_owner_count += 1
                 else:
                     try:
-                        member.role = self.cleaned_data['role']
-                        member.save()
+                        member.change_role(self.cleaned_data['role'])
                         self.changed_count += 1
                     except Exception as e:
                         logger.error(e, exc_info=True)
@@ -1671,6 +1671,9 @@ class RemoveMemberForm(ManagementForm):
         for member in members:
             try:
                 member.delete()
+                member_remove.send(sender=member)
+                for app in member.team.applications.filter(user=member.user):
+                    app.on_member_removed(self.user, "web UI")
                 self.removed_count += 1
             except Exception as e:
                 logger.warn(e, exc_info=True)
@@ -1811,8 +1814,11 @@ class ApplicationForm(forms.Form):
         return self.cleaned_data
 
     def save(self):
-        self.application.note = self.cleaned_data['about_you']
-        self.application.save()
+        try:
+            self.application.note = self.cleaned_data['about_you']
+            self.application.save()
+        except IntegrityError as e:
+            raise forms.ValidationError(e.__cause__, code='duplicate')
         languages = []
         for i in xrange(1, 7):
             value = self.cleaned_data['language{}'.format(i)]
