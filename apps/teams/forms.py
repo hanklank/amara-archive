@@ -467,7 +467,7 @@ class MultipleURLsField(forms.CharField):
 class AddMultipleTeamVideoForm(forms.Form):
     language = NewLanguageField(label=_(u'Video language'),
                                 required=True,
-                                options='null popular all',
+                                options='null popular all dont-set',
                                 help_text=_(u'It will be saved only if video does not exist in our database.'),
                                 error_messages={'required': 'Please select the video language.'})
 
