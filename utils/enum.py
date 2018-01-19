@@ -159,6 +159,27 @@ class EnumField(models.PositiveSmallIntegerField):
         super(EnumField, self).__init__(**kwargs)
         self.enum = enum
 
+    def get_default(self):
+        if self.has_default():
+            return self.default.number
+        else:
+            return super(EnumField, self).get_default()
+
+    @property
+    def choices(self):
+        return self.enum.choices()
+
+    def value_from_object(self, obj):
+        value = getattr(obj, self.attname)
+        return value.number if isinstance(value, EnumMember) else value
+
+    @property
+    def raw_default(self):
+        if isinstance(self.default, EnumMember):
+            return self.default.number
+        else:
+            return self.default
+
     def db_type(self, connection):
         return 'tinyint UNSIGNED' # 256 values should be enough for our enums
 
@@ -184,6 +205,14 @@ class EnumField(models.PositiveSmallIntegerField):
         else:
             return value.number
 
-add_introspection_rules([], [
+add_introspection_rules([
+    (
+        [EnumField],
+        [],
+        {
+            'default': ['raw_default', {}],
+        }
+    ),
+], [
     "^utils\.enum\.EnumField$",
 ])
