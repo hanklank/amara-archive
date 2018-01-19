@@ -414,6 +414,8 @@
                 this.$thumbnailContainer.height(height);
                 this.$videoDivContainer.width(width);
                 this.$videoDivContainer.height(height);
+                // For HTML5 videos, we also need to update the element
+                _$('video', this.$popContainer).width(width).height(height);
                 this.$thumbnailButton.css('margin-top', ((height - 35) / 2) + "px");
                 this.model.set('height', height);
                 this.model.set('width', width);
@@ -476,9 +478,6 @@
                 });
 
                 this.pop.on('loadedmetadata', function() {
-                    // In case of HTML5 videos, we need to set their dimension directly to the video element
-                    _$('video', that.$popContainer).width(that.$popContainer.width()).height(that.$popContainer.height());
-
                     // Just set some cached Zepto selections for later use.
                     that.cacheNodes();
 
