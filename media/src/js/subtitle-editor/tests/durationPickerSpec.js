@@ -100,6 +100,26 @@ describe('The duration picker', function() {
         expect(picker.picker.hasClass('disabled')).toBe(true);
 
     });
+
+    it('supports ngChange', function() {
+        $scope.amount = 0;
+        $scope.onChange = jasmine.createSpy('onChange');
+        var picker = buildDurationPicker('<div duration-picker ng-model="amount" ng-change="onChange()"></div>');
+
+        expect($scope.onChange).not.toHaveBeenCalled();
+        picker.minutes.trigger('change');
+        expect($scope.onChange).toHaveBeenCalled();
+    });
+
+    it('calls the ngChange callaback on keyup', function() {
+        $scope.amount = 0;
+        $scope.onChange = jasmine.createSpy('onChange');
+        var picker = buildDurationPicker('<div duration-picker ng-model="amount" ng-change="onChange()"></div>');
+
+        expect($scope.onChange).not.toHaveBeenCalled();
+        picker.minutes.trigger('keyup');
+        expect($scope.onChange).toHaveBeenCalled();
+    });
 });
 
 describe('The formatTime function', function() {

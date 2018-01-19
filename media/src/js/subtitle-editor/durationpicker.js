@@ -102,6 +102,7 @@ var angular = angular || null;
             if(attrs.ngModel) {
                 $scope.$watch(attrs.ngModel, updateInputsFromModel);
                 inputs.change(updateModelFromInputs);
+                inputs.keyup(updateModelFromInputs);
             }
 
             function parseInput(input) {

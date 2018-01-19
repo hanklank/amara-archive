@@ -42,6 +42,7 @@ var angular = angular || null;
             var lastSubtitle = getLastSubtitle();
             var startTime = getStartTime();
             $scope.dataValid = false;
+            $scope.helpTextWarning = '';
             if($scope.amount == 0 || isNaN($scope.amount) || isNaN(startTime)) {
                 $scope.helpText = gettext('Shift subtitles forward in bulk by a set amount of time.  This feature is useful when you edit the video and insert a new segment after already creating subtitles.');
                 $scope.helpTextError = false;
@@ -50,9 +51,6 @@ var angular = angular || null;
                 $scope.helpTextError = true;
             } else if(lastSubtitle.startTime < $scope.startTime) {
                 $scope.helpText = gettext('Start time after last subtitle');
-                $scope.helpTextError = true;
-            } else if(lastSubtitle.startTime + $scope.amount > $scope.timeline.duration) {
-                $scope.helpText = gettext('Shift amount would place the last subtitle past the end of the video');
                 $scope.helpTextError = true;
             } else {
                 if(startTime > 0) {
@@ -64,6 +62,10 @@ var angular = angular || null;
                     start_time: formatTime(startTime),
                     amount: formatTime($scope.amount)
                 }, true);
+                if(lastSubtitle.startTime + $scope.amount > $scope.timeline.duration) {
+                    $scope.helpTextWarning = gettext('Shift amount would move the last subtitle past the end of the video');
+                }
+                $scope.helpTextError = true;
                 $scope.helpTextError = false;
                 $scope.dataValid = true;
             }
@@ -107,26 +109,28 @@ var angular = angular || null;
     module.controller("ShiftBackwardController", ['$scope', 'formatTime', function($scope, formatTime) {
         $scope.validateForm = function() {
             $scope.dataValid = false;
+            $scope.helpTextWarning = '';
 
-            if(isNaN($scope.startTime) || isNaN($scope.endTime) || ($scope.startTime == 0 && $scope.endTime == 0)) {
+            if(isNaN($scope.startTime) || isNaN($scope.endTime) || $scope.endTime == 0) {
                 $scope.helpText = gettext('Delete all subtitles in a time range, and shift subtitles afterwards back by the duration.  This feature is useful when you edit the video and delete a segment after already creating subtitles.');
                 $scope.helpTextError = false;
             } else if(!$scope.workingSubtitles.subtitleList.lastSyncedSubtitle()) {
-                $scope.helpText = gettext('No subtitles to shift');
+                $scope.helpText = gettext('No subtitles to shift.');
                 $scope.helpTextError = true;
             } else if($scope.endTime <= $scope.startTime) {
-                $scope.helpText = gettext('Start time not after end time');
-                $scope.helpTextError = true;
-            } else if($scope.startTime > $scope.timeline.duration) {
-                $scope.helpText = gettext('Start time exceeds the video duration');
+                $scope.helpText = gettext('Start time not after end time.');
                 $scope.helpTextError = true;
             } else {
-                var helpTextTemplate = gettext('Delete subtitles between %(start_time)s and %(end_time)s.  Shift subtitles after that back by %(amount)s');
+                var helpTextTemplate = gettext('Delete subtitles between %(start_time)s and %(end_time)s.  Shift subtitles after that back by %(amount)s.');
+                $scope.helpTextError = true;
                 $scope.helpText = interpolate(helpTextTemplate, {
                     start_time: formatTime($scope.startTime, {longFormat: true}),
                     end_time: formatTime($scope.endTime, {longFormat: true}),
                     amount: formatTime($scope.endTime - $scope.startTime),
                 }, true);
+                if($scope.startTime > $scope.timeline.duration) {
+                    $scope.helpTextWarning = gettext('Warning: Start time exceeds the video duration.');
+                }
                 $scope.helpTextError = false;
                 $scope.dataValid = true;
             }
@@ -141,14 +145,23 @@ var angular = angular || null;
             var i = 0;
             while(i < subtitleList.syncedCount) {
                 var sub = subtitleList.subtitles[i];
-                if(sub.startTime >= startTime) {
-                    if(sub.startTime < endTime) {
+                if(sub.endTime < startTime) {
+                    // subtitle before time period, leave it be
+                } else if(sub.startTime >= endTime) {
+                    // subtitle after time period, shift it back
+                    $scope.workingSubtitles.subtitleList.updateSubtitleTime(sub, sub.startTime - amount, sub.endTime - amount);
+                } else {
+                    // The subtitle overlaps somehow with the time period
+                    if(sub.startTime < startTime) {
+                        // subtitle starts before the time period, but ends in it.  cut off the end
+                        $scope.workingSubtitles.subtitleList.updateSubtitleTime(sub, sub.startTime, startTime);
+                    } else if(sub.endTime >= endTime) {
+                        // subtitle starts inside the time period, but ends after it.  cut off the begining
+                        $scope.workingSubtitles.subtitleList.updateSubtitleTime(sub, startTime, sub.endTime - amount);
+                    } else {
+                        // subtitle totally inside the time period.  Remove it
                         $scope.workingSubtitles.subtitleList.removeSubtitle(sub);
                         continue; // avoid incrementing i, since we removed a subtitle
-                    } else {
-                        $scope.workingSubtitles.subtitleList.updateSubtitleTime(sub,
-                            sub.startTime - amount,
-                            sub.endTime - amount);
                     }
                 }
                 i++;

@@ -447,7 +447,10 @@
           <label>{% trans "Shift amount" %}</label>
           <div class="durationPicker" ng-model="amount" ng-change="validateForm()" duration-picker></div>
         </div>
-        <p class="formHelp min-lines-3" ng-bind="helpText" ng-class="helpTextError ? 'error' : ''"></p>
+        <div class="min-lines-3 formHelp">
+          <p ng-bind="helpText" ng-class="helpTextError ? 'error' : ''"></p>
+          <p class="warningText" ng-if="helpTextWarning != ''" ng-bind="helpTextWarning"></p>
+        </div>
         <footer class="buttons">
           <button ng-click="onShiftClick($event)" ng-disabled="!dataValid">{% trans "Shift" %}</button>
           <button ng-click="dialogManager.onCloseClick($event)">{% trans "Cancel" %}</button>
@@ -465,7 +468,10 @@
           <label>{% trans "End time" %}</label>
           <div class="durationPicker" ng-model="endTime" ng-change="validateForm()" duration-picker></div>
         </div>
-        <p class="formHelp min-lines-3" ng-bind="helpText" ng-class="helpTextError ? 'error' : ''"></p>
+        <div class="min-lines-3 formHelp">
+          <p ng-bind="helpText" ng-class="helpTextError ? 'error' : ''"></p>
+          <p class="warningText" ng-if="helpTextWarning != ''" ng-bind="helpTextWarning"></p>
+        </div>
         <footer class="buttons">
           <button ng-click="onShiftClick($event)" ng-disabled="!dataValid">{% trans "Shift" %}</button>
           <button ng-click="dialogManager.onCloseClick($event)">{% trans "Cancel" %}</button>

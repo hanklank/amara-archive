@@ -567,14 +567,14 @@ var angular = angular || null;
             $scope.$root.$emit("user-action");
             if (evt.keyCode == 9 && !evt.shiftKey) {
                 // Shift, Toggle playback
-                if($scope.dialogManager.current) {
+                if($scope.dialogManager.current()) {
                     // If a dialog is open, then don't mess with playback.  The user probably wants to navigate the form
                     return;
                 }
                 VideoPlayer.togglePlay();
             } else if (evt.keyCode === 9 && evt.shiftKey) {
                 // Shift+Tab, go back 2 seconds
-                if($scope.dialogManager.current) {
+                if($scope.dialogManager.current()) {
                     // If a dialog is open, then don't mess with playback.  The user probably wants to navigate the form
                     return;
                 }
