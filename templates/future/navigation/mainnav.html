@@ -1,11 +1,6 @@
 {% load i18n %}
 {% load url from future %}
-<div id="mainnav" role="navigation">
-  <div class="container">
-    <a class="brand" href="{% url "home" %}">{% include brand|default:"future/amara-brand.html" %}</a>
-    {% include primarynav|default:"future/navigation/primarynav.html" %}
-    {% if request.user.is_anonymous %}
-    <a class="primary-cta" href="{% url "videos:create" %}">{% trans "Start Subtitling<span>For Free</span>" %}</a>
-    {% endif %}
-  </div>
+<div id="mainnav" class="container" role="navigation">
+  <a class="mainnav-brand" href="{% url "home" %}">{% include brand|default:"future/amara-brand.html" %}</a>
+  {% include primarynav|default:"future/navigation/primarynav.html" %}
 </div>
