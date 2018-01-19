@@ -40,6 +40,16 @@ class EnumMember(object):
     def __repr__(self):
         return "{}.{}".format(self.enum_name, self.name)
 
+    def __eq__(self, other):
+        if isinstance(other, EnumMember):
+            return self.number == other.number
+        elif isinstance(other, basestring):
+            return self.slug == other
+        elif isinstance(other, (int, long)):
+            return self.number == other
+        else:
+            return False
+
     def choice(self):
         return (self.number, self.label)
 
@@ -160,7 +170,7 @@ class EnumField(models.PositiveSmallIntegerField):
         self.enum = enum
 
     def get_default(self):
-        if self.has_default():
+        if self.has_default() and isinstance(self.default, EnumMember):
             return self.default.number
         else:
             return super(EnumField, self).get_default()
@@ -189,7 +199,10 @@ class EnumField(models.PositiveSmallIntegerField):
 
     def to_python(self, value):
         if isinstance(value, basestring):
-            return self.enum.lookup_slug(value)
+            if value.isdigit():
+                return self.enum.lookup_number(int(value))
+            else:
+                return self.enum.lookup_slug(value)
         elif isinstance(value, (int, long)):
             return self.enum.lookup_number(value)
         else:
