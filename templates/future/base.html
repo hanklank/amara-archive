@@ -6,11 +6,10 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}{% trans 'Amara: Caption, Subtitle and Translate video' %}{% endblock %}</title>
-    <meta name="description" content="{% trans "Using Amara's award-winning technology, you can caption and subtitle any video for free. We also offer amazing solutions for organizing teams of volunteers or paid translators. Plus, you can purchase high-quality captions or translations from our passionate team of professional linguists. Amara can help make your videos accessible to the world!" %}">
-    <meta property="og:title" content="{% trans 'Amara: Caption, Subtitle and Translate video' %}">
-    <meta property="og:description" content="{% trans "Using Amara's award-winning technology, you can caption and subtitle any video for free. We also offer amazing solutions for organizing teams of volunteers or paid translators. Plus, you can purchase high-quality captions or translations from our passionate team of professional linguists. Amara can help make your videos accessible to the world!" %}">
-
+    <title>{% block title %}{% trans 'Amara: Caption, Subtitle and Translate Video' %}{% endblock %}</title>
+    <meta name="description" content="{% trans "Amara's award-winning technology enables you to caption and subtitle any video for free. For larger subtitling projects the platform makes it easy to manage teams of translators. And you can always purchase high-quality captions or translations from our passionate team of professional linguists. Amara can help make your videos accessible to the world!" %}">
+    <meta property="og:title" content="{% trans 'Amara: Caption, Subtitle and Translate Video' %}">
+    <meta property="og:description" content="{% trans "Amara's award-winning technology enables you to caption and subtitle any video for free. For larger subtitling projects the platform makes it easy to manage teams of translators. And you can always purchase high-quality captions or translations from our passionate team of professional linguists. Amara can help make your videos accessible to the world!" %}">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://amara.org/">
     <meta property="og:image" content="{% asset "img/og-image.jpg" %}">
@@ -20,7 +19,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@AmaraSubs">
     <meta name="twitter:creator" content="@AmaraSubs">
-    <meta name="twitter:title" content="{% trans 'Amara: Caption, Subtitle and Translate video' %}">
+    <meta name="twitter:title" content="{% trans 'Amara: Caption, Subtitle and Translate Video' %}">
     <meta name="twitter:description" content="{% trans "Make video accessible to the world with Amara!" %}">
     <meta name="twitter:image" content="{% asset "img/og-image.jpg" %}">
     <meta name="twitter:image:alt" content="{% trans "Colorful Amara logo and the following text: Working to Build a More Open, Collaborative World" %}">
@@ -38,6 +37,8 @@
   </head>
   <body{% block body-extra %}{% endblock %}>
     {% block header %}{% include "future/header.html" %}{% endblock %}
+    {% futureui_announcement %}
+    {% futureui_messages %}
     <main id="page-content">
       {% if messages %}
       <div id="messages" class="container">

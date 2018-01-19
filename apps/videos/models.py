@@ -62,9 +62,12 @@ from utils.panslugify import pan_slugify
 from utils.searching import get_terms
 from utils.subtitles import create_new_subtitles, dfxp_merge
 from utils.text import fmt
+from utils.url_escape import url_escape
 from teams.moderation_const import MODERATION_STATUSES, UNMODERATED
 
 logger = logging.getLogger("videos-models")
+
+URL_MAX_LENGTH = 2048
 
 NO_SUBTITLES, SUBTITLES_FINISHED = range(2)
 VIDEO_TYPE_HTML5 = 'H'
@@ -729,6 +732,7 @@ class Video(models.Model):
             (video, video_url) tuple
         """
         with transaction.atomic():
+            url = url_escape(url)
             video, video_url = cls._get_video_for_add(url, user, team)
             if setup_callback:
                 setup_callback(video, video_url)
@@ -2177,12 +2181,14 @@ class VideoUrlManager(models.Manager):
 class VideoUrlQueryset(query.QuerySet):
     def get(self, **kwargs):
         if 'url' in kwargs:
-            kwargs['url_hash'] = url_hash(kwargs.pop('url'))
+            url = url_escape(kwargs.pop('url'))
+            kwargs['url_hash'] = url_hash(url)
         return super(VideoUrlQueryset, self).get(**kwargs)
 
     def filter(self, **kwargs):
         if 'url' in kwargs:
-            kwargs['url_hash'] = url_hash(kwargs.pop('url'))
+            url = url_escape(kwargs.pop('url'))
+            kwargs['url_hash'] = url_hash(url)
         return super(VideoUrlQueryset, self).filter(**kwargs)
 
 # VideoUrl
@@ -2194,7 +2200,7 @@ class VideoUrl(models.Model):
     # type should be 2 chars long with the first char being unique for the
     # app.
     type = models.CharField(max_length=2)
-    url = models.URLField(max_length=2048)
+    url = models.URLField(max_length=URL_MAX_LENGTH)
     url_hash = models.CharField(max_length=32)
     videoid = models.CharField(max_length=50, blank=True)
     primary = models.BooleanField(default=False)
@@ -2308,6 +2314,7 @@ class VideoUrl(models.Model):
         assert self.type != '', "Can't set an empty type"
         if updates_timestamp:
             self.created = datetime.now()
+        self.url = url_escape(self.url)
         self.url_hash = url_hash(self.url)
         super(VideoUrl, self).save(*args, **kwargs)
 
