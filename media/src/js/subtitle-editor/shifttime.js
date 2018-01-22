@@ -142,29 +142,33 @@ var angular = angular || null;
             var amount = endTime - startTime;
             var subtitleList = $scope.workingSubtitles.subtitleList;
 
-            var i = 0;
-            while(i < subtitleList.syncedCount) {
+            // adjust a time on the time line based on cutting out the period [startTime, endTime].
+            function adjustTime(time) {
+                if(time > endTime) {
+                    return time-amount;
+                } else if(time > startTime) {
+                    return startTime;
+                } else {
+                    return time;
+                }
+            }
+
+            for(var i=0; i < subtitleList.syncedCount; i++) {
                 var sub = subtitleList.subtitles[i];
                 if(sub.endTime < startTime) {
                     // subtitle before time period, leave it be
-                } else if(sub.startTime >= endTime) {
-                    // subtitle after time period, shift it back
-                    $scope.workingSubtitles.subtitleList.updateSubtitleTime(sub, sub.startTime - amount, sub.endTime - amount);
+                    continue;
                 } else {
-                    // The subtitle overlaps somehow with the time period
-                    if(sub.startTime < startTime) {
-                        // subtitle starts before the time period, but ends in it.  cut off the end
-                        $scope.workingSubtitles.subtitleList.updateSubtitleTime(sub, sub.startTime, startTime);
-                    } else if(sub.endTime >= endTime) {
-                        // subtitle starts inside the time period, but ends after it.  cut off the begining
-                        $scope.workingSubtitles.subtitleList.updateSubtitleTime(sub, startTime, sub.endTime - amount);
-                    } else {
-                        // subtitle totally inside the time period.  Remove it
+                    var newStartTime = adjustTime(sub.startTime);
+                    var newEndTime = adjustTime(sub.endTime);
+                    if(newStartTime == newEndTime) {
+                        // subtitle was totally inside the time period, remove it
                         $scope.workingSubtitles.subtitleList.removeSubtitle(sub);
-                        continue; // avoid incrementing i, since we removed a subtitle
+                        i--; // counteract the i++ statement, since we removed a subtitle
+                    } else {
+                        $scope.workingSubtitles.subtitleList.updateSubtitleTime(sub, newStartTime, newEndTime);
                     }
                 }
-                i++;
             }
             $scope.$root.$emit('work-done');
             $scope.dialogManager.close();
