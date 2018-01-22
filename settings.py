@@ -466,8 +466,8 @@ MEDIA_BUNDLES = {
             "amara/css/variables.scss",
             "amara/css/mixins.scss",
             "amara/css/global/dropdowns.scss",
-            "amara/css/elements/_navigation.scss",
             "amara/css/elements/_page_header.scss",
+            "amara/css/elements/_navigation.scss",
             "amara/css/elements/_consolidate-header.scss",
             "amara/css/elements/page_footer.scss",
             "css/marketing-integration.scss",
@@ -710,6 +710,7 @@ MEDIA_BUNDLES = {
     },
     'login.js': {
         'files': (
+            'src/js/site/login.js',
             'src/js/site/facebook.js',
         ),
     },
