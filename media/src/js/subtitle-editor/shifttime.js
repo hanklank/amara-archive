@@ -43,7 +43,10 @@ var angular = angular || null;
             var startTime = getStartTime();
             $scope.dataValid = false;
             $scope.helpTextWarning = '';
-            if($scope.amount == 0 || isNaN($scope.amount) || isNaN(startTime)) {
+            if(isNaN($scope.amount) || isNaN(startTime)) {
+                $scope.helpText = gettext('Invalid time entered.');
+                $scope.helpTextError = true;
+            } else if($scope.amount == 0) {
                 $scope.helpText = gettext('Shift subtitles forward in bulk by a set amount of time.  This feature is useful when you edit the video and insert a new segment after already creating subtitles.');
                 $scope.helpTextError = false;
             } else if(!lastSubtitle) {
@@ -111,7 +114,10 @@ var angular = angular || null;
             $scope.dataValid = false;
             $scope.helpTextWarning = '';
 
-            if(isNaN($scope.startTime) || isNaN($scope.endTime) || $scope.endTime == 0) {
+            if(isNaN($scope.startTime) || isNaN($scope.endTime)) {
+                $scope.helpText = gettext('Invalid time entered.');
+                $scope.helpTextError = true;
+            } else if($scope.endTime == 0) {
                 $scope.helpText = gettext('Delete all subtitles in a time range, and shift subtitles afterwards back by the duration.  This feature is useful when you edit the video and delete a segment after already creating subtitles.');
                 $scope.helpTextError = false;
             } else if(!$scope.workingSubtitles.subtitleList.lastSyncedSubtitle()) {
