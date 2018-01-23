@@ -393,7 +393,7 @@ class Switch(Command):
         if self.branch_exists(self.args.branch):
             self.checkout(name, self.args.branch)
         elif self.branch_exists('origin/' + self.args.branch):
-            self.checkout(name, 'origin/' + branch, track=True)
+            self.checkout(name, 'origin/' + self.args.branch, track=True)
         else:
             if not fallback_to_master:
                 print('{} does not exist on {}'.format(
