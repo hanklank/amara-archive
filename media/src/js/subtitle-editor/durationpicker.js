@@ -23,6 +23,7 @@ var angular = angular || null;
 
 (function() {
     var module = angular.module('amara.SubtitleEditor.durationpicker', []);
+    var wholeNumberRe = /^\s*\d+\s*$/;
 
     module.directive('durationPicker', ['pgettext', function(pgettext) {
         var durationUnits = {
@@ -110,7 +111,7 @@ var angular = angular || null;
                 if(unparsed == '') {
                     return 0;
                 }
-                if(unparsed.indexOf('.') != '-1') {
+                if(unparsed.match(wholeNumberRe) === null) {
                     return NaN;
                 }
                 var amount = parseInt(unparsed);

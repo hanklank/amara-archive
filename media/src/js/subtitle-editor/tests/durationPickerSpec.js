@@ -53,6 +53,7 @@ describe('The duration picker', function() {
         expect(validateInput('minutes', '0')).toBe(true);
         expect(validateInput('minutes', '59')).toBe(true);
         expect(validateInput('minutes', '60')).toBe(false);
+        expect(validateInput('minutes', '0 0')).toBe(false);
 
         expect(validateInput('seconds', '5')).toBe(true);
         expect(validateInput('seconds', '-1')).toBe(false);
@@ -60,6 +61,7 @@ describe('The duration picker', function() {
         expect(validateInput('seconds', '0')).toBe(true);
         expect(validateInput('seconds', '59')).toBe(true);
         expect(validateInput('seconds', '60')).toBe(false);
+        expect(validateInput('seconds', '0seconds')).toBe(false);
 
         expect(validateInput('milliseconds', '5')).toBe(true);
         expect(validateInput('milliseconds', '-1')).toBe(false);
