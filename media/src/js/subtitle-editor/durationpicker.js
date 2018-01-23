@@ -110,6 +110,9 @@ var angular = angular || null;
                 if(unparsed == '') {
                     return 0;
                 }
+                if(unparsed.indexOf('.') != '-1') {
+                    return NaN;
+                }
                 var amount = parseInt(unparsed);
                 if(isNaN(amount)) {
                     return NaN;

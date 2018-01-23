@@ -45,6 +45,7 @@ describe('The duration picker', function() {
         expect(validateInput('hours', '-1')).toBe(false);
         expect(validateInput('hours', 'five')).toBe(false);
         expect(validateInput('hours', '0')).toBe(true);
+        expect(validateInput('hours', '0.5')).toBe(false);
 
         expect(validateInput('minutes', '5')).toBe(true);
         expect(validateInput('minutes', '-1')).toBe(false);
