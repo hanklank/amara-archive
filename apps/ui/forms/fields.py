@@ -86,10 +86,32 @@ class AmaraMultipleChoiceField(AmaraChoiceFieldMixin,
     pass
 
 class LanguageFieldMixin(AmaraChoiceFieldMixin):
+    """
+    Used to create a language selector
+
+    This is implemented as a mixin class so it can be used for both single and
+    multiple selects.
+
+    Args:
+        options: whitespace separated list of different option types.  The
+            following types are supported:
+            - null: allow no choice
+            - my: "My languages" optgroup
+            - popular: "Popular languages" optgroup
+            - all: "All languages" optgroup
+            - dont-set: The "Don't set" option.  Use this when you want to
+              allow users to leave the value unset, but only if they actually
+              select that option rather than just leaving the initial value
+              unchanged.
+    """
+
     def __init__(self, options="null my popular all",
                  placeholder=_("Select language"), *args, **kwargs):
-        kwargs['choices'] = translation.get_language_choices(flat=True)
-        super(LanguageFieldMixin, self).__init__(*args, **kwargs)
+        choices = translation.get_language_choices(flat=True)
+        if 'dont-set' in options.split():
+            choices.append(('dont-set', _('Don\'t set')))
+        super(LanguageFieldMixin, self).__init__(*args, choices=choices,
+                                                 **kwargs)
         self.set_select_data('language-options', options)
         if "null" in options:
             self.set_placeholder(placeholder)
@@ -117,6 +139,12 @@ class LanguageFieldMixin(AmaraChoiceFieldMixin):
 
     def _setup_widget_choices(self):
         pass
+
+    def clean(self, value):
+        value = super(LanguageFieldMixin, self).clean(value)
+        if value == 'dont-set':
+            value = ''
+        return value
 
 class LanguageField(LanguageFieldMixin, forms.ChoiceField):
     widget = widgets.AmaraLanguageSelect
