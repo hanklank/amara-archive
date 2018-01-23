@@ -29,6 +29,7 @@ import unittest
 from api.tests.utils import format_datetime_field
 from api.views.videos import VideoSerializer, VideoViewSet
 from subtitles import pipeline
+from teams.models import VideoVisibility
 from utils.factories import *
 from utils import test_utils
 from utils.test_utils.api import *
@@ -574,7 +575,7 @@ class VideoViewSetTest(TestCase):
         assert_items_equal([v1], self.viewset.get_queryset())
 
     def test_team_filter(self):
-        team = TeamFactory(is_visible=True)
+        team = TeamFactory(video_visibility=VideoVisibility.PUBLIC)
         v1 = VideoFactory(title='correct team')
         v2 = VideoFactory(title='wrong team')
         v3 = VideoFactory(title='not in team')
@@ -584,7 +585,7 @@ class VideoViewSetTest(TestCase):
         assert_items_equal([v1], self.viewset.get_queryset())
 
     def test_project_filter(self):
-        team = TeamFactory(is_visible=True)
+        team = TeamFactory(video_visibility=VideoVisibility.PUBLIC)
         project = ProjectFactory(team=team, slug='project')
         other_project = ProjectFactory(team=team, slug='wrong-project')
         v1 = VideoFactory(title='correct project')
@@ -600,7 +601,7 @@ class VideoViewSetTest(TestCase):
         assert_items_equal([v1], self.viewset.get_queryset())
 
     def test_default_project_filter(self):
-        team = TeamFactory(is_visible=True)
+        team = TeamFactory(video_visibility=VideoVisibility.PUBLIC)
         project = ProjectFactory(team=team, slug='project-slug')
         v1 = VideoFactory(title='in default project')
         v2 = VideoFactory(title='not in default project')

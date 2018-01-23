@@ -28,7 +28,7 @@ from auth.models import CustomUser as User
 from codefield import CodeField, Code
 from comments.models import Comment
 from mysqltweaks import query
-from teams.models import Team
+from teams.models import Team, TeamVisibility
 from teams.permissions import can_view_activity
 from teams.permissions_const import (ROLE_OWNER, ROLE_ADMIN, ROLE_MANAGER,
                                      ROLE_CONTRIBUTOR, ROLE_NAMES)
@@ -686,7 +686,8 @@ class ActivityQueryset(query.QuerySet):
     def viewable_by_user(self, user):
         if user.is_superuser:
             return self
-        q = Q(team__isnull=True) | Q(team__is_visible=True)
+        q = (Q(team__isnull=True) |
+             Q(team__team_visibility=TeamVisibility.PUBLIC))
         if user.is_authenticated():
             q |= Q(team__in=user.teams.all())
 

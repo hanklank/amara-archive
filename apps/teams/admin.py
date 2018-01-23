@@ -25,6 +25,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from auth.models import CustomUser as User
 from messages.forms import TeamAdminPageMessageForm
+from teams import tasks
 from teams.models import (
     Team, TeamMember, TeamVideo, Workflow, Task, Setting, MembershipNarrowing,
     Project, TeamLanguagePreference, TeamNotificationSetting, BillingReport,
@@ -48,7 +49,7 @@ class TeamAdmin(admin.ModelAdmin):
                     'is_visible', 'team_visibility', 'video_visibility',
                     'highlight', 'last_notification_time', 'thumbnail',
                     'partner')
-    list_filter = ('highlight', 'is_visible')
+    list_filter = ('highlight', 'team_visibility', 'video_visibility')
     actions = ['delete_selected', 'highlight', 'unhighlight', 'send_message']
     raw_id_fields = ['video', 'users', 'videos', 'applicants']
     exclude = ('users', 'applicants','videos')
@@ -99,6 +100,10 @@ class TeamAdmin(admin.ModelAdmin):
         if ordering:
             qs = qs.order_by(*ordering)
         return qs
+
+    def save_model(self, request, obj, form, change):
+        super(TeamAdmin, self).save_model(request, obj, form, change)
+        tasks.update_video_public_field.delay(obj.id)
 
 class TeamMemberChangeList(ChangeList):
     # This class is a bit of a hack.

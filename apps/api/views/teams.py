@@ -561,6 +561,12 @@ class TeamViewSet(mixins.CreateModelMixin,
     def get_queryset(self):
         return Team.objects.for_user(self.request.user)
 
+    def get_object(self):
+        team = get_object_or_404(Team, slug=self.kwargs['team_slug'])
+        if team.team_private() and not team.user_is_member(self.request.user):
+            raise Http404()
+        return team
+
     def get_serializer_class(self):
         if self.request.method in ('PUT', 'PATCH'):
             return TeamUpdateSerializer
