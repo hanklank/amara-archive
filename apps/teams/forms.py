@@ -442,7 +442,7 @@ class AddTeamVideoForm(forms.ModelForm):
         return self.cleaned_data
 
     def setup_video(self, video, video_url):
-        video.is_public = self.team.is_visible
+        video.is_public = self.team.videos_public()
         video.primary_audio_language_code = self.cleaned_data['language']
         self.saved_team_video = TeamVideo.objects.create(
             video=video, team=self.team, project=self.cleaned_data['project'],
@@ -513,7 +513,7 @@ class AddMultipleTeamVideoForm(forms.Form):
         return self.cleaned_data
 
     def setup_video(self, video, video_url):
-        video.is_public = self.team.is_visible
+        video.is_public = self.team.videos_public()
         video.primary_audio_language_code = self.cleaned_data['language']
         self.saved_team_video = TeamVideo.objects.create(
             video=video, team=self.team, project=self.cleaned_data['project'],
@@ -573,6 +573,7 @@ class CreateTeamForm(forms.ModelForm):
         return slug
 
     def save(self, user):
+        self.instance.set_legacy_visibility(self.instance.is_visible)
         team = super(CreateTeamForm, self).save()
         TeamMember.objects.create_first_member(team=team, user=user)
         return team
@@ -813,6 +814,7 @@ class SettingsForm(forms.ModelForm):
 
     def save(self, user):
         with transaction.atomic():
+            self.instance.set_legacy_visibility(self.instance.is_visible)
             super(SettingsForm, self).save()
             self.instance.handle_settings_changes(user, self.initial_settings)
 

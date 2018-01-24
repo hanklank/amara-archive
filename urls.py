@@ -177,16 +177,16 @@ urlpatterns += patterns('',
     url(r'^api/', 'api.views.index.not_found', name='api-not-found'),
 )
 
-try:
-    import debug_toolbar
-except ImportError:
-    pass
-else:
-    urlpatterns += patterns('',
-        url(r'^__debug__/', include(debug_toolbar.urls)),
-    )
 
 if settings.DEBUG:
+    try:
+        import debug_toolbar
+    except ImportError:
+        pass
+    else:
+        urlpatterns += patterns('',
+            url(r'^__debug__/', include(debug_toolbar.urls)),
+        )
     urlpatterns += patterns('',
         (r'^site_media/(?P<path>.*)$', 'django.views.static.serve',
          {'document_root': settings.STATIC_ROOT, 'show_indexes': True}),

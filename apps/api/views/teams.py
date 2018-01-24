@@ -528,6 +528,13 @@ class TeamSerializer(serializers.ModelSerializer):
             'team_slug': team.slug,
         }, request=self.context['request'])
 
+    def save(self):
+        team = super(TeamSerializer, self).save()
+        if 'is_visible' in self.validated_data:
+            team.set_legacy_visibility(self.validated_data['is_visible'])
+            team.save()
+        return team
+
     class Meta:
         model = Team
         fields = ('name', 'slug', 'type', 'description', 'is_visible',
@@ -553,6 +560,12 @@ class TeamViewSet(mixins.CreateModelMixin,
 
     def get_queryset(self):
         return Team.objects.for_user(self.request.user)
+
+    def get_object(self):
+        team = get_object_or_404(Team, slug=self.kwargs['team_slug'])
+        if team.team_private() and not team.user_is_member(self.request.user):
+            raise Http404()
+        return team
 
     def get_serializer_class(self):
         if self.request.method in ('PUT', 'PATCH'):
