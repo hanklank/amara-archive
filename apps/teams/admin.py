@@ -46,7 +46,7 @@ class LanguageManagerInline(admin.TabularInline):
 class TeamAdmin(admin.ModelAdmin):
     search_fields = ('name'),
     list_display = ('name', 'not_deleted', 'membership_policy', 'video_policy',
-                    'is_visible', 'team_visibility', 'video_visibility',
+                    'team_visibility', 'video_visibility',
                     'highlight', 'last_notification_time', 'thumbnail',
                     'partner')
     list_filter = ('highlight', 'team_visibility', 'video_visibility')

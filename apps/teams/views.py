@@ -49,9 +49,9 @@ from videos.templatetags.paginator import paginate
 from messages import tasks as notifier
 from teams.forms import (
     CreateTeamForm, EditTeamVideoForm,
-    AddTeamVideosFromFeedForm, TaskAssignForm, SettingsForm, TaskCreateForm,
+    AddTeamVideosFromFeedForm, TaskAssignForm, LegacySettingsForm, TaskCreateForm,
     PermissionsForm, WorkflowForm, InviteForm, TaskDeleteForm,
-    GuidelinesMessagesForm, RenameableSettingsForm, ProjectForm, LanguagesForm,
+    GuidelinesMessagesForm, LegacyRenameableSettingsForm, ProjectForm, LanguagesForm,
     MoveTeamVideoForm, TaskUploadForm, make_billing_report_form,
     TaskCreateSubtitlesForm, TeamMultiVideoCreateSubtitlesForm,
     OldMoveVideosForm, AddVideoToTeamForm, GuidelinesLangMessagesForm,
@@ -243,9 +243,9 @@ def settings_basic(request, team):
             return r
 
     if can_rename_team(team, request.user):
-        FormClass = RenameableSettingsForm
+        FormClass = LegacyRenameableSettingsForm
     else:
-        FormClass = SettingsForm
+        FormClass = LegacySettingsForm
 
     if request.POST:
         form = FormClass(request.POST, request.FILES, instance=team)

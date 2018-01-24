@@ -658,7 +658,7 @@ class VideoViewSet(mixins.CreateModelMixin,
                 raise PermissionDenied()
         workflow = video.get_workflow()
         if not workflow.user_can_view_video(self.request.user):
-            raise PermissionDenied()
+            raise http.Http404
         SubtitleLanguage.bulk_has_public_version(
             video.all_subtitle_languages())
         return video

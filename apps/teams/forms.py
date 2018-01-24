@@ -47,9 +47,10 @@ from messages.tasks import send_new_messages_notifications
 from subtitles.forms import SubtitlesUploadForm
 from teams.models import (
     Team, TeamMember, TeamVideo, Task, Project, Workflow, Invite,
-    BillingReport, MembershipNarrowing, Application
+    BillingReport, MembershipNarrowing, Application, TeamVisibility,
+    VideoVisibility,
 )
-from teams import behaviors, permissions
+from teams import behaviors, permissions, tasks
 from teams.exceptions import ApplicationInvalidException
 from teams.fields import TeamMemberInput
 from teams.permissions import (
@@ -552,6 +553,7 @@ class CreateTeamForm(forms.ModelForm):
     logo = forms.ImageField(widget=AmaraClearableFileInput,
                 validators=[MaxFileSizeValidator(settings.AVATAR_MAX_SIZE)], required=False)
     workflow_type = forms.ChoiceField(choices=(), initial="O")
+    is_visible = forms.BooleanField(required=False)
 
     class Meta:
         model = Team
@@ -573,7 +575,8 @@ class CreateTeamForm(forms.ModelForm):
         return slug
 
     def save(self, user):
-        self.instance.set_legacy_visibility(self.instance.is_visible)
+        is_visible = self.cleaned_data.get('is_visible', False)
+        self.instance.set_legacy_visibility(is_visible)
         team = super(CreateTeamForm, self).save()
         TeamMember.objects.create_first_member(team=team, user=user)
         return team
@@ -796,7 +799,7 @@ class GuidelinesLangMessagesForm(forms.Form):
     sorted_keys = map(lambda x: x["key"], sorted(keys, key=lambda x: x["label"]))
     self.fields.keyOrder = ["messages_joins_language", "messages_joins_localized"] + sorted_keys
 
-class SettingsForm(forms.ModelForm):
+class LegacySettingsForm(forms.ModelForm):
     logo = forms.ImageField(
         validators=[MaxFileSizeValidator(settings.AVATAR_MAX_SIZE)],
         help_text=_('Max 940 x 235'),
@@ -807,24 +810,74 @@ class SettingsForm(forms.ModelForm):
         help_text=_('Recommended size: 100 x 100'),
         widget=forms.FileInput,
         required=False)
+    is_visible = forms.BooleanField(required=False)
 
     def __init__(self, *args, **kwargs):
-        super(SettingsForm, self).__init__(*args, **kwargs)
+        super(LegacySettingsForm, self).__init__(*args, **kwargs)
+        self.fields['is_visible'].initial = self.instance.team_public()
         self.initial_settings = self.instance.get_settings()
 
+    def use_future_ui(self):
+        self.fields['logo'].widget = AmaraClearableFileInput()
+        self.fields['square_logo'].widget = AmaraClearableFileInput()
+
     def save(self, user):
+        is_visible = self.cleaned_data.get('is_visible', False)
         with transaction.atomic():
-            self.instance.set_legacy_visibility(self.instance.is_visible)
-            super(SettingsForm, self).save()
+            self.instance.set_legacy_visibility(is_visible)
+            super(LegacySettingsForm, self).save()
             self.instance.handle_settings_changes(user, self.initial_settings)
 
     class Meta:
         model = Team
-        fields = ('description', 'logo', 'square_logo', 'is_visible', 'sync_metadata')
+        fields = ('description', 'logo', 'square_logo', 'sync_metadata')
 
-class RenameableSettingsForm(SettingsForm):
-    class Meta(SettingsForm.Meta):
-            fields = SettingsForm.Meta.fields + ('name',)
+class LegacyRenameableSettingsForm(LegacySettingsForm):
+    class Meta(LegacySettingsForm.Meta):
+            fields = LegacySettingsForm.Meta.fields + ('name',)
+
+class GeneralSettingsForm(forms.ModelForm):
+    logo = forms.ImageField(
+        validators=[MaxFileSizeValidator(settings.AVATAR_MAX_SIZE)],
+        help_text=_('Max 940 x 235'),
+        widget=AmaraClearableFileInput,
+        required=False)
+    square_logo = forms.ImageField(
+        validators=[MaxFileSizeValidator(settings.AVATAR_MAX_SIZE)],
+        help_text=_('Recommended size: 100 x 100'),
+        widget=AmaraClearableFileInput,
+        required=False)
+    is_visible = forms.BooleanField(required=False)
+    team_visibility = forms.ChoiceField(
+        choices=TeamVisibility.choices(),
+        label=_('Team visibility'),
+        help_text=_("Can non-members view your team?"))
+    video_visibility = forms.ChoiceField(
+        choices=VideoVisibility.choices(),
+        label=_('Video visibility'),
+        help_text=_("Can non-members view your team videos?"))
+
+    def __init__(self, allow_rename, *args, **kwargs):
+        super(GeneralSettingsForm, self).__init__(*args, **kwargs)
+        self.initial_settings = self.instance.get_settings()
+        self.initial_video_visibility = self.instance.video_visibility
+        if not allow_rename:
+            del self.fields['name']
+
+    def save(self, user):
+        with transaction.atomic():
+            team = super(GeneralSettingsForm, self).save()
+            self.instance.handle_settings_changes(user, self.initial_settings)
+        if team.video_visibility != self.initial_video_visibility:
+            tasks.update_video_public_field.delay(team.id)
+            tasks.invalidate_video_visibility_caches.delay(team)
+        return team
+
+    class Meta:
+        model = Team
+        fields = ('name', 'description', 'logo', 'square_logo',
+                  'team_visibility', 'video_visibility', 'sync_metadata')
+
 
 class WorkflowForm(forms.ModelForm):
     class Meta:

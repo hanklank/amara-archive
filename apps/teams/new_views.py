@@ -941,39 +941,26 @@ def settings_basic(request, team):
     if team.is_old_style():
         return old_views.settings_basic(request, team)
 
-    if permissions.can_rename_team(team, request.user):
-        FormClass = forms.RenameableSettingsForm
-    else:
-        FormClass = forms.SettingsForm
-
+    kwargs = {
+        'instance': team,
+        'allow_rename': permissions.can_rename_team(team, request.user),
+    }
     if request.POST:
-        form = FormClass(request.POST, request.FILES, instance=team)
-
-        old_video_visibility = team.video_visibility
+        form = forms.GeneralSettingsForm(data=request.POST,
+                                         files=request.FILES, **kwargs)
 
         if form.is_valid():
-            try:
-                form.save(request.user)
-            except:
-                logger.exception("Error on changing team settings")
-                raise
-
-            if old_video_visibility != form.instance.video_visibility:
-                tasks.update_video_public_field.delay(team.id)
-                tasks.invalidate_video_visibility_caches.delay(team)
-
+            form.save(request.user)
             messages.success(request, _(u'Settings saved.'))
             return HttpResponseRedirect(request.path)
     else:
-        form = FormClass(instance=team)
+        form = forms.GeneralSettingsForm(**kwargs)
 
-    return render(request, "new-teams/settings.html", {
+    return render(request, "future/teams/settings/general.html", {
         'team': team,
         'form': form,
-        'breadcrumbs': [
-            BreadCrumb(team, 'teams:dashboard', team.slug),
-            BreadCrumb(_('Settings')),
-        ],
+        'team_nav': 'settings',
+        'settings_tab': 'general',
     })
 
 @team_settings_view

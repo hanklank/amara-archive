@@ -118,24 +118,20 @@ class Build(Command):
 
 class Manage(Command):
     """Run manage.py inside the app container."""
-
-    def add_arguments(self, parser):
-        parser.add_argument('manage_args', nargs=argparse.REMAINDER)
+    raw_args = True
 
     def run(self):
         ensure_node_modules()
-        run_manage(self.args.manage_args)
+        run_manage(self.args)
 
 class Test(Command):
     """Run unittests."""
-
-    def add_arguments(self, parser):
-        parser.add_argument('test_args', nargs=argparse.REMAINDER)
+    raw_args = True
 
     def run(self):
         ensure_node_modules()
         run_manage(['test', '--settings=dev_settings_test',
-                    '--where=/opt/apps/amara'] + self.args.test_args)
+                    '--where=/opt/apps/amara'] + self.args)
 
 class JSTest(Command):
     """Run Javascript unittests."""

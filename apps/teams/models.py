@@ -233,8 +233,6 @@ class Team(models.Model):
                                       default='', blank=True,
                                       legacy_filenames=False,
                                       thumb_sizes=[(100, 100), (48, 48), (40, 40), (30, 30)])
-    # Legacy field, soon to be removed
-    is_visible = models.BooleanField(_(u'videos public?'), default=False)
     # New fields
     team_visibility = enum.EnumField(enum=TeamVisibility,
                                      default=TeamVisibility.PRIVATE)
@@ -528,8 +526,8 @@ class Team(models.Model):
                                             project=project, added_by=user)
     # Settings
     SETTINGS_ATTRIBUTES = set([
-        'description', 'is_visible', 'sync_metadata', 'membership_policy',
-        'video_policy',
+        'description', 'sync_metadata', 'membership_policy', 'video_policy',
+        'team_visibility', 'video_visibility',
     ])
     def get_settings(self):
         """Get the current settings for this team
@@ -559,10 +557,16 @@ class Team(models.Model):
             user: user performing the action
             previous_settings: return value from the get_settings() method
         """
+        def coerce_value(value):
+            if isinstance(value, enum.EnumMember):
+                return value.slug
+            else:
+                return value
         changed_settings = {}
         old_settings = {}
         for name, old_value in previous_settings.items():
-            current_value = getattr(self, name)
+            old_value = coerce_value(old_value)
+            current_value = coerce_value(getattr(self, name))
             if old_value != current_value:
                 changed_settings[name] = current_value
                 old_settings[name] = old_value

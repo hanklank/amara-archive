@@ -17,6 +17,7 @@
 
 from __future__ import absolute_import
 
+from django import http
 from django.test import TestCase
 from nose.tools import *
 from rest_framework import status
@@ -557,7 +558,7 @@ class VideoViewSetTest(TestCase):
         assert_equal(self.viewset.get_object(), video)
         # test failed permissions check
         workflow.user_can_view_video.return_value = False
-        with assert_raises(PermissionDenied):
+        with assert_raises(http.Http404):
             self.viewset.get_object()
 
     def test_get_detail_returns_403_when_video_not_found(self):
@@ -613,7 +614,7 @@ class VideoViewSetTest(TestCase):
         assert_items_equal([v1], self.viewset.get_queryset())
 
     def test_team_filter_user_is_not_member(self):
-        team = TeamFactory(is_visible=False)
+        team = TeamFactory()
         video = TeamVideoFactory(team=team).video
         self.query_params['team'] = team.slug
         assert_items_equal([], self.viewset.get_queryset())
