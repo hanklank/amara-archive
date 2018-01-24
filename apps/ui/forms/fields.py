@@ -78,7 +78,6 @@ class AmaraChoiceFieldMixin(object):
                     '<div class="helpBlock helpBlock-radio">{}</div>'.format(
                         force_unicode(conditional_escape(help_text))))
             ])
-            print(label)
         return (name, label)
 
     def widget_attrs(self, widget):
