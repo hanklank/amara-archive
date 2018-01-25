@@ -1365,6 +1365,10 @@ class TeamVideo(models.Model):
             self._editor_task = self._get_task_for_editor(language_code)
         return self._editor_task
 
+    def clear_editor_task(self):
+        if hasattr(self, '_editor_task'):
+            delattr(self, '_editor_task')
+
     def _get_task_for_editor(self, language_code):
         task_set = self.task_set.incomplete().filter(language=language_code)
         # 2533: We can get 2 review tasks if we include translate/transcribe
