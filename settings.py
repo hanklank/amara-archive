@@ -466,8 +466,8 @@ MEDIA_BUNDLES = {
             "amara/css/variables.scss",
             "amara/css/mixins.scss",
             "amara/css/global/dropdowns.scss",
-            "amara/css/elements/_navigation.scss",
             "amara/css/elements/_page_header.scss",
+            "amara/css/elements/_navigation.scss",
             "amara/css/elements/_consolidate-header.scss",
             "amara/css/elements/page_footer.scss",
             "css/marketing-integration.scss",
@@ -706,6 +706,7 @@ MEDIA_BUNDLES = {
     },
     'login.js': {
         'files': (
+            'src/js/site/login.js',
             'src/js/site/facebook.js',
         ),
     },
@@ -778,37 +779,5 @@ SOUTH_MIGRATION_MODULES = {
 
 from task_settings import *
 
-
-if DEBUG:
-    try:
-        import debug_toolbar
-    except ImportError:
-        pass
-    else:
-        INSTALLED_APPS += ('debug_toolbar',)
-        MIDDLEWARE_CLASSES = (
-            ('debug_toolbar.middleware.DebugToolbarMiddleware',) +
-            MIDDLEWARE_CLASSES
-        )
-        DEBUG_TOOLBAR_PATCH_SETTINGS = False
-
-        DEBUG_TOOLBAR_PANELS = (
-            'debug_toolbar.panels.timer.TimerPanel',
-            'debug_toolbar.panels.request.RequestPanel',
-            'debug_toolbar.panels.templates.TemplatesPanel',
-            'debug_toolbar.panels.sql.SQLPanel',
-            'caching.debug_toolbar_panels.CachePanel',
-        )
-
-        def custom_show_toolbar(request):
-            return 'debug_toolbar' in request.GET
-
-        DEBUG_TOOLBAR_CONFIG = {
-            'INTERCEPT_REDIRECTS': False,
-            'SHOW_TOOLBAR_CALLBACK': 'settings.custom_show_toolbar',
-            'EXTRA_SIGNALS': [],
-            'HIDE_DJANGO_SQL': False,
-            'INSERT_BEFORE': '</body>',
-        }
 
 optionalapps.exec_repository_scripts('settings_extra.py', globals(), locals())
