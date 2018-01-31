@@ -318,7 +318,6 @@
                 });
                 // Set the initial language to either the one provided by the initial
                 // options, or the original language from the API.
-                console.log(this.get('initial_language'));
                 this.set('initial_language',
                         (this.get('initial_language') && (visibleLanguages.indexOf(this.get('initial_language')) > -1) && this.get('initial_language')) ||
                         (this.get('original_language') && (visibleLanguages.indexOf(this.get('original_language')) > -1) && this.get('original_language')) ||
@@ -1217,9 +1216,9 @@
                 '&lt;script type="text/javascript" src="https://amara.org/embedder-iframe"&gt;\n' +
                 '&lt;/script&gt;' +
                 '                        </pre>' +
-                '                        <p>Step 2: paste this somewhere inside your HTML body, wherever you would like your widgets to appear, with the height, width and options of your choosing:</p>' +
+                '                        <p>Step 2: paste this somewhere inside your HTML body, wherever you would like your widgets to appear:</p>' +
                 '                        <pre class="pre-small">' +
-                '&lt;div class="amara-embed" data-height="480px" data-width="854px" data-url="{{ original_video_url }}"&gt;&lt;/div&gt;' +
+                '&lt;div class="amara-embed" data-url="{{ original_video_url }}"&gt;&lt;/div&gt;' +
                 '                        </pre>' +
                 '                        <ul>' +
                 '                            <li>Hide order subtitles menu item: <code>data-hide-order="true"</code>.</li>' +

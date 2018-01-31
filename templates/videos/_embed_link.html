@@ -16,12 +16,11 @@
 &lt;script type="text/javascript" src='https://amara.org/embedder-iframe'&gt;&lt;/script&gt;
 	      </pre>
 	  </p>
-	  <p>Paste this inside your HTML body, where you want to include the widget, with the width and height of your choosing:
+	  <p>Paste this inside your HTML body, where you want to include the widget:
 	    <pre>
-&lt;div class="amara-embed" data-width="{{ width }}px" data-url="{{ video_url }}" {% if team %}data-team="{{ team.slug }}"{% else %}data-team="null"{% endif %}&gt;&lt;/div&gt;
+&lt;div class="amara-embed" data-url="{{ video_url }}" {% if team %}data-team="{{ team.slug }}"{% else %}data-team="null"{% endif %}&gt;&lt;/div&gt;
 	    </pre>
 	  </p>
-	  <p>If you would like the widget to be responsive, you can add <code>data-resizable="true"</code>.</p>
         </div>
     </div>
 </div>

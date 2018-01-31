@@ -27,14 +27,12 @@ var THIS_JS_FILE = scriptFiles[scriptFiles.length-1].src;
                     targetWidth = Math.min(targetWidth, widthData);
                 }
 		var targetHeight = parseInt((height - toolbarHeight - transcriptHeight) * targetWidth / width) + toolbarHeight + transcriptHeight;
-		if ((width != targetWidth) || (targetHeight != containerSize[1])) {
-		    width = targetWidth;
-		    height = targetHeight;
-		    iframe.width = 0;
-		    iframe.width = width;
-		    iframe.height = height;
-                    iframe.contentWindow.postMessage({resize: true}, iframeDomain);
-		}
+                width = targetWidth;
+                height = targetHeight;
+                iframe.width = 0;
+                iframe.width = width;
+                iframe.height = height;
+                iframe.contentWindow.postMessage({resize: true}, iframeDomain);
 	    }
 	};
         var getSize = function(elt) {
