@@ -303,9 +303,7 @@
                     }
                 }
                 // Fall back to the first video
-                if(!videoData) {
-                    this.setFromVideoData(resp.objects[0]);
-                }
+                this.setFromVideoData(resp.objects[0]);
             },
             setFromVideoData: function(videoData) {
                 var that = this;
