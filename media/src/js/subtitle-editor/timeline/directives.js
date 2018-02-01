@@ -203,6 +203,11 @@ var angular = angular || null;
             var unsyncedDiv = null;
             var unsyncedSubtitle = null;
 
+            scope.hideContextMenu = function() {
+                var contextMenu = $('#context-menu');
+                contextMenu.hide();
+            }
+
             function handleDragLeft(context, deltaMS) {
                 context.startTime = context.initialStartTime + deltaMS;
                 if (context.startTime < context.minStartTime) {
@@ -393,6 +398,9 @@ var angular = angular || null;
             function handleMouseDownInTimeline(evt) {
                 var initialPageX = evt.pageX;
                 var maxDeltaX = 0;
+                if(evt.which != 1) {
+                    return;
+                }
                 $(document).on('mousemove.timelinedrag', function(evt) {
                     VideoPlayer.pause();
                     var deltaX = initialPageX - evt.pageX;

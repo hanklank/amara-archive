@@ -203,6 +203,10 @@
             }
         });
 
+        $scope.$root.$on('dialog-opened', function() {
+            $scope.hideContextMenu();
+        });
+
         // Update the timeline subtitles when the underlying data changes.
         $scope.$root.$on('work-done', function() {
             $scope.redrawSubtitles({forcePlace: true});
