@@ -735,15 +735,14 @@ def statistics(request, team, tab):
 
 def dashboard(request, slug):
     team = get_object_or_404(
-        Team.objects.for_user(request.user, exclude_private=False),
-        slug=slug)
+        Team.objects.for_user(request.user, allow_unlisted=True), slug=slug)
     if not team.is_old_style() and not team.user_is_member(request.user):
         return welcome(request, team)
     else:
         return team.new_workflow.dashboard_view(request, team)
 
 def welcome(request, team):
-    if team.is_visible:
+    if team.videos_public():
         videos = team.videos.order_by('-id')[:2]
     else:
         videos = None
@@ -942,39 +941,26 @@ def settings_basic(request, team):
     if team.is_old_style():
         return old_views.settings_basic(request, team)
 
-    if permissions.can_rename_team(team, request.user):
-        FormClass = forms.RenameableSettingsForm
-    else:
-        FormClass = forms.SettingsForm
-
+    kwargs = {
+        'instance': team,
+        'allow_rename': permissions.can_rename_team(team, request.user),
+    }
     if request.POST:
-        form = FormClass(request.POST, request.FILES, instance=team)
-
-        is_visible = team.is_visible
+        form = forms.GeneralSettingsForm(data=request.POST,
+                                         files=request.FILES, **kwargs)
 
         if form.is_valid():
-            try:
-                form.save(request.user)
-            except:
-                logger.exception("Error on changing team settings")
-                raise
-
-            if is_visible != form.instance.is_visible:
-                tasks.update_video_public_field.delay(team.id)
-                tasks.invalidate_video_visibility_caches.delay(team)
-
+            form.save(request.user)
             messages.success(request, _(u'Settings saved.'))
             return HttpResponseRedirect(request.path)
     else:
-        form = FormClass(instance=team)
+        form = forms.GeneralSettingsForm(**kwargs)
 
-    return render(request, "new-teams/settings.html", {
+    return render(request, "future/teams/settings/general.html", {
         'team': team,
         'form': form,
-        'breadcrumbs': [
-            BreadCrumb(team, 'teams:dashboard', team.slug),
-            BreadCrumb(_('Settings')),
-        ],
+        'team_nav': 'settings',
+        'settings_tab': 'general',
     })
 
 @team_settings_view

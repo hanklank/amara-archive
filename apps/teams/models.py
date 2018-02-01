@@ -131,17 +131,14 @@ class TeamManager(models.Manager):
         """Return a QS of all non-deleted teams."""
         return TeamQuerySet(Team).filter(deleted=False)
 
-    def for_user(self, user, exclude_private=False):
-        """Return the teams visible for the given user.
-
-        If exclude_private is True, then we will exclude private teams, even
-        if the user can apply to them.
-        """
-        # policies where we should show the team, even if they're not visible
-        visible_policies = [Team.OPEN, Team.APPLICATION]
-        q = models.Q(is_visible=True)
-        if not exclude_private:
-            q |= models.Q(membership_policy__in=visible_policies)
+    def for_user(self, user, allow_unlisted=False):
+        """Return the teams visible for the given user.  """
+        if user.is_superuser:
+            return self.all()
+        if allow_unlisted:
+            q = ~models.Q(team_visibility=TeamVisibility.PRIVATE)
+        else:
+            q = models.Q(team_visibility=TeamVisibility.PUBLIC)
         if user.is_authenticated():
             user_teams = TeamMember.objects.filter(user=user)
             q |= models.Q(id__in=user_teams.values('team_id'))
@@ -236,8 +233,6 @@ class Team(models.Model):
                                       default='', blank=True,
                                       legacy_filenames=False,
                                       thumb_sizes=[(100, 100), (48, 48), (40, 40), (30, 30)])
-    # Legacy field, soon to be removed
-    is_visible = models.BooleanField(_(u'videos public?'), default=False)
     # New fields
     team_visibility = enum.EnumField(enum=TeamVisibility,
                                      default=TeamVisibility.PRIVATE)
@@ -427,6 +422,24 @@ class Team(models.Model):
             Team.INVITATION_BY_ADMIN,
         )
 
+    def team_public(self):
+        return self.team_visibility == TeamVisibility.PUBLIC
+
+    def team_unlisted(self):
+        return self.team_visibility == TeamVisibility.UNLISTED
+
+    def team_private(self):
+        return self.team_visibility == TeamVisibility.PRIVATE
+
+    def videos_public(self):
+        return self.video_visibility == VideoVisibility.PUBLIC
+
+    def videos_unlisted(self):
+        return self.video_visibility == VideoVisibility.UNLISTED
+
+    def videos_private(self):
+        return self.video_visibility == VideoVisibility.PRIVATE
+
     def set_legacy_visibility(self, is_visible):
         """
         Update team_visibility and video_visibility together
@@ -484,7 +497,7 @@ class Team(models.Model):
             TeamVideo.objects.create(video=video, team=self,
                                      project=project,
                                      added_by=user)
-            video.is_public = self.is_visible
+            video.is_public = self.videos_public()
             if setup_video:
                 setup_video(video, video_url)
 
@@ -506,15 +519,15 @@ class Team(models.Model):
         if project is None:
             project = self.default_project
         with transaction.atomic():
-            video.is_public = self.is_visible
+            video.is_public = self.videos_public()
             video.update_team(self)
             video.save()
             return TeamVideo.objects.create(team=self, video=video,
                                             project=project, added_by=user)
     # Settings
     SETTINGS_ATTRIBUTES = set([
-        'description', 'is_visible', 'sync_metadata', 'membership_policy',
-        'video_policy',
+        'description', 'sync_metadata', 'membership_policy', 'video_policy',
+        'team_visibility', 'video_visibility',
     ])
     def get_settings(self):
         """Get the current settings for this team
@@ -544,10 +557,16 @@ class Team(models.Model):
             user: user performing the action
             previous_settings: return value from the get_settings() method
         """
+        def coerce_value(value):
+            if isinstance(value, enum.EnumMember):
+                return value.slug
+            else:
+                return value
         changed_settings = {}
         old_settings = {}
         for name, old_value in previous_settings.items():
-            current_value = getattr(self, name)
+            old_value = coerce_value(old_value)
+            current_value = coerce_value(getattr(self, name))
             if old_value != current_value:
                 changed_settings[name] = current_value
                 old_settings[name] = old_value
@@ -713,8 +732,8 @@ class Team(models.Model):
                      .exclude(languages_managed__code=language_code))
         return User.objects.filter(team_members__in=member_qs)
 
-    def user_can_view_videos(self, user):
-        return self.is_visible or self.user_is_member(user)
+    def user_can_view_video_listing(self, user):
+        return self.videos_public() or self.user_is_member(user)
 
     def _is_role(self, user, role=None):
         """Return whether the given user has the given role in this team.
@@ -1256,7 +1275,7 @@ class TeamVideo(models.Model):
             video = self.video
 
             video.newsubtitleversion_set.extant().update(visibility='public')
-            video.is_public = self.team.is_visible
+            video.is_public = self.team.videos_public()
             video.moderated_by = self.team if self.team.moderates_videos() else None
             video.save()
 
@@ -1345,6 +1364,10 @@ class TeamVideo(models.Model):
         if not hasattr(self, '_editor_task'):
             self._editor_task = self._get_task_for_editor(language_code)
         return self._editor_task
+
+    def clear_editor_task(self):
+        if hasattr(self, '_editor_task'):
+            delattr(self, '_editor_task')
 
     def _get_task_for_editor(self, language_code):
         task_set = self.task_set.incomplete().filter(language=language_code)
