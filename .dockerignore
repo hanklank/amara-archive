@@ -6,4 +6,4 @@ user-data
 amara-assets
 !amara-assets/dist
 !amara-assets/assets
-!amara-assets/scss/styleguide-toc.yml
+!amara-assets/scss
