@@ -92,7 +92,6 @@ var angular = angular || null;
         div.css('left', -durationToPixels(deltaTime, this.scale) + 'px');
     }
 
-
     module.directive('timelineTiming', ["displayTimeSecondsFilter", function(displayTimeSecondsFilter) {
         return function link(scope, elem, attrs) {
             var canvas = $(elem);
@@ -204,6 +203,11 @@ var angular = angular || null;
             var unsyncedDiv = null;
             var unsyncedSubtitle = null;
 
+            scope.hideContextMenu = function() {
+                var contextMenu = $('#context-menu');
+                contextMenu.hide();
+            }
+
             function handleDragLeft(context, deltaMS) {
                 context.startTime = context.initialStartTime + deltaMS;
                 if (context.startTime < context.minStartTime) {
@@ -257,6 +261,8 @@ var angular = angular || null;
             }
 
             function handleMouseDown(evt, dragHandler) {
+                scope.handleAppMouseClick(evt);
+                if (evt.which == 3) return;
                 if(!scope.canSync) {
                     return false;
                 }
@@ -381,9 +387,20 @@ var angular = angular || null;
                 }
             }
 
+            function handleMouseDownInContainer(evt) {
+                if (evt.which == 3) {
+                    var contextMenu = $('#context-menu');
+                    contextMenu.show();
+                    contextMenu.css({"left": evt.clientX, "top": evt.clientY});
+                }
+            }
+
             function handleMouseDownInTimeline(evt) {
                 var initialPageX = evt.pageX;
                 var maxDeltaX = 0;
+                if(evt.which != 1) {
+                    return;
+                }
                 $(document).on('mousemove.timelinedrag', function(evt) {
                     VideoPlayer.pause();
                     var deltaX = initialPageX - evt.pageX;
@@ -583,6 +600,7 @@ var angular = angular || null;
 
             // Handle drag and drop.
             timelineDiv.on('mousedown', handleMouseDownInTimeline);
+            container.on('mousedown', handleMouseDownInContainer);
             // Redraw the subtitles on window resize
             $(window).resize(function() {
                 containerWidth = (container.width() || container.parent().width());
