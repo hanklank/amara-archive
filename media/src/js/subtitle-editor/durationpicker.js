@@ -81,7 +81,7 @@ var angular = angular || null;
                 $(this).select();
             }).change(function() {
                 var input = $(this);
-                if(isNaN(parseInput(input))) {
+                if(_.isNaN(parseInput(input))) {
                     input.addClass('invalid');
                 } else {
                     input.removeClass('invalid');
@@ -115,7 +115,7 @@ var angular = angular || null;
                     return NaN;
                 }
                 var amount = parseInt(unparsed);
-                if(isNaN(amount)) {
+                if(_.isNaN(amount)) {
                     return NaN;
                 }
                 var unitInfo = getUnitInfo(input);
@@ -135,7 +135,7 @@ var angular = angular || null;
 
             var lastAmountFromInputs = NaN;
             function updateInputsFromModel(newValue) {
-                if(isNaN(newValue) || newValue == lastAmountFromInputs) {
+                if(_.isNaN(newValue) || newValue == lastAmountFromInputs) {
                     return;
                 }
                 var ms = Math.floor(newValue);
