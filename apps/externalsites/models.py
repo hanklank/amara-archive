@@ -370,7 +370,7 @@ class BrightcoveCMSAccount(ExternalAccount):
         return None
 
     def _sync_video_metadata(self, bc_video_id, video):
-        data = syncing.brightcove.sync_metadata_cms(self.publisher_id,
+        data = syncing.brightcove.get_metadata_cms(self.publisher_id,
                                     self.client_id,
                                     self.client_secret,
                                     bc_video_id)
