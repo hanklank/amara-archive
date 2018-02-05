@@ -369,10 +369,22 @@ class BrightcoveCMSAccount(ExternalAccount):
             return urlparse.parse_qs(parsed_url.query)['videoId'][0]
         return None
 
+    def _sync_video_metadata(self, bc_video_id, video):
+        data = syncing.brightcove.sync_metadata_cms(self.publisher_id,
+                                    self.client_id,
+                                    self.client_secret,
+                                    bc_video_id)
+        video.title = data["title"]
+        video.description = data["description"]
+        video.thumbnail = data["thumbnail"]
+        video.duration = int(data["duration_ms"]) / 1000    # convert from ms to s
+        video.save()
+
     def do_update_subtitles(self, video_url, language, tip):
         bc_video_id = self._get_brightcove_id(video_url)
         if bc_video_id is None:
             return
+        self._sync_video_metadata(bc_video_id, video_url.video)
         syncing.brightcove.update_subtitles_cms(self.publisher_id,
                                      self.client_id,
                                      self.client_secret,
@@ -382,6 +394,7 @@ class BrightcoveCMSAccount(ExternalAccount):
         bc_video_id = self._get_brightcove_id(video_url)
         if bc_video_id is None:
             return
+        self._sync_video_metadata(bc_video_id, video_url.video)
         syncing.brightcove.delete_subtitles_cms(self.publisher_id,
                                      self.client_id,
                                      self.client_secret,

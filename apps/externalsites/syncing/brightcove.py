@@ -45,7 +45,21 @@ def _get_cms_token(client_id, client_secret):
         raise SyncingError("Error while retrieving CMS token: %s" % r.text)
     return json.loads(r.text)['access_token']
 
-def _make_cms_request(account_id, client_id, client_secret, bc_video_id, language_code, subtitle_version=None):
+def _make_metadata_cms_request(account_id, client_id, client_secret, bc_video_id):
+    access_token = _get_cms_token(client_id, client_secret)
+    authentication_header = {"Authorization": "Bearer " + access_token}
+    r = requests.get(CMS_BASE_URL + "/accounts/" + account_id + "/videos/" + bc_video_id, headers=authentication_header)
+    if r.status_code != 200:
+        raise SyncingError("Error while retrieving Brightcove video data: {}".format(r.text))
+    data = json.loads(r.text)
+    return {
+            "title": data["name"],
+            "thumbnail": data["images"]["thumbnail"]["src"],
+            "description": data["long_description"],
+            "duration_ms": data["duration"]
+           }
+
+def _make_subtitle_cms_request(account_id, client_id, client_secret, bc_video_id, language_code, subtitle_version=None):
     access_token = _get_cms_token(client_id, client_secret)
     authentication_header = {"Authorization": "Bearer " + access_token}
     r = requests.get(CMS_BASE_URL + "/accounts/" + account_id + "/videos/" + bc_video_id, headers=authentication_header)
@@ -85,11 +99,14 @@ def _make_cms_request(account_id, client_id, client_secret, bc_video_id, languag
         if r.status_code != 200:
             raise SyncingError("Error while adding new Brightcove text track: %s" % r.text)
 
+def get_metadata_cms(account_id, client_id, client_secret, bc_video_id):
+    return _make_metadata_cms_request(account_id, client_id, client_secret, bc_video_id)
+
 def update_subtitles_cms(account_id, client_id, client_secret, bc_video_id, subtitle_version):
-    _make_cms_request(account_id, client_id, client_secret, bc_video_id, subtitle_version.language_code, subtitle_version)
+    _make_subtitle_cms_request(account_id, client_id, client_secret, bc_video_id, subtitle_version.language_code, subtitle_version)
 
 def delete_subtitles_cms(account_id, client_id, client_secret, bc_video_id, subtitle_language):
-    _make_cms_request(account_id, client_id, client_secret, bc_video_id, subtitle_language.language_code)
+    _make_subtitle_cms_request(account_id, client_id, client_secret, bc_video_id, subtitle_language.language_code)
 
 def _make_write_request(write_token, method, **params):
     file_content = params.pop('file_content', None)
