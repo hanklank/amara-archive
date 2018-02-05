@@ -370,14 +370,21 @@ class BrightcoveCMSAccount(ExternalAccount):
         return None
 
     def _sync_video_metadata(self, bc_video_id, video):
+        # check to make sure the video even has missing metadata before making a request
+        if (video.title and video.description and video.thumbnail and video.duration):
+            return
         data = syncing.brightcove.get_metadata_cms(self.publisher_id,
                                     self.client_id,
                                     self.client_secret,
                                     bc_video_id)
-        video.title = data["title"]
-        video.description = data["description"]
-        video.thumbnail = data["thumbnail"]
-        video.duration = int(data["duration_ms"]) / 1000    # convert from ms to s
+        if not video.title:
+            video.title = data["title"]
+        if not video.description:
+            video.description = data["description"]
+        if not video.thumbnail:
+            video.thumbnail = data["thumbnail"]
+        if not video.duration:
+            video.duration = int(data["duration_ms"]) / 1000    # convert from ms to s
         video.save()
 
     def do_update_subtitles(self, video_url, language, tip):
