@@ -80,5 +80,5 @@ def on_video_url_added(sender, video, **kwargs):
             logger.error("Exception")
             logger.error(e)
     # if BrightcoveCMSAccount
-    if account.account_type == 'C':
+    if account and account.account_type == 'C':
         account.sync_video_metadata(video_url)
