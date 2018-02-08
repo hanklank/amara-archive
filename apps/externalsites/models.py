@@ -335,13 +335,14 @@ class BrightcoveAccount(ExternalAccount):
         return player_id, tags
 
 class BrightcoveCMSAccountManager(ExternalAccountManager):
-    def _get_sync_account_team_video(self, video, video_url):
+    def _get_sync_account_team_video(self, team_video, video_url):
         return self.get(
-            type=ExternalAccount.TYPE_TEAM, username=video_url.owner_username)
+            type=ExternalAccount.TYPE_TEAM, owner_id=team_video.team_id)
 
     def _get_sync_account_nonteam_video(self, video, video_url):
+        user_id = video.user.id if video.user else None
         return self.get(
-            type=ExternalAccount.TYPE_USER, username=video_url.owner_username)
+            type=ExternalAccount.TYPE_USER, owner_id=user_id)
 
 class BrightcoveCMSAccount(ExternalAccount):
     account_type = 'C'
