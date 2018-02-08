@@ -878,7 +878,8 @@ class Video(models.Model):
         return vt, vt.convert_to_video_url()
 
     @classmethod
-    def _check_prevent_duplicate_public_videos(cls, url, team=None):
+    def _check_prevent_duplicate_public_videos(cls, url, team=None,
+                                               ignore_video=None):
         """Check if there are any duplicate video URLs on teams with
         prevent_duplicate_public_videos set
 
@@ -888,23 +889,33 @@ class Video(models.Model):
             url(str): url being added
             team(Team): team the URL is being added to, or None if it's being
                 added to the public area
+            video(Video): Video to ignore for the URL checking.  We use this
+                when we move a video to/from a team and need to ignore the
+                video being moved when performing the check.
         """
-        if team and not team.prevent_duplicate_public_videos:
-            return
-        try:
-            qs = VideoUrl.objects.filter(url=url)
-            if team:
-                qs = qs.filter(video__teamvideo__isnull=True)
-            else:
-                qs = qs.filter(
-                    video__teamvideo__team__prevent_duplicate_public_videos=True
-                )
-            video_url = qs[0:1][0]
-        except IndexError:
-            pass
+        if team and team.prevent_duplicate_public_videos:
+            # Adding to a team with prevent_duplicate_public_videos set, check
+            # for videos in the public area
+            qs = VideoUrl.objects.filter(url=url, video__teamvideo__isnull=True)
+        elif not team:
+            # Adding to the public are, check for teams with
+            # prevent_duplicate_public_videos set
+            qs = VideoUrl.objects.filter(
+                url=url, video__teamvideo__team__prevent_duplicate_public_videos=True)
         else:
+            # nothing to check
+            return
+
+        if ignore_video:
+            qs = qs.exclude(video=ignore_video)
+
+        # We don't care about video URLs past the first, so add a LIMIT clause
+        # to make the query go a bit faster
+        qs = qs[:1]
+
+        if qs:
             raise Video.DuplicateUrlError(
-                video_url, from_prevent_duplicate_public_videos=True)
+                qs[0], from_prevent_duplicate_public_videos=True)
 
     def update_team(self, team):
         """Update the team for this video
@@ -923,7 +934,8 @@ class Video(models.Model):
                 already added to the team
         """
         for vurl in self.get_video_urls():
-            self._check_prevent_duplicate_public_videos(vurl.url, team)
+            self._check_prevent_duplicate_public_videos(vurl.url, team,
+                                                        ignore_video=self)
         new_team_id = team.id if team else 0
         try:
             self.videourl_set.update(team_id=new_team_id)

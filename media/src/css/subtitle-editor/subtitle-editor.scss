@@ -80,6 +80,8 @@ $tutorial-banner-height: 50px;
 $tutorial-play-height: 70px;
 $tutorial-top: 540px;
 
+$line-height-text: 1.2;
+
 // Mixins
 @mixin border-radius($radius: 5px) {
     -webkit-background-clip: padding-box;
@@ -192,6 +194,7 @@ body {
     &.loading-finished {
         background: $dark-grey;
     }
+    line-height: $line-height-text;
 }
 html, body {
     overflow: hidden;
@@ -329,6 +332,42 @@ div.workflow {
     height: $top-section-height - $header-height;
     left: 74%;
     right: 0;
+}
+
+#context-menu {
+    display: none;
+    position: fixed;
+    color: #DDDDDD;
+    z-index: 71;
+    background: $dark-grey;
+    text-align: left;
+    width: 150px;
+    li {
+        list-style-type: none;
+        display: inline-block;
+        width:100%;
+        a {
+            width:100%;
+            color: #DDDDDD;
+            display: inline-block;
+            padding: 10px;
+            padding-left: 28px;
+            text-decoration: none;
+            &.show-timeline {
+                background: url('../images/subtitle-editor/glyphicons_054_clock.png') 10px no-repeat;
+            }
+            &.shift-forward {
+                background: url('../images/subtitle-editor/glyphicons_176_forward.png') 10px no-repeat;
+            }
+            &.shift-backward {
+                background: url('../images/subtitle-editor/glyphicons_172_rewind.png') 10px no-repeat;
+            }
+            &:hover {
+                background: #C5C5C5;
+                color: $dark-grey;
+            }
+        }
+    }
 }
 
 div.timeline {
@@ -1282,7 +1321,7 @@ div.workspace-tools {
         div.toolbox-inside .active{
           background-color: $lighter-blue;
         }
-        div.toolbox-inside > button {
+        div.toolbox-inside > .button-subs {
         outline: none;
         border-radius: 5px;
         background-image: url('../images/subtitle-editor/glyphicons_halflings_135_wrench.png');
@@ -1294,7 +1333,19 @@ div.workspace-tools {
         cursor: pointer;
         z-index: 70;
         }
-        div.toolbox-inside > .helper_margin{
+        div.toolbox-inside > .button-timing {
+        outline: none;
+        border-radius: 5px;
+        background-image: url('../images/subtitle-editor/glyphicons_halflings_022_time_large.png');
+        background-position: 10px center;
+        background-repeat: no-repeat;
+        position: absolute;
+        right: 55px;
+        padding: 5px 10px 20px 20px;
+        cursor: pointer;
+        z-index: 70;
+        }
+        div.toolbox-inside > .helper_margin {
           display:none;
           position: absolute;
           text-align: left;
@@ -1306,7 +1357,39 @@ div.workspace-tools {
         }
 
 
-        ul.toolbox-menu {
+        ul.toolbox-menu-subs {
+           right: -200px;
+	}
+        ul.toolbox-menu-timing, div.toolbox-menu-forward, div.toolbox-menu-backward {
+           right: -160px;
+	}
+        div.toolbox-menu-forward, div.toolbox-menu-backward {
+           width:100%;
+           color: #DDDDDD;
+           padding: 10px;
+           padding-left: 28px;
+	   h1 {
+	       text-decoration: underline;
+	    }
+	   form {
+	       display: inline-block;
+               p {
+                   font-size: 12px;
+                   line-height: 150%;
+                   margin-top: 0.5em;
+                   &.error {
+                     font-size: 10px;
+                     color: $reddish-pink;
+                   }
+	       }
+               input[type="text"] {
+                 border-radius: 5px;
+                 padding: 0;
+                 margin: 5px 0;
+              }
+	   }
+	}
+        ul.toolbox-menu-subs, ul.toolbox-menu-timing, div.toolbox-menu-forward, div.toolbox-menu-backward {
            &:before {
                position: absolute;
                display: block;
@@ -1324,9 +1407,8 @@ div.workspace-tools {
            position: absolute;
            text-align: left;
            top: 0;
-           right: -200px;
            width: 200px;
-           z-index: 62;
+           z-index: 70;
            li { 
                list-style-type: none;
                display: inline-block;
@@ -1361,6 +1443,12 @@ div.workspace-tools {
                    }
                    &.show-tutorial {
                      background: url('../images/subtitle-editor/glyphicons_194_circle_question_mark.png') 10px no-repeat;
+                   }
+                   &.shift-forward {
+                     background: url('../images/subtitle-editor/glyphicons_176_forward.png') 10px no-repeat;
+                   }
+                   &.shift-backward {
+                     background: url('../images/subtitle-editor/glyphicons_172_rewind.png') 10px no-repeat;
                    }
                    &:hover {
                       background: #C5C5C5;
@@ -1831,6 +1919,10 @@ aside.modal#playback-mode-modal {
     color: $warning-color;
     font-size: 10px;
 }
+.warningText {
+    color: $warning-color;
+    font-size: 14px;
+}
 
 aside#tutorial {
   div {
@@ -2047,4 +2139,57 @@ div.sub-toolbox {
             }
         }
     }
+}
+
+// Forms and fields
+label {
+    display: block;
+    font-size: 14px;
+}
+
+.formControl {
+    padding-bottom: 20px;
+}
+
+input {
+    color: $dark-grey;
+    background: $light-grey;
+    border: none;
+}
+input[disabled] {
+    color: lighten($dark-grey, 40%);
+    background: $medium-grey;
+}
+.durationPicker {
+    background: $light-grey;
+    color: $medium-grey;
+    display: inline-block;
+
+    &.disabled {
+        color: lighten($dark-grey, 40%);
+        background: $medium-grey;
+    }
+}
+.durationPicker-input {
+    margin-left: 8px;
+    margin-right: 1px;
+    text-align: right;
+    &:first-of-type {
+        margin-left: 0;
+    }
+    &.invalid {
+        color: $reddish-pink;
+    }
+}
+
+.formHelp {
+    font-size: 14px;
+}
+
+.min-lines-3 {
+    min-height: ($line-height-text * 3) * 1em;
+}
+
+.min-lines-2 {
+    min-height: ($line-height-text * 3) * 1em;
 }

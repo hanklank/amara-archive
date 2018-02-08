@@ -140,7 +140,7 @@ class Message(models.Model):
         return self.subject or ugettext('[no subject]')
 
     def get_reply_url(self):
-        return '%s?reply=%s' % (reverse('messages:inbox'), self.pk)
+        return '%s?reply=%s' % (reverse('messages:new'), self.pk)
 
     def delete_for_user(self, user):
         if self.user == user:
