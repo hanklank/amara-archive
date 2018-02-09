@@ -24,10 +24,14 @@ var angular = angular || null;
         'amara.SubtitleEditor.help',
         'amara.SubtitleEditor.modal',
         'amara.SubtitleEditor.dom',
+        'amara.SubtitleEditor.durationpicker',
+        'amara.SubtitleEditor.gettext',
         'amara.SubtitleEditor.lock',
         'amara.SubtitleEditor.preferences',
         'amara.SubtitleEditor.notes',
         'amara.SubtitleEditor.session',
+        'amara.SubtitleEditor.shifttime',
+        'amara.SubtitleEditor.toolbar',
         'amara.SubtitleEditor.workflow',
         'amara.SubtitleEditor.subtitles.controllers',
         'amara.SubtitleEditor.subtitles.directives',
@@ -214,6 +218,18 @@ var angular = angular || null;
             $event.preventDefault();
         };
 
+        $scope.showShiftForwardModal = function($event) {
+            $scope.dialogManager.open('shift-forward');
+            $event.stopPropagation();
+            $event.preventDefault();
+        };
+
+        $scope.showShiftBackwardModal = function($event) {
+            $scope.dialogManager.open('shift-backward');
+            $event.stopPropagation();
+            $event.preventDefault();
+        };
+
         // Required by ajax plugin but not present in our version of
         // jQuery
         jQuery.extend({
@@ -384,22 +400,6 @@ var angular = angular || null;
             $event.stopPropagation();
             $scope.dialogManager.open('metadata');
         }
-        $scope.isToolboxMenuOpen = false;
-        $scope.onToolIconClicked = function($event) {
-            $event.preventDefault();
-            $event.stopPropagation();
-            // highlight tool icon
-            $(".toolIcon").toggleClass("active");
-            // expose toolbox menu
-            $(".toolbox-menu").toggleClass("hidden");
-            $scope.isToolboxMenuOpen = !$scope.isToolboxMenuOpen;
-            if ($scope.isToolboxMenuOpen) {
-                $window.onclick = function ($event) {
-                    $window.onclick = null;
-                    $scope.onToolIconClicked($event);
-                };
-            } 
-        }
         // Hide the loading modal after we are done with bootstrapping
         // everything
         $scope.$evalAsync(function() {
@@ -555,7 +555,6 @@ var angular = angular || null;
             }
             $scope.handleAppKeyDown(evt);
         }
-
         $scope.handleAppKeyDown = function(evt) {
             // Reset the lock timer.
 	    var isDel = function(key) {
@@ -567,9 +566,18 @@ var angular = angular || null;
             $scope.minutesIdle = 0;
             $scope.$root.$emit("user-action");
             if (evt.keyCode == 9 && !evt.shiftKey) {
+                // Shift, Toggle playback
+                if($scope.dialogManager.current()) {
+                    // If a dialog is open, then don't mess with playback.  The user probably wants to navigate the form
+                    return;
+                }
                 VideoPlayer.togglePlay();
             } else if (evt.keyCode === 9 && evt.shiftKey) {
                 // Shift+Tab, go back 2 seconds
+                if($scope.dialogManager.current()) {
+                    // If a dialog is open, then don't mess with playback.  The user probably wants to navigate the form
+                    return;
+                }
                 VideoPlayer.seek(VideoPlayer.currentTime() - 2000);
             } else if (evt.keyCode === 188 && evt.shiftKey && evt.ctrlKey) {
                 // Control+Shift+Comma, go back 4 seconds
@@ -660,6 +668,7 @@ var angular = angular || null;
 
         $scope.handleAppMouseClick = function(evt) {
             // Reset the lock timer.
+            $('#context-menu').hide();
             $scope.minutesIdle = 0;
             $scope.$root.$emit("user-action");
         };

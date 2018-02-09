@@ -63,8 +63,8 @@ describe('The playback mode controller', function() {
         $timeout = $injector.get('$timeout');
         $rootScope = $injector.get('$rootScope');
         $scope = $rootScope.$new();
+        $scope.timelineShown = false;
         $controller('PlaybackModeController', {$scope: $scope});
-        
         $scope.$digest();
         VideoPlayer.pause.calls.reset();
     }));

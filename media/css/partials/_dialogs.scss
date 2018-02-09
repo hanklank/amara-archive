@@ -119,8 +119,18 @@ aside.modal {
             border: 1px solid $light-grey;
         }
 
+        &:disabled {
+            color: darken($light-grey, 10%);
+            border: 1px solid transparent;
+            cursor: default;
+        }
+
         &:first-of-type {
             background: $usblue;
+
+            &:disabled {
+                background: darken($usblue, 10%);
+            }
         }
 
         &.link-style {

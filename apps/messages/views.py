@@ -166,6 +166,16 @@ def sent(request):
 @render_to('messages/new.html')
 def new(request):
     selected_user = None
+    reply_msg = None
+    reply = request.GET.get('reply')
+
+    if reply:
+        try:
+            reply_msg = Message.objects.get(pk=reply, user=request.user)
+            reply_msg.read = True
+            reply_msg.save()
+        except (Message.DoesNotExist, ValueError):
+            pass
 
     if request.POST:
         form = NewMessageForm(request.user, request.POST)
@@ -212,10 +222,16 @@ def new(request):
             if request.GET.get('user'):
                 selected_user = User.objects.get(username=request.GET['user'])
     else:
-        form = NewMessageForm(request.user)
+        initial = {}
+        if reply_msg:
+            initial['subject'] = 'RE: {}'.format(reply_msg.subject)
+        form = NewMessageForm(request.user, initial=initial)
 
         if request.GET.get('user'):
             selected_user = User.objects.get(username=request.GET['user'])
+
+    if not selected_user and reply_msg:
+        selected_user = reply_msg.author
 
     return {
         'selected_user': selected_user,
