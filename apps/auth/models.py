@@ -74,7 +74,8 @@ class CustomUserManager(UserManager):
         username = kwargs.pop('username')
         for username_try in self._unique_username_iter(username):
             try:
-                return self.create(username=username_try, **kwargs)
+                with transaction.atomic():
+                    return self.create(username=username_try, **kwargs)
             except IntegrityError:
                 continue
         raise AssertionError("Ran out of username tries")

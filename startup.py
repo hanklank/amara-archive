@@ -41,8 +41,6 @@ def setup_ca():
 def setup_monkeypatches():
     from localeurl import patch_reverse
     patch_reverse()
-    from utils.compat import monkeypatch
-    monkeypatch.monkeypatch_old_code()
 
 def uuid_hack():
     # Fix for older Kombo version from

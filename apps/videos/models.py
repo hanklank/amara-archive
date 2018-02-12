@@ -938,7 +938,8 @@ class Video(models.Model):
                                                         ignore_video=self)
         new_team_id = team.id if team else 0
         try:
-            self.videourl_set.update(team_id=new_team_id)
+            with transaction.atomic():
+                self.videourl_set.update(team_id=new_team_id)
         except IntegrityError:
             for vurl in self.get_video_urls():
                 try:
@@ -1616,12 +1617,14 @@ def update_followers(sender, instance, created, **kwargs):
     lang = instance.language
     if created and user and user.notify_by_email:
         try:
-            lang.followers.add(user)
+            with transaction.atomic():
+                lang.followers.add(user)
         except IntegrityError:
             # User already follows the language.
             pass
         try:
-            lang.video.followers.add(user)
+            with transaction.atomic():
+                lang.video.followers.add(user)
         except IntegrityError:
             # User already follows the video.
             pass
