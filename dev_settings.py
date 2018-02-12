@@ -119,10 +119,8 @@ if DEBUG:
             return 'debug_toolbar' in request.GET
 
         DEBUG_TOOLBAR_CONFIG = {
-            'INTERCEPT_REDIRECTS': False,
             'SHOW_TOOLBAR_CALLBACK': 'dev_settings.custom_show_toolbar',
             'EXTRA_SIGNALS': [],
-            'HIDE_DJANGO_SQL': False,
             'INSERT_BEFORE': '</body>',
         }
 
