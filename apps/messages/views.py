@@ -136,9 +136,8 @@ def inbox(request, message_pk=None):
                        template_object_name='message',
                        extra_context=extra_context)
     if qs:
-        request.user.set_last_hidden_message_id(qs[0].id)
-    try:
-        last_message = qs[:1].get()
+        last_message = qs[0]
+        request.user.set_last_hidden_message_id(last_message.id)
         max_age = 60*60*24*365
         expires = cookie_date(time.time()+max_age)
         response.set_cookie(Message.hide_cookie_name, last_message.pk, max_age, expires)
