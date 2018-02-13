@@ -6,7 +6,6 @@ logger = logging.getLogger('teams.tasks')
 from celery.schedules import crontab, timedelta
 from celery.task import task
 from django.conf import settings
-from django.contrib.sites.models import Site
 from django.db.models import F
 from django.utils.translation import ugettext_lazy as _
 import requests
@@ -105,7 +104,7 @@ def add_videos_notification_hourly(*args, **kwargs):
 def _notify_teams_of_new_videos(team_qs):
     from messages.tasks import team_sends_notification
     from teams.models import TeamVideo
-    domain = Site.objects.get_current().domain
+    domain = settings.HOSTNAME
 
     for team in team_qs:
         if not team_sends_notification(team, 'block_new_video_message'):
@@ -242,7 +241,7 @@ def add_team_videos(team_pk, user_pk, videos):
     else:
         messages.append(fmt(_(u'You are not authorized to perform such action\n')))
     messages.append(fmt(_(u"Number of videos added to team: %(num)i\n"), num=num_successful_videos))
-    domain = Site.objects.get_current().domain
+    domain = settings.HOSTNAME
     context = {
         'domain': domain,
         'user': user,
