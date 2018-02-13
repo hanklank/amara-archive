@@ -141,8 +141,6 @@ def inbox(request, message_pk=None):
         max_age = 60*60*24*365
         expires = cookie_date(time.time()+max_age)
         response.set_cookie(Message.hide_cookie_name, last_message.pk, max_age, expires)
-    except Message.DoesNotExist:
-        pass
 
     return response
 
