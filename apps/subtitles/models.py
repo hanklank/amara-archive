@@ -1444,8 +1444,8 @@ class SubtitleVersion(models.Model):
 
     version_number = models.PositiveIntegerField(default=1)
 
-    author = models.ForeignKey(User, default=User.get_amara_anonymous,
-                               related_name='newsubtitleversion_set')
+    author = models.ForeignKey(User, related_name='newsubtitleversion_set',
+                               default=settings.ANONYMOUS_USER_ID)
 
     title = models.CharField(max_length=2048, blank=True)
     description = models.TextField(blank=True)
@@ -1609,7 +1609,6 @@ class SubtitleVersion(models.Model):
             (self.id or '(unsaved)'), self.video.video_id,
             self.get_language_code_display(), self.version_number
         )
-
 
     def clean(self):
         if self.rollback_of_version_number != None:

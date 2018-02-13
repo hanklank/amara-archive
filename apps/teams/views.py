@@ -1945,7 +1945,7 @@ def download_draft(request, slug, task_pk, type="srt"):
     subtitle_version = task.get_subtitle_version()
 
     subtitles = babelsubs.to(subtitle_version.get_subtitles(), type)
-    response = HttpResponse(unicode(subtitles), mimetype="text/plain")
+    response = HttpResponse(unicode(subtitles), content_type="text/plain")
     original_filename = '%s.%s' % (subtitle_version.video.lang_filename(task.language), type)
 
     if not 'HTTP_USER_AGENT' in request.META or u'WebKit' in request.META['HTTP_USER_AGENT']:

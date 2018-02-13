@@ -68,7 +68,7 @@ def render_to_json(func):
             return result
 
         content = json.dumps(result, cls=DjangoJSONEncoder)
-        return HttpResponse(content, mimetype="application/json")
+        return HttpResponse(content, content_type="application/json")
     return update_wrapper(wrapper, func)
 
 def send_templated_email(to, subject, body_template, body_dict,

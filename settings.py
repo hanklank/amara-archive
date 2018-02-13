@@ -199,7 +199,6 @@ INSTALLED_APPS = (
     'django.contrib.webdesign',
     # third party apps
     'djcelery',
-    'south',
     'rest_framework',
     # third party apps forked on our repo
     'localeurl',
@@ -334,8 +333,7 @@ AUTHENTICATION_BACKENDS = (
 # Use cookie storage always since it works the best with our caching system
 MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
 
-SKIP_SOUTH_TESTS = True
-SOUTH_TESTS_MIGRATE = False
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 LOGIN_URL = '/auth/login/'
 LOGIN_REDIRECT_URL = '/'

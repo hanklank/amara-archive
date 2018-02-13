@@ -378,7 +378,8 @@ class Video(models.Model):
             (120,90),))
     edited = models.DateTimeField(null=True, editable=False)
     created = models.DateTimeField()
-    user = models.ForeignKey(User, null=True, blank=True)
+    user = models.ForeignKey(User, null=True, blank=True,
+                             default=settings.ANONYMOUS_USER_ID)
     followers = models.ManyToManyField(User, blank=True, related_name='followed_videos', editable=False)
     complete_date = models.DateTimeField(null=True, blank=True, editable=False)
     featured = models.DateTimeField(null=True, blank=True)
@@ -1550,7 +1551,7 @@ class SubtitleVersion(models.Model):
     language = models.ForeignKey(SubtitleLanguage)
     version_no = models.PositiveIntegerField(default=0)
     datetime_started = models.DateTimeField(editable=False)
-    user = models.ForeignKey(User, default=User.get_amara_anonymous)
+    user = models.ForeignKey(User, default=None)
     note = models.CharField(max_length=512, blank=True)
     time_change = models.FloatField(null=True, blank=True, editable=False)
     text_change = models.FloatField(null=True, blank=True, editable=False)

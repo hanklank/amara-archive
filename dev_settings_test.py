@@ -16,6 +16,7 @@
 # along with this program.  If not, see
 # http://www.gnu.org/licenses/agpl-3.0.html.
 
+import warnings
 from dev_settings import *
 
 INSTALLED_APPS += (
@@ -34,6 +35,16 @@ DATABASES = {
 }
 
 
+# disable migrations for testing
+class DisableMigrations(object):
+
+    def __contains__(self, item):
+        return True
+
+    def __getitem__(self, item):
+        return "notmigrations"
+MIGRATION_MODULES = DisableMigrations()
+
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
@@ -43,7 +54,7 @@ CACHE_PREFIX = "testcache"
 CACHE_TIMEOUT = 60
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-NOSE_PLUGINS = ['utils.test_utils.plugin.UnisubsTestPlugin']
+NOSE_PLUGINS = ['noseplugin.UnisubsTestPlugin']
 CELERY_ALWAYS_EAGER = True
 
 GOOGLE_CLIENT_ID = 'test-youtube-id'

@@ -601,7 +601,7 @@ def member_search(request, team, qs):
         for member in members_qs
     ]
 
-    return HttpResponse(json.dumps(data), mimetype='application/json')
+    return HttpResponse(json.dumps(data), content_type='application/json')
 
 @public_team_view
 @login_required

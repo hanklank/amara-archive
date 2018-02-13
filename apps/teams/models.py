@@ -3830,7 +3830,7 @@ class Partner(models.Model):
 
     # The `admins` field specifies users who can do just about anything within
     # the partner realm.
-    admins = models.ManyToManyField('auth.CustomUser',
+    admins = models.ManyToManyField('amara_auth.CustomUser',
             related_name='managed_partners', blank=True, null=True)
 
     def __unicode__(self):

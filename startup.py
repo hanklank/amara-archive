@@ -55,7 +55,11 @@ def setup_celery_loader():
 def run_startup_modules():
     """For all django apps, try to run the startup module.  """
 
+    import django
     from django.conf import settings
+
+    # TODO use django's AppConfig.ready() method instead of this startup code
+    django.setup()
 
     for app in settings.INSTALLED_APPS:
         module = __import__(app)

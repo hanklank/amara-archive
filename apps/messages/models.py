@@ -95,6 +95,10 @@ class MessageManager(models.Manager):
             messages_to_clean = messages_to_clean.filter(message_type=message_type)
         messages_to_clean.delete()
 
+def validate_message_type(value):
+    if value not in MESSAGE_TYPES:
+        raise ValidationError('%s is not a valid message type' % value)
+
 class Message(models.Model):
     user = models.ForeignKey(User)
     subject = models.CharField(max_length=100, blank=True)
@@ -116,9 +120,6 @@ class Message(models.Model):
     has_reply_for_user = models.BooleanField(default=False)
     hide_cookie_name = 'hide_new_messages'
 
-    def validate_message_type(value):
-        if value not in MESSAGE_TYPES:
-            raise ValidationError('%s is not a valid message type' % value)
     message_type = models.CharField(max_length=1,
                                     choices=MESSAGE_TYPE_CHOICES,
                                     validators=[validate_message_type])

@@ -11,7 +11,7 @@ from django.utils.translation import ugettext_lazy as _
 import requests
 from utils import send_templated_email
 from utils.panslugify import pan_slugify
-from utils.translation import get_language_choices
+from utils.translation import SUPPORTED_LANGUAGE_CODES
 from widget.video_cache import (
     invalidate_cache as invalidate_video_cache,
     invalidate_video_moderation,
@@ -20,8 +20,6 @@ from widget.video_cache import (
 
 from utils.text import fmt
 from videos.tasks import video_changed_tasks
-
-LANGUAGE_CHOICES = [l[0] for l in get_language_choices(flat=True)]
 
 @task()
 def invalidate_video_caches(team_id):
@@ -201,7 +199,7 @@ def add_team_videos(team_pk, user_pk, videos):
                     video.description = video_item['description']
                 if video_item.get('language'):
                     language = video_item['language'].lower()
-                    if language in LANGUAGE_CHOICES:
+                    if language in SUPPORTED_LANGUAGE_CODES:
                         video.primary_audio_language_code = language
                     else:
                         messages.append(fmt(_(u"Badly formated language for %(url)s: %(language)s, ignoring it."), url=video_url, language=video_item['language']))
