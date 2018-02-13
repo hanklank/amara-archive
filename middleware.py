@@ -5,9 +5,7 @@ import random
 import sys
 import time
 
-import debug_toolbar
 import django.db.backends.mysql.base
-from debug_toolbar.middleware import DebugToolbarMiddleware
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_ipv4_address
