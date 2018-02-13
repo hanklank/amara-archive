@@ -179,14 +179,6 @@ urlpatterns += patterns('',
 
 
 if settings.DEBUG:
-    try:
-        import debug_toolbar
-    except ImportError:
-        pass
-    else:
-        urlpatterns += patterns('',
-            url(r'^__debug__/', include(debug_toolbar.urls)),
-        )
     urlpatterns += patterns('',
         (r'^site_media/(?P<path>.*)$', 'django.views.static.serve',
          {'document_root': settings.STATIC_ROOT, 'show_indexes': True}),
