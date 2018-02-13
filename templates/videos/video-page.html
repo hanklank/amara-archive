@@ -16,7 +16,7 @@
 {{block.super}}
 <meta property="og:title" content="{{ video.page_title }}" />
 <meta property="og:type" content="video"/>
-<meta property="og:url" content="http://{{ current_site.domain }}{{ video.get_absolute_url }}"/>
+<meta property="og:url" content="{{ BASE_URL }}{{ video.get_absolute_url }}"/>
 {% if video.thumbnail %}
 <meta property="og:image" content="{{ video.get_thumbnail }}" />
 {% else %}

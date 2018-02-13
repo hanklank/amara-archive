@@ -25,7 +25,7 @@ import logging
 from datetime import datetime, date, timedelta
 
 
-from django.contrib.sites.models import Site
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models, IntegrityError
@@ -2019,7 +2019,7 @@ class SubtitleVersion(models.Model):
 
     def get_absolute_download_url(self, format="vtt", filename="subtitles"):
         return "{}://{}{}".format(settings.DEFAULT_PROTOCOL,
-                                  Site.objects.get_current().domain,
+                                  settings.HOSTNAME,
                                   reverse("subtitles:download", kwargs={"video_id": self.video.video_id,
                                                                         "language_code": self.language_code,
                                                                         "version_number": self.version_number,

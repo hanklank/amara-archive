@@ -26,21 +26,15 @@ ADMINS = (
 )
 
 if INSTALLATION == DEV:
-    SITE_ID = 16
-    SITE_NAME = 'unisubsdev'
     REDIS_DB = "3"
     EMAIL_SUBJECT_PREFIX = '[usubs-dev]'
     CELERY_TASK_RESULT_EXPIRES = timedelta(days=7)
 elif INSTALLATION == STAGING:
-    SITE_ID = 17
-    SITE_NAME = 'unisubsstaging'
     REDIS_DB = "2"
     SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
     EMAIL_SUBJECT_PREFIX = '[usubs-staging]'
     CELERY_TASK_RESULT_EXPIRES = timedelta(days=7)
 elif INSTALLATION == PRODUCTION:
-    SITE_ID = 18
-    SITE_NAME = 'unisubs'
     REDIS_DB = "1"
     SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
     EMAIL_SUBJECT_PREFIX = '[usubs-production]'
@@ -48,15 +42,10 @@ elif INSTALLATION == PRODUCTION:
     # only send actual email on the production server
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 elif INSTALLATION == BETA:
-    SITE_ID = 20
-    SITE_NAME = 'unisubs'
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 elif INSTALLATION == DEMO:
     DEBUG = True
     REDIS_DB = "4"
-elif INSTALLATION == LOCAL:
-    SITE_ID = 14
-    SITE_NAME = 'unisubsstaging'
 
 if INSTALLATION == STAGING or INSTALLATION == PRODUCTION or INSTALLATION == LOCAL:
     AWS_STORAGE_BUCKET_NAME = DEFAULT_BUCKET
