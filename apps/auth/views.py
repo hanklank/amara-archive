@@ -347,5 +347,5 @@ def set_hidden_message_id(request):
         message_id = request.POST['message_id']
     except KeyError:
         return HttpResponseBadRequest()
-    request.user.set_last_hidden_message_id(message_id)
+    request.user.set_last_hidden_message_id(request, message_id)
     return HttpResponse()

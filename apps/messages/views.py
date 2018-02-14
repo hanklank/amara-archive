@@ -88,7 +88,7 @@ def message(request, message_id):
                        template_object_name='message',
                        extra_context=extra_context)
     if messages:
-        request.user.set_last_hidden_message_id(messages[0].id)
+        request.user.set_last_hidden_message_id(request, messages[0].id)
     return response
 
 @login_required
@@ -129,7 +129,7 @@ def inbox(request, message_pk=None):
                        template_object_name='message',
                        extra_context=extra_context)
     if qs:
-        request.user.set_last_hidden_message_id(qs[0].id)
+        request.user.set_last_hidden_message_id(request, qs[0].id)
 
     return response
 

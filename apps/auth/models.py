@@ -293,10 +293,12 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
         if '$' in self.username:
             raise ValidationError("usernames can't contain the '$' character")
 
-    def set_last_hidden_message_id(self, message_id):
+    def set_last_hidden_message_id(self, request, message_id):
         if message_id != self.last_hidden_message_id:
             self.last_hidden_message_id = message_id
             self.save()
+            # cycle the session key to bust the varnish cache
+            request.session.cycle_key()
 
     def new_messages_count(self):
         """
