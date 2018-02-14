@@ -179,7 +179,7 @@ class SearchField(forms.CharField):
     widget = widgets.SearchBar
 
     def __init__(self, **kwargs):
-        label = kwargs.pop('label')
+        label = kwargs.pop('label', None)
         kwargs['label'] = ''
         super(SearchField, self).__init__(**kwargs)
         if label:
