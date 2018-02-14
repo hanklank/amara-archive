@@ -21,8 +21,7 @@ from settings import *
 import logging
 import os
 
-SITE_ID = 1
-SITE_NAME = 'unisubs-dev'
+HOSTNAME = 'unisubs.example.com:8000'
 
 INSTALLED_APPS += (
     'sslserver',
