@@ -16,8 +16,15 @@
                   $('.note .hide-messages').click(function(){
                       var $this = $(this);
                       $this.parents('.announce-banner').hide();
-                      $.post("/auth/set-hidden-message-id/", {
-                        message_id: {{ last_message_id }}
+                      $.ajax({
+                        method: "POST",
+                        url: "/auth/set-hidden-message-id/",
+                        headers: {
+                          "X-CSRFToken": Cookies.get('csrftoken')
+                        },
+                        data: {
+                          message_id: {{ last_message_id }}
+                        }
                       })
                       return false;
                   });
