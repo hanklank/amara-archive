@@ -12,9 +12,7 @@
     <meta name="description" content="The easiest way to caption and translate any video, with crowdsourcing, volunteers, and professional services." />
 
     <meta charset="utf-8" />
-    {% if not current_site.name == 'amara-production' %}
-        <meta name="robots" content="noindex, nofollow"/>
-    {% endif %}
+    {% if HOSTNAME != 'amara.org' %}<meta name="robots" content="noindex, nofollow"/>{% endif %}
     {% block opengraph-head %}
         <meta property="fb:admins" content="539835590"/>
     {% endblock  %}

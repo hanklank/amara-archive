@@ -27,7 +27,6 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 from django.conf import settings
-from django.contrib.sites.models import Site
 
 DEFAULT_PROTOCOL = getattr(settings, "DEFAULT_PROTOCOL", 'https')
 
@@ -104,8 +103,8 @@ def send_templated_email(to, subject, body_template, body_dict,
             to.append(recipient)
     if not from_email: from_email = settings.DEFAULT_FROM_EMAIL
 
-    body_dict['domain'] = Site.objects.get_current().domain
-    body_dict['url_base'] = "%s://%s" % (DEFAULT_PROTOCOL,  Site.objects.get_current().domain)
+    body_dict['domain'] = settings.HOSTNAME
+    body_dict['url_base'] = "%s://%s" % (DEFAULT_PROTOCOL,  settings.HOSTNAME)
     message = render_to_string(body_template, body_dict)
     bcc = settings.EMAIL_BCC_LIST
     email = EmailMessage(subject, message, from_email, to, bcc=bcc)

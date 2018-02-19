@@ -178,8 +178,7 @@ class MultipleLanguageField(LanguageFieldMixin, forms.MultipleChoiceField):
 class SearchField(forms.CharField):
     widget = widgets.SearchBar
 
-    def __init__(self, **kwargs):
-        label = kwargs.pop('label', None)
+    def __init__(self, label=_('Search for videos'), **kwargs):
         kwargs['label'] = ''
         super(SearchField, self).__init__(**kwargs)
         if label:

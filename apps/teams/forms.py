@@ -23,7 +23,6 @@ import re
 
 from django import forms
 from django.conf import settings
-from django.contrib.sites.models import Site
 from django.core.exceptions import PermissionDenied
 from django.core.files.base import ContentFile
 from django.core.urlresolvers import reverse
@@ -1838,7 +1837,8 @@ class ApplicationForm(forms.Form):
 
     def notify(self):
         send_to = [tm.user for tm in self.application.team.members.admins()]
-        url_base = '{}://{}'.format(settings.DEFAULT_PROTOCOL, Site.objects.get_current().domain)
+        url_base = '{}://{}'.format(settings.DEFAULT_PROTOCOL,
+                                    settings.HOSTNAME)
         context = {
             'application': self.application,
             'applicant': self.application.user,

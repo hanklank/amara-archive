@@ -19,7 +19,7 @@
 goog.provide('unisubs.Config');
 
 unisubs.Config.siteConfig = {
-    'siteURL': 'http{% if request.is_secure %}s{% endif %}://{{current_site.domain}}',
+    'siteURL': '{{ BASE_URL }}',
     'staticURL': '{{STATIC_URL}}'
 };
 
