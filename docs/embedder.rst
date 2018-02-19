@@ -11,7 +11,7 @@ There are two main files:
 Usage
 -----
 
-The host page must load ``embedder-iframe.js`` and add a ``div`` element with the ``amara-embed`` class for each widget. Parameters such as the video URL, width and height are given as data attributes.
+The host page must load ``embedder-iframe.js`` and add a ``div`` element with the ``amara-embed`` class for each widget. Parameters such as the video URL and width are given as data attributes.
 
 ``embedder-iframe.js`` is responsible for adding the widgets inside the ``div`` element and resizing them as needed. It also observes and reacts to new elements added through AJAX.
 
