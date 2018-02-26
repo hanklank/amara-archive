@@ -10,7 +10,6 @@ RUN apt-get update
 RUN apt-get -y --force-yes install wget python-dev python-setuptools make gcc libmysqlclient-dev libmemcached-dev supervisor libxml2-dev libxslt-dev zlib1g-dev swig libffi-dev libssl-dev libyaml-dev git-core python-m2crypto subversion openjdk-6-jre libjpeg-dev libfreetype6-dev gettext build-essential gcc dialog mysql-client node-uglify ruby-sass libav-tools libz-dev
 ENV APP_DIR /opt/apps/amara
 ENV CLOSURE_PATH /opt/google-closure
-ENV PAFY_BACKEND internal
 RUN git clone https://github.com/google/closure-library $CLOSURE_PATH
 RUN (cd $CLOSURE_PATH && git checkout adbcc8ef6530ea16bac9f877901fe6b32995c5ff)
 RUN easy_install pip
