@@ -303,6 +303,7 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
             logger.warn(
                 "Error reading the hide_new_messages cookie ({})".format(
                     raw_cookie_value), exc_info=True)
+            return
         if cookie_value and cookie_value != self.last_hidden_message_id:
             self.set_last_hidden_message_id(cookie_value)
 
