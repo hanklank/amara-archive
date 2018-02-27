@@ -890,8 +890,8 @@ class SentMessageDateManager(models.Manager):
 
     def check_too_many_messages(self, user):
         now = dates.now()
-        self.get_query_set().filter(created__lt=now - timedelta(minutes=settings.MESSAGES_SENT_WINDOW_MINUTES)).delete()
-        return self.get_query_set().filter(user=user,
+        self.get_queryset().filter(created__lt=now - timedelta(minutes=settings.MESSAGES_SENT_WINDOW_MINUTES)).delete()
+        return self.get_queryset().filter(user=user,
                                     created__gt=now - timedelta(minutes=settings.MESSAGES_SENT_WINDOW_MINUTES)).count() > settings.MESSAGES_SENT_LIMIT
 
 class SentMessageDate(models.Model):

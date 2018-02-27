@@ -89,7 +89,7 @@ class TeamAdmin(admin.ModelAdmin):
     def delete_selected(self, request, queryset):
         queryset.update(deleted=True)
 
-    def queryset(self, request):
+    def get_queryset(self, request):
         """
         Returns a QuerySet of all model instances that can be edited by the
         admin site. This is used by changelist_view.
@@ -184,11 +184,11 @@ class WorkflowAdmin(admin.ModelAdmin):
     ordering = ('-created',)
 
 class TaskChangeList(ChangeList):
-    def get_query_set(self, request):
+    def get_queryset(self, request):
         # Hijack the query attribute so we can handle it ourselves
         query = self.query
         self.query = None
-        qs = super(TaskChangeList, self).get_query_set(request)
+        qs = super(TaskChangeList, self).get_queryset(request)
         if query:
             qs = qs.filter(team_video__video__in=Video.objects.search(query))
         self.query = query

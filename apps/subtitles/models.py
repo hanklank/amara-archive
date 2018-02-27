@@ -199,7 +199,7 @@ class SubtitleLanguageManager(models.Manager):
     # These methods are not fun, and they are not pretty, but they ARE fast.
     #
     # Prepare yourself.
-    def get_query_set(self):
+    def get_queryset(self):
         return SubtitleLanguagageQuerySet(self.model)
 
     def having_versions(self):
@@ -210,7 +210,7 @@ class SubtitleLanguageManager(models.Manager):
         mess we were in before)).
 
         """
-        return self.get_query_set().extra(where=[
+        return self.get_queryset().extra(where=[
             """
             EXISTS (
                 SELECT 1
@@ -229,7 +229,7 @@ class SubtitleLanguageManager(models.Manager):
         mess we were in before)).
 
         """
-        return self.get_query_set().extra(where=[
+        return self.get_queryset().extra(where=[
             """
             NOT EXISTS (
                 SELECT 1
@@ -243,7 +243,7 @@ class SubtitleLanguageManager(models.Manager):
 
     def having_nonempty_versions(self):
         """Return a QS of SLs that have at least 1 version with 1 or more subtitles."""
-        return self.get_query_set().extra(where=[
+        return self.get_queryset().extra(where=[
             """
             EXISTS
             (SELECT 1
@@ -256,7 +256,7 @@ class SubtitleLanguageManager(models.Manager):
 
     def not_having_nonempty_versions(self):
         """Return a QS of SLs that have zero versions with 1 or more subtitles."""
-        return self.get_query_set().extra(where=[
+        return self.get_queryset().extra(where=[
             """
             NOT EXISTS
             (SELECT 1
@@ -270,7 +270,7 @@ class SubtitleLanguageManager(models.Manager):
 
     def having_nonempty_tip(self):
         """Return a QS of SLs that have a tip version with 1 or more subtitles."""
-        return self.get_query_set().extra(where=[
+        return self.get_queryset().extra(where=[
             """
             EXISTS (
                 SELECT 1
@@ -289,7 +289,7 @@ class SubtitleLanguageManager(models.Manager):
 
     def not_having_nonempty_tip(self):
         """Return a QS of SLs that do not have a tip version with 1 or more subtitles."""
-        return self.get_query_set().extra(where=[
+        return self.get_queryset().extra(where=[
             """
             NOT EXISTS (
                 SELECT 1
@@ -315,7 +315,7 @@ class SubtitleLanguageManager(models.Manager):
         mess we were in before)).
 
         """
-        return self.get_query_set().extra(where=[
+        return self.get_queryset().extra(where=[
             """
             EXISTS (
                 SELECT 1
@@ -336,7 +336,7 @@ class SubtitleLanguageManager(models.Manager):
         mess we were in before)).
 
         """
-        return self.get_query_set().extra(where=[
+        return self.get_queryset().extra(where=[
             """
             NOT EXISTS (
                 SELECT 1
@@ -350,7 +350,7 @@ class SubtitleLanguageManager(models.Manager):
         ])
 
     def video_count(self):
-        qs = self.get_query_set().extra(select={
+        qs = self.get_queryset().extra(select={
             'video_count': 'count(distinct(video_id))',
         })
         return qs.values_list('video_count', flat=True)[0]
@@ -1253,22 +1253,22 @@ class SubtitleVersionManager(models.Manager):
     # Normally we'd disable all these proxy methods so we could find all the
     # places where they're used, and it would be safe and break loudly instead
     # of silently doing unsafe things.  Unfortunately Django's Model class uses
-    # these proxy methods instead of going through get_query_set(), so we're out
+    # these proxy methods instead of going through get_queryset(), so we're out
     # of luck.
 
     # These three methods are your main entry point into SubtitleVersion querysets.
     def full(self):
         """Return a queryset of ALL versions (including deleted ones)."""
-        return self.get_query_set()
+        return self.get_queryset()
 
     def extant(self):
         """Return a queryset of all non-deleted versions."""
-        return (self.get_query_set()
+        return (self.get_queryset()
                     .exclude(visibility_override='deleted'))
 
     def public(self):
         """Return a queryset of all publicly-visible versions."""
-        return (self.get_query_set()
+        return (self.get_queryset()
                     .exclude(visibility='private', visibility_override='')
                     .exclude(visibility_override='private')
                     .exclude(visibility_override='deleted'))
@@ -1285,7 +1285,7 @@ subtitles_subtitleversion.version_number = (
     WHERE sv2.subtitle_language_id =
            subtitles_subtitleversion.subtitle_language_id AND
            sv2.visibility_override != 'deleted')"""
-        return self.get_query_set().extra(where=[tip_where])
+        return self.get_queryset().extra(where=[tip_where])
 
     def public_tips(self):
         public_tip_where = """\
@@ -1296,10 +1296,10 @@ subtitles_subtitleversion.version_number = (
            sv2.visibility_override = 'public') AND
            sv2.subtitle_language_id =
            subtitles_subtitleversion.subtitle_language_id)"""
-        return self.get_query_set().extra(where=[public_tip_where])
+        return self.get_queryset().extra(where=[public_tip_where])
 
     def subtitle_count(self):
-        qs = self.get_query_set().extra(select={
+        qs = self.get_queryset().extra(select={
             'subs_total': 'SUM(subtitles_subtitleversion.subtitle_count)'
         }, where=[
             'subtitles_subtitleversion.version_number = ('

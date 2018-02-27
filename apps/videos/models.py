@@ -137,7 +137,7 @@ class AlreadyEditingException(Exception):
 
 # Video
 class VideoManager(models.Manager):
-    def get_query_set(self):
+    def get_queryset(self):
         return VideoQueryset(self.model, using=self._db)
 
     def featured(self):
@@ -2191,7 +2191,7 @@ class Action(models.Model):
             instance.save()
 
 class VideoUrlManager(models.Manager):
-    def get_query_set(self):
+    def get_queryset(self):
         return VideoUrlQueryset(self.model, using=self._db)
 
 class VideoUrlQueryset(query.QuerySet):
