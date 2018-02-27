@@ -293,10 +293,10 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
             raise ValidationError("usernames can't contain the '$' character")
 
     def check_last_hidden_message_id(self, request):
-        if 'hide_new_messages' not in request.COOKIES:
+        raw_cookie_value = request.COOKIES.get('hide_new_messages')
+        if not raw_cookie_value:
             return
         try:
-            raw_cookie_value = request.COOKIES.get('hide_new_messages')
             cookie_value = long(raw_cookie_value)
         except (ValueError, TypeError):
             logger.warn(
