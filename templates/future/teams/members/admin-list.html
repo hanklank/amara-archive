@@ -22,7 +22,7 @@
                     <h3>({{member.user.username}})</h3>
                   </div>
                   <div class="pull-right">
-                    <a href="{% url "messages:new" %}?user={{ member.user }}">Send message</a>
+                    <a href="{% url "messages:new" %}?user={{ member.user.username }}">Send message</a>
                   </div>
                 </li>
                 {% endfor %}
