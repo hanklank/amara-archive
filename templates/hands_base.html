@@ -25,10 +25,7 @@
   <meta name="application-name" content="Amara - Buy captions, video translations, transcriptions, and crowd subtitling" />
   <meta name="msapplication-tooltip" content="A platform for collaborative subtitles!" />
   <meta name="title" content="Crowd Subtitles | Amara - Buy captions, video translations, transcriptions, and crowd subtitling" />
-
-  {% if not current_site.name == 'amara-production' %}
-    <meta name="robots" content="noindex, nofollow"/>
-  {% endif %}
+  {% if HOSTNAME != 'amara.org' %}<meta name="robots" content="noindex, nofollow"/>{% endif %}
   {% block opengraph-head %}
     <meta property="fb:admins" content="539835590"/>
   {% endblock  %}

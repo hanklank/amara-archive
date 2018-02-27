@@ -27,6 +27,7 @@ import optionalapps
 
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 DEFAULT_PROTOCOL  = 'http'
+HOSTNAME = 'localhost'
 
 LOCALE_PATHS = [
     os.path.join(PROJECT_ROOT, 'locale')
@@ -119,8 +120,6 @@ TIME_ZONE = 'America/Chicago'
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
 
-SITE_ID = 1
-
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
 USE_I18N = True
@@ -197,7 +196,6 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sitemaps',
-    'django.contrib.sites',
     'django.contrib.webdesign',
     # third party apps
     'djcelery',

@@ -29,7 +29,6 @@ import uuid
 
 from django.conf import settings
 from django.contrib.auth.models import UserManager, User as BaseUser
-from django.contrib.sites.models import Site
 from django.core.cache import cache
 from django.core.exceptions import MultipleObjectsReturned, ValidationError
 from django.core.urlresolvers import reverse
@@ -521,7 +520,7 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
                                   urlquote(self.username))
         if absolute_url:
             url = "{}://{}{}".format(settings.DEFAULT_PROTOCOL,
-                                     Site.objects.get_current().domain, url)
+                                     settings.HOSTNAME, url)
         return url
 
     @property
@@ -781,19 +780,18 @@ class EmailConfirmationManager(models.Manager):
 
         salt = hashlib.sha1(str(random.random())+settings.SECRET_KEY).hexdigest()[:5]
         confirmation_key = hashlib.sha1(salt + user.email.encode('utf-8')).hexdigest()
-        try:
-            current_site = Site.objects.get_current()
-        except Site.DoesNotExist:
-            return
         path = reverse("auth:confirm_email", args=[confirmation_key])
-        activate_url = u"{}://{}{}".format(settings.DEFAULT_PROTOCOL, unicode(current_site.domain), path)
+        activate_url = u"{}://{}{}".format(settings.DEFAULT_PROTOCOL,
+                                           settings.HOSTNAME, path)
         context = {
             "user": user,
             "activate_url": activate_url,
-            "current_site": current_site,
             "confirmation_key": confirmation_key,
+            'HOSTNAME': settings.HOSTNAME,
+            'BASE_URL': "%s://%s"  % (settings.DEFAULT_PROTOCOL,
+                                      settings.HOSTNAME)
         }
-        subject = u'Please confirm your email address for %s' % current_site.name
+        subject = u'Please confirm your email address for Amara'
         send_templated_email_async(user, subject, "messages/email/email-confirmation.html", context)
         return self.create(
             user=user,
