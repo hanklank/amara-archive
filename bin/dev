@@ -131,7 +131,7 @@ class Test(Command):
     def run(self):
         ensure_node_modules()
         run_manage(['test', '--settings=dev_settings_test',
-                    '--where=/opt/apps/amara'] + self.args)
+                    '/opt/apps/amara'] + self.args)
 
 class JSTest(Command):
     """Run Javascript unittests."""
