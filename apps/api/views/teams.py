@@ -41,16 +41,14 @@ Get a list of teams
         team?  Possible values:
 
         - ``private`` -- Only team members can view the team
-        - ``unlisted`` -- Team not listed in the directory, but publicly
-            accessible for users with a link
+        - ``unlisted`` -- Team not listed in the directory, but publicly accessible for users with a link
         - ``public`` -- Anyone can view the team (default)
 
     :>json string video_visibility: Should non-team members be able to view the
         team's videos?  Possible values:
 
         - ``private`` -- Only team members can view the team's videos
-        - ``unlisted`` -- The team's videos not searchable, or listed in the
-            directory, but publicly accessible for users with a link
+        - ``unlisted`` -- The team's videos not searchable, or listed in the directory, but publicly accessible for users with a link
         - ``public`` -- Anyone can view the team's videos (default)
 
     :>json boolean is_visible: Legacy visibility field.  This will be True if
@@ -96,16 +94,14 @@ Updating team settings
         team?  Possible values:
 
         - ``private`` -- Only team members can view the team
-        - ``unlisted`` -- Team not listed in the directory, but publicly
-            accessible for users with a link
+        - ``unlisted`` -- Team not listed in the directory, but publicly accessible for users with a link
         - ``public`` -- Anyone can view the team (default)
 
     :<json string video_visibility: Should non-team members be able to view the
         team's videos?  Possible values:
 
         - ``private`` -- Only team members can view the team's videos
-        - ``unlisted`` -- The team's videos not searchable, or listed in the
-            directory, but publicly accessible for users with a link
+        - ``unlisted`` -- The team's videos not searchable, or listed in the directory, but publicly accessible for users with a link
         - ``public`` -- Anyone can view the team's videos (default)
 
     :<json boolean is_visible: Legacy visibility field.  If set to True, this
@@ -147,16 +143,14 @@ Amara partners can create teams via the API.
         team?  Possible values:
 
         - ``private`` -- Only team members can view the team
-        - ``unlisted`` -- Team not listed in the directory, but publicly
-            accessible for users with a link
+        - ``unlisted`` -- Team not listed in the directory, but publicly accessible for users with a link
         - ``public`` -- Anyone can view the team (default)
 
     :<json string video_visibility: Should non-team members be able to view the
         team's videos?  Possible values:
 
         - ``private`` -- Only team members can view the team's videos
-        - ``unlisted`` -- The team's videos not searchable, or listed in the
-            directory, but publicly accessible for users with a link
+        - ``unlisted`` -- The team's videos not searchable, or listed in the directory, but publicly accessible for users with a link
         - ``public`` -- Anyone can view the team's videos (default)
 
     :<json boolean is_visible: Legacy visibility field.  If set to True, this

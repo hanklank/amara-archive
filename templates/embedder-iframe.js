@@ -15,20 +15,24 @@ var THIS_JS_FILE = scriptFiles[scriptFiles.length-1].src;
 	var iframeDomain = '';
 	var absoluteURL = new RegExp('^(?:[a-z]+:)?//', 'i');
 	var resize = function(index, width, height, transcriptHeight) {
-	    if (iframes[index].style.visibility == "visible")
-                iframes[index].parentNode.style.height = "";
-	    if (iframes[index].parentNode && iframes[index].parentNode.parentNode) {
-                var containerSize = getSize(iframes[index].parentNode.parentNode);
-		var targetWidth = Math.min(containerSize[0], parseInt(iframes[index].parentNode.dataset.width));
+            var iframe = iframes[index];
+
+	    if (iframe.style.visibility == "visible")
+                iframe.parentNode.style.height = "";
+	    if (iframe.parentNode && iframe.parentNode.parentNode) {
+                var containerSize = getSize(iframe.parentNode.parentNode);
+		var targetWidth = containerSize[0];
+                var widthData = parseInt(iframe.parentNode.dataset.width);
+                if(widthData) {
+                    targetWidth = Math.min(targetWidth, widthData);
+                }
 		var targetHeight = parseInt((height - toolbarHeight - transcriptHeight) * targetWidth / width) + toolbarHeight + transcriptHeight;
-		if ((width != targetWidth) || (targetHeight != containerSize[1])) {
-		    width = targetWidth;
-		    height = targetHeight;
-		    iframes[index].width = 0;
-		    iframes[index].width = width;
-		    iframes[index].height = height;
-                    iframes[index].contentWindow.postMessage({resize: true}, iframeDomain);
-		}
+                width = targetWidth;
+                height = targetHeight;
+                iframe.width = 0;
+                iframe.width = width;
+                iframe.height = height;
+                iframe.contentWindow.postMessage({resize: true}, iframeDomain);
 	    }
 	};
         var getSize = function(elt) {
@@ -81,10 +85,10 @@ var THIS_JS_FILE = scriptFiles[scriptFiles.length-1].src;
                     noanalytics = true;
                 currentDiv.style.backgroundColor = "#1b1c1d";
                 currentDiv.style.color = "white";
-                if (currentDiv.dataset.height)
-                    loadingDiv.style.paddingTop = ((36 + parseInt(currentDiv.dataset.height)) / 2 - 33) + "px";
-                else
-                    loadingDiv.style.paddingTop = "200px";
+                if(currentDiv.dataset.width) {
+                    currentDiv.style.width = currentDiv.dataset.width;
+                }
+                loadingDiv.style.paddingTop = "200px";
 		loadingDiv.style.paddingLeft = loadingDiv.style.paddingRight = "50px";
                 loadingDiv.style.textAlign = "center";
                 loadingImg = document.createElement("IMG");

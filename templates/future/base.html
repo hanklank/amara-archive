@@ -23,7 +23,7 @@
     <meta name="twitter:description" content="{% trans "Make video accessible to the world with Amara!" %}">
     <meta name="twitter:image" content="{% asset "img/og-image.jpg" %}">
     <meta name="twitter:image:alt" content="{% trans "Colorful Amara logo and the following text: Working to Build a More Open, Collaborative World" %}">
-
+    {% if HOSTNAME != 'amara.org' %}<meta name="robots" content="noindex, nofollow"/>{% endif %}
     <link rel="apple-touch-icon" sizes="180x180" href="{% asset "img/apple-touch-icon.png" %}">
     <link rel="icon" type="image/png" sizes="16x16" href="{% asset "img/favicon-16x16.png" %}">
     <link rel="icon" type="image/png" sizes="32x32" href="{% asset "img/favicon-32x32.png" %}">

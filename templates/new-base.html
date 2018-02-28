@@ -17,10 +17,7 @@
   <meta name="application-name" content="Amara - Buy captions, video translations, transcriptions, and crowd subtitling" />
   <meta name="msapplication-tooltip" content="A platform for collaborative subtitles!" />
   <meta name="title" content="Crowd Subtitles | Amara - Buy captions, video translations, transcriptions, and crowd subtitling" />
-
-  {% if not current_site.name == 'amara-production' %}
-    <meta name="robots" content="noindex, nofollow"/>
-  {% endif %}
+  {% if HOSTNAME != 'amara.org' %}<meta name="robots" content="noindex, nofollow"/>{% endif %}
   {% block opengraph-head %}
     <meta property="fb:admins" content="539835590"/>
   {% endblock  %}
@@ -79,7 +76,7 @@
     <div class="terms">
       <a href="//amara.org"><img src="{{ STATIC_URL }}images/amara-logotype.png" alt="Amara's green circle logotype" /></a>
       <ul>
-        <li><a href="//about.amara.org/tos/">{% trans 'Terms' %}</a></li>
+        <li><a href="//blog.amara.org/tos/">{% trans 'Terms' %}</a></li>
         <li><a href="//pculture.org/pcf/websites-privacy/">{% trans 'Privacy' %}</a></li>
         <li><a href="/security">{% trans 'Security' %}</a></li>
       </ul>
@@ -88,7 +85,7 @@
     <div class="nav group">
       <ul>
         <li><strong>Amara</strong></li>
-        <li><a href="http://about.amara.org/">{% trans 'Blog' %}</a></li>
+        <li><a href="http://blog.amara.org/">{% trans 'Blog' %}</a></li>
         <li><a href="http://support.amara.org/solution/categories/13504">{% trans 'Help' %}</a></li>
         <li><a href="http://support.amara.org/support/solutions/articles/35517--i-have-a-non-technical-question-about">{% trans 'Contact' %}</a></li>
       </ul>

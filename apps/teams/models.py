@@ -24,7 +24,6 @@ import logging
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.core.files import File
@@ -634,7 +633,7 @@ class Team(models.Model):
     def get_site_url(self):
         """Return the full, absolute URL for this team, including http:// and the domain."""
         return '%s://%s%s' % (DEFAULT_PROTOCOL,
-                              Site.objects.get_current().domain,
+                              settings.HOSTNAME,
                               self.get_absolute_url())
 
     def get_project_video_counts(self):
@@ -1105,7 +1104,7 @@ class Project(models.Model):
 
     def get_site_url(self):
         """Return the full, absolute URL for this project, including http:// and the domain."""
-        return '%s://%s%s' % (DEFAULT_PROTOCOL, Site.objects.get_current().domain, self.get_absolute_url())
+        return '%s://%s%s' % (DEFAULT_PROTOCOL, settings.HOSTNAME, self.get_absolute_url())
 
     def get_absolute_url(self):
         if self.team.is_old_style():
@@ -1364,6 +1363,10 @@ class TeamVideo(models.Model):
         if not hasattr(self, '_editor_task'):
             self._editor_task = self._get_task_for_editor(language_code)
         return self._editor_task
+
+    def clear_editor_task(self):
+        if hasattr(self, '_editor_task'):
+            delattr(self, '_editor_task')
 
     def _get_task_for_editor(self, language_code):
         task_set = self.task_set.incomplete().filter(language=language_code)
