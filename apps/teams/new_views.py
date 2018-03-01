@@ -249,20 +249,22 @@ def manage_members_form(request, team, form_name, members):
     else:
         raise Http404()
 
+    is_owner = team.is_owner(request.user)
     # we don't count the current user since they cannot select their own entry
     all_selected = len(selection) >= MEMBERS_PER_PAGE - 1
 
     if request.method == 'POST':
         try:
             form = FormClass(request.user, members, selection, all_selected,
-                             data=request.POST, files=request.FILES)
+                             data=request.POST, files=request.FILES, is_owner=is_owner)
         except Exception as e:
             logger.error(e, exc_info=True)
         if form.is_valid():
             return render_management_form_submit(request, form)
     else:
         try:
-            form = FormClass(request.user, members, selection, all_selected)
+            form = FormClass(request.user, members, selection, all_selected,
+                             is_owner=is_owner)
         except Exception as e:
             logger.error(e, exc_info=True)
 

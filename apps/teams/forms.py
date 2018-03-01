@@ -1633,10 +1633,15 @@ class ChangeMemberRoleForm(ManagementForm):
            ], initial='', label=_('Member Role'))
 
     def __init__(self, user, queryset, selection, all_selected,
-                 data=None, files=None):
+                 data=None, files=None, is_owner=False):
         self.user = user
+        self.is_owner = is_owner
         super(ChangeMemberRoleForm, self).__init__(
             queryset, selection, all_selected, data=data, files=files)
+
+    def setup_fields(self):
+        if self.is_owner:
+            self.fields['role'].choices += [(TeamMember.ROLE_OWNER, _('Owner'))]
 
     def would_remove_last_owner(self, member, role):
         if role == TeamMember.ROLE_OWNER:
@@ -1650,16 +1655,23 @@ class ChangeMemberRoleForm(ManagementForm):
     def perform_submit(self, members):
         self.error_count = 0
         self.only_owner_count = 0
+        self.invalid_permission_count = 0
         self.changed_count = 0
 
-        if self.cleaned_data['role'] != '':
+        role = self.cleaned_data['role']
+
+        if role != '':
             for member in members:
                 # check if user is last owner on team
-                if self.would_remove_last_owner(member, self.cleaned_data['role']):
+                if self.would_remove_last_owner(member, role):
                     self.only_owner_count += 1
+                elif role == TeamMember.ROLE_OWNER and not self.is_owner:
+                    # we should handle the rare case that a user manages
+                    # to force the value in manually just in case
+                    self.invalid_permission_count += 1
                 else:
                     try:
-                        member.change_role(self.cleaned_data['role'])
+                        member.change_role(role)
                         self.changed_count += 1
                     except Exception as e:
                         logger.error(e, exc_info=True)
@@ -1682,6 +1694,12 @@ class ChangeMemberRoleForm(ManagementForm):
             "Could not change %(count)s member role because there would be no owners left in the team",
             "Could not change %(count)s member roles because there would be no owners left in the team",
             self.only_owner_count), count=self.only_owner_count))
+        if self.invalid_permission_count:
+            errors.append(self.ungettext(
+                "Only team owners can add a new owner",
+                "Only team owners can add new owners",
+                "Only team owners can add new owners",
+                self.invalid_permission_count))
         if self.error_count:
             errors.append(fmt(self.ungettext(
                 "Member could not be edited",
@@ -1695,7 +1713,7 @@ class RemoveMemberForm(ManagementForm):
     label = _("Remove Member")
 
     def __init__(self, user, queryset, selection, all_selected,
-                 data=None, files=None):
+                 data=None, files=None, is_owner=False):
         self.user = user
         super(RemoveMemberForm, self).__init__(
             queryset, selection, all_selected, data=data, files=files)
