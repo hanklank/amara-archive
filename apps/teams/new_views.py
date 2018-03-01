@@ -660,7 +660,7 @@ def admin_list(request, team):
     if (not team.is_by_invitation() and not
         team.user_is_member(request.user)):
         return HttpResponseForbidden()
-    return render(request, 'new-teams/admin-list.html', {
+    return render(request, 'future/teams/members/admin-list.html', {
         'team': team,
         'admins': (team.members
                    .filter(Q(role=TeamMember.ROLE_ADMIN)|
