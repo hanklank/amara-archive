@@ -44,6 +44,7 @@ from activity.models import ActivityRecord
 from messages.models import Message, SYSTEM_NOTIFICATION
 from messages.tasks import send_new_messages_notifications
 from subtitles.forms import SubtitlesUploadForm
+from subtitles.models import ORIGIN_WEB_EDITOR
 from subtitles.pipeline import add_subtitles
 from teams.models import (
     Team, TeamMember, TeamVideo, Task, Project, Workflow, Invite,
@@ -1952,7 +1953,7 @@ class EditVideosForm(VideoManagementForm):
         self.fields['language'].initial = video.primary_audio_language_code
 
         if team_video.team.user_is_admin(self.user):
-            self.fields['title'].widget.attrs['placeholder'] = team_video.video.title
+            self.fields['title'].widget.attrs['value'] = team_video.video.title
         else:
             del self.fields['title']
 
@@ -1989,7 +1990,8 @@ class EditVideosForm(VideoManagementForm):
             if version:
                 subtitles = version.get_subtitles()
                 add_subtitles(video, subtitle_language.language_code, subtitles,
-                              title=video.title, author=self.user, committer=self.user)
+                              title=video.title, author=self.user, committer=self.user,
+                              visibility=version.visibility, origin=ORIGIN_WEB_EDITOR)
 
     def message(self):
         msg = ungettext('Video has been edited',
