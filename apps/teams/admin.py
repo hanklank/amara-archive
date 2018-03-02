@@ -160,7 +160,7 @@ class TeamMemberAdmin(admin.ModelAdmin):
     team_link.allow_tags = True
 
     def user_link(self, obj):
-        url = reverse('admin:auth_customuser_change', args=[obj.user_id])
+        url = reverse('admin:amara_auth_customuser_change', args=[obj.user_id])
         return u'<a href="%s">%s</a>' % (url, obj.user)
     user_link.short_description = _('User')
     user_link.allow_tags = True
@@ -307,7 +307,7 @@ class ApplicationAdmin(admin.ModelAdmin):
     team_link.allow_tags = True
 
     def user_link(self, obj):
-        url = reverse('admin:auth_customuser_change', args=[obj.user_id])
+        url = reverse('admin:amara_auth_customuser_change', args=[obj.user_id])
         return u'<a href="%s">%s</a>' % (url, obj.user)
     user_link.short_description = _('User')
     user_link.allow_tags = True

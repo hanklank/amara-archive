@@ -54,7 +54,7 @@
     {% if user.is_staff and perms.videos.edit_video %}
         <ul id="page_controls">
             <li>
-                <a href="{% url "admin:auth_customuser_change" user_info.pk %}" target="blank">{% trans 'Edit user' %}</a>
+                <a href="{% url "admin:amara_auth_customuser_change" user_info.pk %}" target="blank">{% trans 'Edit user' %}</a>
             </li>
         </ul>
     {% endif %}
