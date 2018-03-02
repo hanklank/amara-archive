@@ -33,7 +33,7 @@ Kannada, Kanuri, Kapampangan, Karakalpak, Karen, Kashmiri, Kazakh, Khmer, Kinyar
 
 Ladin, Lakota, Lao, Latgalian, Latin, Latvian, Limburgish, Lingala, Lithuanian, Lower Sorbian, Luba-Kasai, Luba-Katagana, Luhya, Luo, Lushootseed, Luxembourgish
 
-Macedo, Macedonian, Madurese, Malagasy, Malay, Malayalam, Maltese, Mandinka, Manipuri, Manx, Māori, Māori (Cook Islands), Marathi, Marshallese, Mauritian Creole, Maya (Yucatán), Metadata: Audio Description, Metadata: Geo, Metadata: Twitter, Metadata: Video Description, Metadata: Wikipedia, Mizo, Mohawk, Moldavian (Moldovan), Mongolian, Montenegrin, Mossi, Muscogee
+Macedo, Macedonian, Madurese, Malagasy, Malay, Malayalam, Maltese, Mandinka, Manipuri, Manx, Māori, Māori (Cook Islands), Marathi, Marshallese, Mauritian Creole, Maya (Yucatán), Metadata: Audio Description, Metadata: Geo, Metadata: Twitter, Metadata: Video Description, Metadata: Wikipedia, Mizo, Mohawk, Moldavian (Moldovan), Mongolian, Montenegrin, Mooré, Muscogee
 
 Nahuatl (Classical), Nahuatl (Northern Puebla), Naurunan, Navajo, Ndonga, Nepali, Nigerian Pidgin, Ndebele (Northern), Ndebele (Southern), Northern Sami, Norwegian, Norwegian Bokmal, Norwegian Nynorsk
 
