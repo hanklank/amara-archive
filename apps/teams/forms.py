@@ -1699,7 +1699,7 @@ class ChangeMemberRoleForm(ManagementForm):
             "Member role not changed because you cannot change roles higher than your own",
             "%(count)s member role not changed because you cannot change roles higher than your own",
             "%(count)s member roles not changed because you cannot change roles higher than your own",
-            self.invalid_permission_count), count=self.invalid_permission_count)
+            self.invalid_permission_count), count=self.invalid_permission_count))
         if self.error_count:
             errors.append(fmt(self.ungettext(
                 "Member could not be edited",
