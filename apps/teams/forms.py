@@ -1665,9 +1665,9 @@ class ChangeMemberRoleForm(ManagementForm):
                 # check if user is last owner on team
                 if self.would_remove_last_owner(member, role):
                     self.only_owner_count += 1
-                elif role == TeamMember.ROLE_OWNER and not self.is_owner:
-                    # we should handle the rare case that a user manages
-                    # to force the value in manually just in case
+                # check if user has permission to change the member's role
+                elif permissions.can_assign_role(member.team, self.user,
+                                                 role, member.user):
                     self.invalid_permission_count += 1
                 else:
                     try:
@@ -1695,11 +1695,11 @@ class ChangeMemberRoleForm(ManagementForm):
             "Could not change %(count)s member roles because there would be no owners left in the team",
             self.only_owner_count), count=self.only_owner_count))
         if self.invalid_permission_count:
-            errors.append(self.ungettext(
-                "Only team owners can add a new owner",
-                "Only team owners can add new owners",
-                "Only team owners can add new owners",
-                self.invalid_permission_count))
+            errors.append(fmt(self.ungettext(
+            "Member role not changed because you cannot change roles higher than your own",
+            "%(count)s member role not changed because you cannot change roles higher than your own",
+            "%(count)s member roles not changed because you cannot change roles higher than your own",
+            self.invalid_permission_count), count=self.invalid_permission_count)
         if self.error_count:
             errors.append(fmt(self.ungettext(
                 "Member could not be edited",
