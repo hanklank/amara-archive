@@ -1,13 +1,4 @@
-# Celery/worker stuff
-celery==3.1.25
-kombu==3.0.37
-amqp==2.2.2
-billiard==2.7.3.30 # needed for process pools to work in celery
-django-celery==3.2.2
 html5lib==0.95
-# patched version of lib, fix for socket errors on rabbitmq
-# from http://code.google.com/p/py-amqplib/issues/detail?id=38
-# this will be removed after the rollout of amqp
 Django==1.7.11
 easy-thumbnails==1.4
 Pillow==2.6.0
@@ -75,3 +66,9 @@ uwsgi==2.0.14
 raven==6.1.0
 newrelic
 subprocess32
+# Celery/worker stuff
+amqp==1.0.13
+billiard==2.7.3.34
+celery==3.0.25
+django-celery==3.0.23
+
