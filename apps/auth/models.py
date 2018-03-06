@@ -495,9 +495,8 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
         avatar = self._get_avatar(110)
         return mark_safe('<span class="avatar avatar-xl"><img src="{}"></span>'.format(avatar))
 
-    @models.permalink
     def get_absolute_url(self):
-        return ('profiles:profile', [urlquote(self.username)])
+        return reverse('profiles:profile', args=(self.username,))
 
     def send_message_url(self, absolute_url=False):
         url = '{}?user={}'.format(reverse('messages:new'),
