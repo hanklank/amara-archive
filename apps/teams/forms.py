@@ -54,9 +54,7 @@ from teams.exceptions import ApplicationInvalidException
 from teams.fields import TeamMemberInput
 from teams.permissions import (
     roles_user_can_invite, can_delete_task, can_add_video, can_perform_task,
-    can_assign_task, can_remove_video,
-    can_add_video_somewhere
-)
+    can_assign_task, can_remove_video, can_assign_role, can_add_video_somewhere)
 from teams.permissions_const import ROLE_NAMES
 from teams.signals import member_remove
 from teams.workflows import TeamWorkflow
@@ -1666,8 +1664,7 @@ class ChangeMemberRoleForm(ManagementForm):
                 if self.would_remove_last_owner(member, role):
                     self.only_owner_count += 1
                 # check if user has permission to change the member's role
-                elif permissions.can_assign_role(member.team, self.user,
-                                                 role, member.user):
+                elif not can_assign_role(member.team, self.user, role, member.user):
                     self.invalid_permission_count += 1
                 else:
                     try:
