@@ -1986,7 +1986,7 @@ class EditVideosForm(VideoManagementForm):
         video.save()
         subtitle_language = video.get_primary_audio_subtitle_language()
         if subtitle_language:
-            version = subtitle_language.get_tip()
+            version = subtitle_language.get_tip(full=True)
             if version:
                 subtitles = version.get_subtitles()
                 add_subtitles(video, subtitle_language.language_code, subtitles,
