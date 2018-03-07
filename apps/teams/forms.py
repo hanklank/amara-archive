@@ -1991,7 +1991,8 @@ class EditVideosForm(VideoManagementForm):
                 subtitles = version.get_subtitles()
                 add_subtitles(video, subtitle_language.language_code, subtitles,
                               title=video.title, author=self.user, committer=self.user,
-                              visibility=version.visibility, origin=ORIGIN_WEB_EDITOR)
+                              visibility=version.visibility, origin=ORIGIN_WEB_EDITOR,
+                              visibility_override=version.visibility_override)
 
     def message(self):
         msg = ungettext('Video has been edited',
