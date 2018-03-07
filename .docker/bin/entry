@@ -41,6 +41,7 @@ elif [ "$ACTION" = "shell" ]; then
     echo "Running shell..."
     echo "Use the manage alias to run django management commands"
     echo "source /usr/local/bin/config_env" >> ~/.bash_profile
+    export AMARASHELL=1
     exec /bin/bash -l
 else
     echo "Unknown action: $ACTION"
