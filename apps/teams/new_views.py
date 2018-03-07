@@ -222,7 +222,7 @@ def members(request, team):
     }
 
     if form_name and is_team_admin:
-        return manage_members_form(request, team, form_name, members)
+        return manage_members_form(request, team, form_name, members, page)
 
     if not form_name and request.is_ajax():
         response_renderer = AJAXResponseRenderer(request)
@@ -235,7 +235,7 @@ def members(request, team):
 
     return render(request, 'future/teams/members/members.html', context)
 
-def manage_members_form(request, team, form_name, members):
+def manage_members_form(request, team, form_name, members, page):
 
     try:
         selection = request.GET['selection'].split('-')
@@ -249,8 +249,12 @@ def manage_members_form(request, team, form_name, members):
     else:
         raise Http404()
 
+    enabled_checkbox_count = len([
+        member for member in page
+        if member.user_id != request.user.id
+    ])
     # we don't count the current user since they cannot select their own entry
-    all_selected = len(selection) >= MEMBERS_PER_PAGE - 1
+    all_selected = len(selection) >= enabled_checkbox_count
 
     if request.method == 'POST':
         try:
@@ -308,7 +312,8 @@ def applications(request, team):
     }
 
     if form_name:
-        return manage_application_form(request, team, form_name, applications)
+        return manage_application_form(request, team, form_name, applications,
+                                       page)
 
     if not form_name and request.is_ajax():
         response_renderer = AJAXResponseRenderer(request)
@@ -321,7 +326,7 @@ def applications(request, team):
 
     return render(request, 'future/teams/applications/applications.html', context)
 
-def manage_application_form(request, team, form_name, applications):
+def manage_application_form(request, team, form_name, applications, page):
 
     try:
         selection = request.GET['selection'].split('-')
@@ -335,7 +340,7 @@ def manage_application_form(request, team, form_name, applications):
     else:
         raise Http404()
 
-    all_selected = len(selection) >= MEMBERS_PER_PAGE
+    all_selected = len(selection) >= len(page)
     response_renderer = AJAXResponseRenderer(request)
 
     if request.method == 'POST':
@@ -770,12 +775,6 @@ def manage_videos(request, team):
                                                     auto_id="id_filters_%s")
     videos = filters_form.get_queryset().select_related('teamvideo',
                                                         'teamvideo__video')
-    form_name = request.GET.get('form')
-    if form_name:
-        if form_name == 'add-videos':
-            return add_video_forms(request, team)
-        else:
-            return manage_videos_form(request, team, form_name, videos)
     enabled_forms = all_video_management_forms(team, request.user)
     paginator = AmaraPaginatorFuture(videos, VIDEOS_PER_PAGE_MANAGEMENT)
     page = paginator.get_page(request)
@@ -784,6 +783,14 @@ def manage_videos(request, team):
     for video in page:
         video.context_menu = manage_videos_context_menu(team, video,
                                                         enabled_forms)
+
+    form_name = request.GET.get('form')
+    if form_name:
+        if form_name == 'add-videos':
+            return add_video_forms(request, team)
+        else:
+            return manage_videos_form(request, team, form_name, videos, page)
+
     context = {
         'team': team,
         'page': page,
@@ -838,7 +845,7 @@ def all_video_management_forms(team, user):
 def lookup_video_managment_form(team, user, form_name):
     return get_video_management_forms(team).lookup(form_name, team, user)
 
-def manage_videos_form(request, team, form_name, videos):
+def manage_videos_form(request, team, form_name, videos, page):
     """Render a form from the action bar on the video management page.
     """
     try:
@@ -849,7 +856,7 @@ def manage_videos_form(request, team, form_name, videos):
     if FormClass is None:
         raise Http404()
 
-    all_selected = len(selection) >= VIDEOS_PER_PAGE_MANAGEMENT
+    all_selected = len(selection) >= len(page)
 
     if request.method == 'POST':
         form = FormClass(team, request.user, videos, selection, all_selected,
