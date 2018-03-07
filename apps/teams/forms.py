@@ -1627,7 +1627,6 @@ class ChangeMemberRoleForm(ManagementForm):
                 ('', _("Don't change")),
                 (TeamMember.ROLE_CONTRIBUTOR, _('Contributor')),
                 (TeamMember.ROLE_MANAGER, _('Manager')),
-                (TeamMember.ROLE_ADMIN, _('Admin')),
            ], initial='', label=_('Member Role'))
 
     def __init__(self, user, queryset, selection, all_selected,
@@ -1640,6 +1639,7 @@ class ChangeMemberRoleForm(ManagementForm):
     def setup_fields(self):
         if self.is_owner:
             self.fields['role'].choices += [(TeamMember.ROLE_OWNER, _('Owner'))]
+            self.fields['role'].choices += [(TeamMember.ROLE_ADMIN, _('Admin'))]
 
     def would_remove_last_owner(self, member, role):
         if role == TeamMember.ROLE_OWNER:
@@ -1693,9 +1693,9 @@ class ChangeMemberRoleForm(ManagementForm):
             self.only_owner_count), count=self.only_owner_count))
         if self.invalid_permission_count:
             errors.append(fmt(self.ungettext(
-            "Member role not changed because you cannot change roles higher than your own",
-            "%(count)s member role not changed because you cannot change roles higher than your own",
-            "%(count)s member roles not changed because you cannot change roles higher than your own",
+            "Member not changed because you do not have permission to change this role",
+            "%(count)s member not changed because you do not have permission to change this role",
+            "%(count)s members not changed because you do not have permission to change these roles",
             self.invalid_permission_count), count=self.invalid_permission_count))
         if self.error_count:
             errors.append(fmt(self.ungettext(
