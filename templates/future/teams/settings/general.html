@@ -15,6 +15,15 @@
   {{ form.logo|render_field }}
   {{ form.square_logo|render_field }}
   {{ form.sync_metadata|render_field }}
+
+  <div class="form-group">
+    <label>{% trans "Duplicate videos" %}</label>
+    <ul>
+      <li><div class="radio"><input type="radio" id="id_prevent_duplicate_public_videos_0" value="" name="prevent_duplicate_public_videos"{% if not form.prevent_duplicate_public_videos_set %} checked{% endif %}><label for="id_prevent_duplicate_public_videos_0"><span></span>Allow duplicate copies of your team videos in the Amara public area.</label></div></li>
+      <li title="{% trans "Don't allow Amara users to post copies of your team videos in the public area." %}&#013;&#010;{% trans "When adding team videos, move videos from the public area to your team rather than creating copies." %}"><div class="radio"><input type="radio" id="id_prevent_duplicate_public_videos_1" value="1" name="prevent_duplicate_public_videos"{% if form.prevent_duplicate_public_videos_set %} checked{% endif %}><label for="id_prevent_duplicate_public_videos_1"><span></span>Prevent duplicate copies of your team videos in the Amara public area.</label></div></li>
+    </ul>
+  </div>
+
   <div class="form-group">
     <button type="submit" class="button cta">{% trans "Update" %}</button>
   </div>

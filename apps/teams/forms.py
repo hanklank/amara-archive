@@ -855,6 +855,8 @@ class GeneralSettingsForm(forms.ModelForm):
         choices=VideoVisibility.choices(),
         label=_('Video visibility'),
         help_text=_("Can non-members view your team videos?"))
+    prevent_duplicate_public_videos = forms.BooleanField(
+        label=_('Duplicate videos'))
 
     def __init__(self, allow_rename, *args, **kwargs):
         super(GeneralSettingsForm, self).__init__(*args, **kwargs)
@@ -862,6 +864,12 @@ class GeneralSettingsForm(forms.ModelForm):
         self.initial_video_visibility = self.instance.video_visibility
         if not allow_rename:
             del self.fields['name']
+
+    def prevent_duplicate_public_videos_set(self):
+        if self.is_bound:
+            return bool(self.data.get('prevent_duplicate_public_videos'))
+        else:
+            return self.instance.prevent_duplicate_public_videos
 
     def save(self, user):
         with transaction.atomic():
@@ -875,7 +883,8 @@ class GeneralSettingsForm(forms.ModelForm):
     class Meta:
         model = Team
         fields = ('name', 'description', 'logo', 'square_logo',
-                  'team_visibility', 'video_visibility', 'sync_metadata')
+                  'team_visibility', 'video_visibility', 'sync_metadata',
+                  'prevent_duplicate_public_videos')
 
 
 class WorkflowForm(forms.ModelForm):
