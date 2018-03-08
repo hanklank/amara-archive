@@ -1,7 +1,0 @@
-#!/bin/bash
-source /usr/local/bin/config_env
-
-echo "Uploading legacy media"
-manage send_to_s3 --settings=unisubs_settings --skip-commit-check
-echo "Uploading assets media"
-manage upload_assets --settings=unisubs_settings

@@ -19,6 +19,9 @@
                       var d = new Date()
                       d.setTime(d.getTime() + 60*60*24*365*1000)
                       document.cookie = '{{ cookie_name }}={{ last_unread|urlencode }}; path=/; expires='+d.toUTCString();
+                      $.post("/auth/set-hidden-message-id/", {
+                        message_id: {{ last_unread }}
+                      })
                       return false;
                   });
               </script>

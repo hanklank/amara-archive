@@ -30,6 +30,8 @@ def get_user(request):
             request._cached_user = user
         else:
             request._cached_user = AnonymousUser()
+        if not user.is_anonymous():
+            user.check_last_hidden_message_id(request)
     return request._cached_user
 
 

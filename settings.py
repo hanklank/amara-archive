@@ -300,6 +300,7 @@ LOCALE_INDEPENDENT_PATHS = [
     re.compile('^/jstest/'),
     re.compile('^/sitemap.*.xml'),
     re.compile('^/externalsites/youtube-callback'),
+    re.compile('^/auth/set-hidden-message-id/'),
     re.compile('^/crossdomain.xml'),
     re.compile('^/embedder-widget-iframe/'),
 ]
