@@ -693,7 +693,7 @@ def activity(request, team):
     if page.has_next():
         next_page_query = request.GET.copy()
         next_page_query['page'] = page.next_page_number()
-        contextq['next_page_query'] = next_page_query.urlencode()
+        context['next_page_query'] = next_page_query.urlencode()
     # tells the template to use get_old_message instead
     context['use_old_messages'] = True
     if team.is_old_style():
