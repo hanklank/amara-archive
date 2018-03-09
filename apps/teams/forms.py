@@ -61,7 +61,8 @@ from teams.permissions_const import ROLE_NAMES
 from teams.signals import member_remove
 from teams.workflows import TeamWorkflow
 from ui.forms import (FiltersForm, ManagementForm, AmaraChoiceField,
-                      AmaraRadioSelect, SearchField, AmaraClearableFileInput, AmaraFileInput)
+                      AmaraRadioSelect, SearchField, AmaraClearableFileInput,
+                      AmaraFileInput, HelpTextList)
 from ui.forms import LanguageField as NewLanguageField
 from utils import send_templated_email
 from utils.forms import (ErrorableModelForm, get_label_for_value,
@@ -856,7 +857,14 @@ class GeneralSettingsForm(forms.ModelForm):
         label=_('Video visibility'),
         help_text=_("Can non-members view your team videos?"))
     prevent_duplicate_public_videos = forms.BooleanField(
-        label=_('Duplicate videos'))
+        label=_('Prevent duplicate copies of your team videos in '
+                'the Amara public area.'), required=False, 
+        help_text=HelpTextList(
+            _("Don't allow Amara users to post copies of your "
+              "team videos in the public area."),
+            _("When adding team videos, move videos from the public "
+              "area to your team rather than creating copies."),
+        ))
 
     def __init__(self, allow_rename, *args, **kwargs):
         super(GeneralSettingsForm, self).__init__(*args, **kwargs)
