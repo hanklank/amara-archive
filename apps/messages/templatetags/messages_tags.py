@@ -32,7 +32,7 @@ def messages(context, futureui=False):
     if not user.is_authenticated():
         return ''
     hidden_message_id = request.COOKIES.get(Message.hide_cookie_name)
-    if hidden_message_id == '':
+    if hidden_message_id == '' or hidden_message_id is None:
         hidden_message_id = None
     else:
         try:
