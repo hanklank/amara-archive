@@ -1655,10 +1655,6 @@ class ChangeMemberRoleForm(ManagementForm):
         super(ChangeMemberRoleForm, self).__init__(
             queryset, selection, all_selected, data=data, files=files)
 
-    def include_all_count(self):
-        # don't count the admin submitting the form
-        return self.queryset.count() - 1
-
     def would_remove_last_owner(self, member, role):
         if role == TeamMember.ROLE_OWNER:
             return False
@@ -1720,10 +1716,6 @@ class RemoveMemberForm(ManagementForm):
         self.user = user
         super(RemoveMemberForm, self).__init__(
             queryset, selection, all_selected, data=data, files=files)
-
-    def include_all_count(self):
-        # don't count the admin submitting the form
-        return self.queryset.count() - 1
 
     def would_remove_last_owner(self, members):
         # if no owners are going to be removed

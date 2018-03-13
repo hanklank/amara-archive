@@ -249,12 +249,15 @@ def manage_members_form(request, team, form_name, members, page):
     else:
         raise Http404()
 
+    # Don't count the current user for the all_selected var, since they cannot
+    # select their own entry
     enabled_checkbox_count = len([
         member for member in page
         if member.user_id != request.user.id
     ])
-    # we don't count the current user since they cannot select their own entry
     all_selected = len(selection) >= enabled_checkbox_count
+    # filter out the current user from the full queryset
+    members = members.exclude(user=request.user)
 
     if request.method == 'POST':
         try:
