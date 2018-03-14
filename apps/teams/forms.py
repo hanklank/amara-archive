@@ -63,7 +63,8 @@ from teams.permissions_const import ROLE_NAMES
 from teams.signals import member_remove
 from teams.workflows import TeamWorkflow
 from ui.forms import (FiltersForm, ManagementForm, AmaraChoiceField,
-                      AmaraRadioSelect, SearchField, AmaraClearableFileInput, AmaraFileInput)
+                      AmaraRadioSelect, SearchField, AmaraClearableFileInput,
+                      AmaraFileInput, HelpTextList)
 from ui.forms import LanguageField as NewLanguageField
 from utils import send_templated_email
 from utils.forms import (ErrorableModelForm, get_label_for_value,
@@ -857,6 +858,15 @@ class GeneralSettingsForm(forms.ModelForm):
         choices=VideoVisibility.choices(),
         label=_('Video visibility'),
         help_text=_("Can non-members view your team videos?"))
+    prevent_duplicate_public_videos = forms.BooleanField(
+        label=_('Prevent duplicate copies of your team videos in '
+                'the Amara public area.'), required=False, 
+        help_text=HelpTextList(
+            _("Don't allow Amara users to post copies of your "
+              "team videos in the public area."),
+            _("When adding team videos, move videos from the public "
+              "area to your team rather than creating copies."),
+        ))
 
     def __init__(self, allow_rename, *args, **kwargs):
         super(GeneralSettingsForm, self).__init__(*args, **kwargs)
@@ -864,6 +874,12 @@ class GeneralSettingsForm(forms.ModelForm):
         self.initial_video_visibility = self.instance.video_visibility
         if not allow_rename:
             del self.fields['name']
+
+    def prevent_duplicate_public_videos_set(self):
+        if self.is_bound:
+            return bool(self.data.get('prevent_duplicate_public_videos'))
+        else:
+            return self.instance.prevent_duplicate_public_videos
 
     def save(self, user):
         with transaction.atomic():
@@ -877,7 +893,8 @@ class GeneralSettingsForm(forms.ModelForm):
     class Meta:
         model = Team
         fields = ('name', 'description', 'logo', 'square_logo',
-                  'team_visibility', 'video_visibility', 'sync_metadata')
+                  'team_visibility', 'video_visibility', 'sync_metadata',
+                  'prevent_duplicate_public_videos')
 
 
 class WorkflowForm(forms.ModelForm):

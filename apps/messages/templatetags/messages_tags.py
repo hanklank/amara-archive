@@ -29,11 +29,16 @@ register = template.Library()
 def messages(context, futureui=False):
     user = context['user']
     request = context['request']
-    hidden_message_id = request.COOKIES.get(Message.hide_cookie_name)
     if not user.is_authenticated():
         return ''
-    if hidden_message_id == '':
+    hidden_message_id = request.COOKIES.get(Message.hide_cookie_name)
+    if hidden_message_id == '' or hidden_message_id is None:
         hidden_message_id = None
+    else:
+        try:
+            hidden_message_id = long(hidden_message_id)
+        except ValueError:
+            hidden_message_id = None
 
     if futureui:
         cache_key = 'messages-future-{}'.format(get_language())
