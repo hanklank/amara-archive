@@ -1295,10 +1295,10 @@ class OldMoveVideosForm(forms.Form):
 class VideoFiltersForm(FiltersForm):
     q = SearchField(label=_('Search for videos'), required=False)
     language = NewLanguageField(label=_("Video language"), required=False,
-                                placeholder=_("All languages"))
+                                placeholder=_("All languages"), filter=True)
     project = ProjectField(required=False, futureui=True)
     duration = VideoDurationField(required=False, widget=AmaraRadioSelect)
-    sort = AmaraChoiceField(label="", border=True, choices=[
+    sort = AmaraChoiceField(label="", choices=[
         ('-time', _('Time, newest')),
         ('time', _('Time, oldest')),
         ('name', _('Name, a-z')),
@@ -1356,13 +1356,15 @@ class ManagementVideoFiltersForm(VideoFiltersForm):
     language = NewLanguageField(label=_("Video language"),
                                 required=False,
                                 placeholder=_('All languages'),
-                                options="null popular all")
+                                options="null popular all", filter=True)
     completed_subtitles = NewLanguageField(label=_("Completed subtitles"),
                                            required=False,
-                                           options="null popular all")
+                                           options="null popular all",
+                                           filter=True)
     needs_subtitles = NewLanguageField(label=_("Needs subtitles"), 
                                        required=False,
-                                       options="null popular all")
+                                       options="null popular all",
+                                       filter=True)
 
     promote_main_project = False
 
@@ -1458,11 +1460,11 @@ class MemberFiltersForm(forms.Form):
         (TeamMember.ROLE_ADMIN, _('Admins')),
         (TeamMember.ROLE_MANAGER, _('Managers')),
         (TeamMember.ROLE_CONTRIBUTOR, _('Contributors')),
-    ], initial='any', required=False)
+    ], initial='any', required=False, filter=True)
     language = AmaraChoiceField(choices=LANGUAGE_CHOICES,
                                  label=_('Language spoken'),
-                                 initial='any', required=False)
-    sort = AmaraChoiceField(label="", border=True, choices=[
+                                 initial='any', required=False, filter=True)
+    sort = AmaraChoiceField(label="", choices=[
         ('recent', _('Date joined, most recent')),
         ('oldest', _('Date joined, oldest')),
     ], initial='recent', required=False)
