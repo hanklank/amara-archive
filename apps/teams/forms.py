@@ -44,6 +44,8 @@ from activity.models import ActivityRecord
 from messages.models import Message, SYSTEM_NOTIFICATION
 from messages.tasks import send_new_messages_notifications
 from subtitles.forms import SubtitlesUploadForm
+from subtitles.models import ORIGIN_MANAGEMENT_PAGE
+from subtitles.pipeline import add_subtitles
 from teams.models import (
     Team, TeamMember, TeamVideo, Task, Project, Workflow, Invite,
     BillingReport, MembershipNarrowing, Application, TeamVisibility,
@@ -54,7 +56,7 @@ from teams.exceptions import ApplicationInvalidException
 from teams.fields import TeamMemberInput
 from teams.permissions import (
     roles_user_can_invite, can_delete_task, can_add_video, can_perform_task,
-    can_assign_task, can_remove_video,
+    can_assign_task, can_remove_video, can_change_video_titles,
     can_add_video_somewhere
 )
 from teams.permissions_const import ROLE_NAMES
@@ -1944,6 +1946,8 @@ class EditVideosForm(VideoManagementForm):
     label = _('Edit')
     permissions_check = staticmethod(permissions.can_edit_videos)
 
+    title = forms.CharField(max_length=2048, label=_('Edit video title'),
+                            required=False)
     language = NewLanguageField(label=_("Video Language"), required=False,
                                 options="null popular all",
                                 placeholder=_('No change'))
@@ -1954,6 +1958,8 @@ class EditVideosForm(VideoManagementForm):
 
     def setup_fields(self):
         self.fields['project'].setup(self.team)
+        if not self.single_selection():
+            del self.fields['title']
 
     def setup_single_selection(self, video):
         team_video = video.teamvideo
@@ -1963,6 +1969,11 @@ class EditVideosForm(VideoManagementForm):
         self.fields['language'].set_placeholder(_('No language set'))
         self.fields['language'].initial = video.primary_audio_language_code
 
+        if can_change_video_titles(self.user, team_video):
+            self.fields['title'].widget.attrs['value'] = team_video.video.title
+        else:
+            del self.fields['title']
+
     def perform_submit(self, qs):
         project = self.cleaned_data.get('project')
         language = self.cleaned_data['language']
@@ -1970,8 +1981,12 @@ class EditVideosForm(VideoManagementForm):
         if language is None and self.single_selection():
             language = ''
 
+
         for video in qs:
             team_video = video.teamvideo
+
+            if self.fields.get('title', None) and self.cleaned_data['title']:
+                self._update_video_title(video, self.cleaned_data['title'])
 
             if project is not None and project != team_video.project:
                 team_video.project = project
@@ -1982,6 +1997,21 @@ class EditVideosForm(VideoManagementForm):
                 video.save()
             if thumbnail:
                 team_video.video.s3_thumbnail.save(thumbnail.name, thumbnail)
+
+    def _update_video_title(self, video, title):
+        with transaction.atomic():
+            video.title = self.cleaned_data['title']
+            video.save()
+            subtitle_language = video.get_primary_audio_subtitle_language()
+            if subtitle_language:
+                version = subtitle_language.get_tip(full=True)
+                if version:
+                    subtitles = version.get_subtitles()
+                    add_subtitles(video, subtitle_language.language_code, subtitles,
+                                  title=video.title, author=self.user, committer=self.user,
+                                  visibility=version.visibility,
+                                  origin=ORIGIN_MANAGEMENT_PAGE,
+                                  visibility_override=version.visibility_override)
 
     def message(self):
         msg = ungettext('Video has been edited',
