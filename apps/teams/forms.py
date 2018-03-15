@@ -44,7 +44,7 @@ from activity.models import ActivityRecord
 from messages.models import Message, SYSTEM_NOTIFICATION
 from messages.tasks import send_new_messages_notifications
 from subtitles.forms import SubtitlesUploadForm
-from subtitles.models import ORIGIN_WEB_EDITOR
+from subtitles.models import ORIGIN_MANAGEMENT_PAGE
 from subtitles.pipeline import add_subtitles
 from teams.models import (
     Team, TeamMember, TeamVideo, Task, Project, Workflow, Invite,
@@ -1969,7 +1969,7 @@ class EditVideosForm(VideoManagementForm):
         self.fields['language'].set_placeholder(_('No language set'))
         self.fields['language'].initial = video.primary_audio_language_code
 
-        if team_video.team.user_is_admin(self.user):
+        if teams.permissions.can_change_video_titles(self.user, team_video):
             self.fields['title'].widget.attrs['value'] = team_video.video.title
         else:
             del self.fields['title']
@@ -1999,17 +1999,19 @@ class EditVideosForm(VideoManagementForm):
                 team_video.video.s3_thumbnail.save(thumbnail.name, thumbnail)
 
     def _update_video_title(self, video, title):
-        video.title = self.cleaned_data['title']
-        video.save()
-        subtitle_language = video.get_primary_audio_subtitle_language()
-        if subtitle_language:
-            version = subtitle_language.get_tip(full=True)
-            if version:
-                subtitles = version.get_subtitles()
-                add_subtitles(video, subtitle_language.language_code, subtitles,
-                              title=video.title, author=self.user, committer=self.user,
-                              visibility=version.visibility, origin=ORIGIN_WEB_EDITOR,
-                              visibility_override=version.visibility_override)
+        with transaction.atomic():
+            video.title = self.cleaned_data['title']
+            video.save()
+            subtitle_language = video.get_primary_audio_subtitle_language()
+            if subtitle_language:
+                version = subtitle_language.get_tip(full=True)
+                if version:
+                    subtitles = version.get_subtitles()
+                    add_subtitles(video, subtitle_language.language_code, subtitles,
+                                  title=video.title, author=self.user, committer=self.user,
+                                  visibility=version.visibility,
+                                  origin=ORIGIN_MANAGEMENT_PAGE,
+                                  visibility_override=version.visibility_override)
 
     def message(self):
         msg = ungettext('Video has been edited',
