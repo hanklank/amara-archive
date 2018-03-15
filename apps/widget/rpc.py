@@ -46,7 +46,6 @@ from widget import video_cache
 from widget.base_rpc import BaseRpc
 from widget.forms import  FinishReviewForm, FinishApproveForm
 from widget.models import SubtitlingSession
-from libs.bulkops import insert_many
 
 from functools import partial
 from subtitles import pipeline
