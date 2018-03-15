@@ -56,7 +56,7 @@ from teams.exceptions import ApplicationInvalidException
 from teams.fields import TeamMemberInput
 from teams.permissions import (
     roles_user_can_invite, can_delete_task, can_add_video, can_perform_task,
-    can_assign_task, can_remove_video,
+    can_assign_task, can_remove_video, can_change_video_titles,
     can_add_video_somewhere
 )
 from teams.permissions_const import ROLE_NAMES
@@ -1969,7 +1969,7 @@ class EditVideosForm(VideoManagementForm):
         self.fields['language'].set_placeholder(_('No language set'))
         self.fields['language'].initial = video.primary_audio_language_code
 
-        if teams.permissions.can_change_video_titles(self.user, team_video):
+        if can_change_video_titles(self.user, team_video):
             self.fields['title'].widget.attrs['value'] = team_video.video.title
         else:
             del self.fields['title']
