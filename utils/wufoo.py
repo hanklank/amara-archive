@@ -64,9 +64,7 @@ class WufooForm(forms.Form):
         for wufoo_name, django_name in self.field_map.items():
             if django_name in self.data:
                 wufoo_data[wufoo_name] = self.data[django_name]
-        print wufoo_data
         response = submit_entry(self.form_id, wufoo_data)
-        print response.content
         errors_from_wufoo = {}
         try:
             data = response.json()

@@ -36,6 +36,7 @@
     <script>var userLanguages = [{% for language in user.get_languages %}"{{language }}"{% if not forloop.last %},{% endif %}{% endfor %}];</script>
   </head>
   <body{% block body-extra %}{% endblock %}>
+    <a id="top"></a>
     {% block header %}{% include "future/header.html" %}{% endblock %}
     {% futureui_announcement %}
     {% futureui_messages %}
