@@ -1383,6 +1383,7 @@ ORIGIN_SCRIPTED = 'scripted'
 ORIGIN_TERN = 'tern'
 ORIGIN_UPLOAD = 'upload'
 ORIGIN_WEB_EDITOR = 'web-editor'
+ORIGIN_MANAGEMENT_PAGE = 'management-page'
 
 SUBTITLE_VERSION_ORIGINS = (
     (ORIGIN_API, _("API")),
@@ -1394,6 +1395,7 @@ SUBTITLE_VERSION_ORIGINS = (
     (ORIGIN_TERN, _("Tern")),
     (ORIGIN_UPLOAD, _("Uploaded")),
     (ORIGIN_WEB_EDITOR, _("Edited")),
+    (ORIGIN_MANAGEMENT_PAGE, _("Management Page")),
 )
 
 class SubtitleVersion(models.Model):

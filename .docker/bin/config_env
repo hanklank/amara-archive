@@ -17,12 +17,7 @@ MAILNAME=${MAILNAME:-pculture.org}
 NEW_RELIC_APP_NAME=${NEW_RELIC_APP_NAME:-}
 NEW_RELIC_LICENSE_KEY=${NEW_RELIC_LICENSE_KEY:-}
 SKIP_CODE_PULL=${SKIP_CODE_PULL:-}
-AMARAPYTHONPATH=/var/run/amara:/opt/apps/amara:/opt/apps/amara/libs:/opt/apps/amara/apps
-
-function manage() {
-  export PYTHONPATH=${AMARAPYTHONPATH}
-  exec python ${MANAGE_SCRIPT} "$@"
-}
+export PYTHONPATH=/var/run/amara:/opt/apps/amara:/opt/apps/amara/libs:/opt/apps/amara/apps
 
 if [ $DJANGO_SETTINGS_MODULE = "unisubs_settings" ] ; then
     if [ ! -z "$AWS_ID" ] && [ ! -z "$AWS_SECRET_KEY" ] ; then
