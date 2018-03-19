@@ -39,11 +39,21 @@ def render_field(field):
     })
 
 @register.filter
+def render_field_reverse_required(field):
+    return render_to_string('future/forms/field.html', {
+        'field': field,
+        'widget_type': calc_widget_type(field),
+        'no_help_block': isinstance(field.help_text, HelpTextList),
+        'label': calc_label(field, reverse_required=True),
+    })
+
+
+@register.filter
 def render_filter_field(field):
     return render_to_string('future/forms/filter-field.html', {
         'field': field,
         'widget_type': calc_widget_type(field),
-        'label': calc_label(field),
+        'label': field.label,
     })
 
 def calc_widget_type(field):
@@ -67,12 +77,16 @@ def calc_widget_type(field):
     else:
         return 'default'
 
-def calc_label(field):
+def calc_label(field, reverse_required=False):
     if not field.label:
         return ''
-    elif field.field.required:
-        return field.label
-    else:
+    elif not field.field.required and not reverse_required:
         return mark_safe(fmt(
             _('%(field_label)s <span class="fieldOptional">(optional)</span>'),
             field_label=field.label))
+    elif field.field.required and reverse_required:
+        return mark_safe(fmt(
+            _('%(field_label)s <span class="fieldOptional">(required)</span>'),
+            field_label=field.label))
+    else:
+        return field.label

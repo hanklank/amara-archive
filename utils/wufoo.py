@@ -31,10 +31,18 @@ from ui.templatetags.forms import render_field
 
 logger = logging.getLogger(__name__)
 
+class WufooError(Exception):
+    pass
+
 def make_api_request(method, path, data=None):
     url = settings.WUFOO_API_BASE_URL + path
     auth = HTTPBasicAuth(settings.WUFOO_API_KEY, '')
     return requests.request(method, url, data=data, auth=auth)
+
+def api_get_form(form_id):
+    response = make_api_request('GET', 'forms/{}.json'.format(form_id))
+    data = response.json()
+    return data['Forms'][0]
 
 def api_get_fields(form_id):
     response = make_api_request('GET', 'forms/{}/fields.json'.format(form_id))
@@ -60,16 +68,18 @@ class WufooForm(forms.Form):
         """
         if not self.is_valid():
             return # don't bother posting to wufoo in this case
+        form_data = self.data.copy()
+        form_data.update(self.extra_wufoo_data())
         wufoo_data = {}
         for wufoo_name, django_name in self.field_map.items():
-            if django_name in self.data:
-                wufoo_data[wufoo_name] = self.data[django_name]
+            if django_name in form_data:
+                wufoo_data[wufoo_name] = form_data[django_name]
         response = submit_entry(self.form_id, wufoo_data)
         errors_from_wufoo = {}
         try:
             data = response.json()
             success = bool(data['Success'])
-            if not data['Success']:
+            if not success:
                 for error in data['FieldErrors']:
                     field_name = self.field_map[error['ID']]
                     errors_from_wufoo[field_name] = error['ErrorText']
@@ -86,3 +96,14 @@ class WufooForm(forms.Form):
             self.cleaned_data = {}
             for field, text in errors_from_wufoo.items():
                 self.errors[field] = self.error_class([text])
+
+    def extra_wufoo_data(self):
+        return {}
+
+    def get_success_message(self):
+        try:
+            form = api_get_form(self.form_id)
+            return form['RedirectMessage']
+        except:
+            logger.warn('Error getting WuFoo RedirectMessage', exc_info=True)
+            raise WufooError()
