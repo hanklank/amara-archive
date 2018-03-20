@@ -78,6 +78,7 @@ NOSE_ARGS = ['--logging-clear-handlers',
              '-selenium.webdriver.remote.remote_connection',
              '--with-xunit', '--logging-level=WARN',
              '--xunit-file=nosetests.xml',
+             '--where', '/opt/apps/amara/',
             ]
 
 MESSAGES_SENT_WINDOW_MINUTES = 1
