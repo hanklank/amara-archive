@@ -74,7 +74,8 @@ class CustomUserManager(UserManager):
         username = kwargs.pop('username')
         for username_try in self._unique_username_iter(username):
             try:
-                return self.create(username=username_try, **kwargs)
+                with transaction.atomic():
+                    return self.create(username=username_try, **kwargs)
             except IntegrityError:
                 continue
         raise AssertionError("Ran out of username tries")
@@ -127,6 +128,12 @@ class CustomUserManager(UserManager):
             return qs
         else:
             return self.none()
+
+def get_amara_anonymous_user():
+    user, created = CustomUser.objects.get_or_create(
+        pk=settings.ANONYMOUS_USER_ID,
+        defaults={'username': settings.ANONYMOUS_DEFAULT_USERNAME})
+    return user
 
 class CustomUser(BaseUser, secureid.SecureIDMixin):
     AUTOPLAY_ON_BROWSER = 1
@@ -199,6 +206,7 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
     ]
 
     class Meta:
+        db_table = 'auth_customuser'
         verbose_name = 'User'
 
     def __init__(self, *args, **kwargs):
@@ -512,9 +520,8 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
         avatar = self._get_avatar(110)
         return mark_safe('<span class="avatar avatar-xl"><img src="{}"></span>'.format(avatar))
 
-    @models.permalink
     def get_absolute_url(self):
-        return ('profiles:profile', [urlquote(self.username)])
+        return reverse('profiles:profile', args=(self.username,))
 
     def send_message_url(self, absolute_url=False):
         url = '{}?user={}'.format(reverse('messages:new'),
@@ -556,10 +563,7 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
 
     @classmethod
     def get_amara_anonymous(cls):
-        user, created = cls.objects.get_or_create(
-            pk=settings.ANONYMOUS_USER_ID,
-            defaults={'username': settings.ANONYMOUS_DEFAULT_USERNAME})
-        return user
+        return get_amara_anonymous_user()
 
     @property
     def is_amara_anonymous(self):
@@ -641,6 +645,9 @@ class Awards(models.Model):
     user = models.ForeignKey(CustomUser, null=True)
     created = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        db_table = 'auth_awards'
+
     def _set_points(self):
         if self.type == self.COMMENT:
             self.points = 10
@@ -704,6 +711,7 @@ class UserLanguage(models.Model):
         verbose_name=_('follow requests in language'))
 
     class Meta:
+        db_table = 'auth_userlanguage'
         unique_together = ['user', 'language']
 
     def save(self, *args, **kwargs):
@@ -724,6 +732,7 @@ class Announcement(models.Model):
     cookie_date_format = '%d/%m/%Y %H:%M:%S'
 
     class Meta:
+        db_table = 'auth_announcement'
         ordering = ['-created']
 
     @classmethod
@@ -815,6 +824,7 @@ class EmailConfirmation(models.Model):
         return u"confirmation for %s" % self.user.email
 
     class Meta:
+        db_table = 'auth_emailconfirmation'
         verbose_name = _("e-mail confirmation")
         verbose_name_plural = _("e-mail confirmations")
 
@@ -863,6 +873,9 @@ class LoginToken(models.Model):
 
     objects = LoginTokenManager()
 
+    class Meta:
+        db_table = 'auth_logintoken'
+
     @property
     def is_expired(self):
         return self.created + LoginToken.EXPIRES_IN <  datetime.now()
@@ -883,6 +896,9 @@ class AmaraApiKey(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     key = models.CharField(max_length=256, blank=True, default=generate_api_key)
 
+    class Meta:
+        db_table = 'auth_amaraapikey'
+
     def __unicode__(self):
         return u"Api key for {}: {}".format(self.user, self.key)
 
@@ -898,11 +914,14 @@ class SentMessageDateManager(models.Manager):
 
     def check_too_many_messages(self, user):
         now = dates.now()
-        self.get_query_set().filter(created__lt=now - timedelta(minutes=settings.MESSAGES_SENT_WINDOW_MINUTES)).delete()
-        return self.get_query_set().filter(user=user,
+        self.get_queryset().filter(created__lt=now - timedelta(minutes=settings.MESSAGES_SENT_WINDOW_MINUTES)).delete()
+        return self.get_queryset().filter(user=user,
                                     created__gt=now - timedelta(minutes=settings.MESSAGES_SENT_WINDOW_MINUTES)).count() > settings.MESSAGES_SENT_LIMIT
 
 class SentMessageDate(models.Model):
     user = models.ForeignKey(CustomUser)
     created = models.DateTimeField()
     objects = SentMessageDateManager()
+
+    class Meta:
+        db_table = 'auth_sentmessagedate'

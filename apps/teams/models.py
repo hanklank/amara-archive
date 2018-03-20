@@ -126,7 +126,7 @@ class TeamQuerySet(query.QuerySet):
         return self.extra(select=select, select_params=[user.id])
 
 class TeamManager(models.Manager):
-    def get_query_set(self):
+    def get_queryset(self):
         """Return a QS of all non-deleted teams."""
         return TeamQuerySet(Team).filter(deleted=False)
 
@@ -141,7 +141,7 @@ class TeamManager(models.Manager):
         if user.is_authenticated():
             user_teams = TeamMember.objects.filter(user=user)
             q |= models.Q(id__in=user_teams.values('team_id'))
-        return self.get_query_set().filter(q)
+        return self.get_queryset().filter(q)
 
     def with_recent_billing_record(self, day_range):
         """Find teams that have had a new video recently"""
@@ -2186,7 +2186,7 @@ class Workflow(models.Model):
 class TaskManager(models.Manager):
     def not_deleted(self):
         """Return a QS of tasks that are not deleted."""
-        return self.get_query_set().filter(deleted=False)
+        return self.get_queryset().filter(deleted=False)
 
 
     def incomplete(self):
@@ -2952,17 +2952,17 @@ class SettingManager(models.Manager):
         """Return a QS of settings related to team guidelines."""
         keys = [key for key, name in Setting.KEY_CHOICES
                 if name.startswith('guidelines_')]
-        return self.get_query_set().filter(key__in=keys)
+        return self.get_queryset().filter(key__in=keys)
 
     def messages(self):
         """Return a QS of settings related to team messages."""
         keys = [key for key, name in Setting.KEY_CHOICES
                 if name.startswith('messages_')]
-        return self.get_query_set().filter(key__in=keys)
+        return self.get_queryset().filter(key__in=keys)
 
     def messages_guidelines(self):
         """Return a QS of settings related to team messages or guidelines."""
-        return self.get_query_set().filter(key__in=Setting.MESSAGE_KEYS)
+        return self.get_queryset().filter(key__in=Setting.MESSAGE_KEYS)
 
     def with_names(self, names):
         return self.filter(key__in=[Setting.KEY_IDS[name] for name in names])
@@ -2980,13 +2980,13 @@ class SettingManager(models.Manager):
         return messages
 
     def features(self):
-        return self.get_query_set().filter(key__in=Setting.FEATURE_KEYS)
+        return self.get_queryset().filter(key__in=Setting.FEATURE_KEYS)
 
     def localized_messages(self):
         """Return a QS of settings related to team messages."""
         keys = [key for key, name in Setting.KEY_CHOICES
                 if name.endswith('localized')]
-        return self.get_query_set().filter(key__in=keys)
+        return self.get_queryset().filter(key__in=keys)
 
 class Setting(models.Model):
     KEY_CHOICES = (
@@ -3091,7 +3091,7 @@ class TeamLanguagePreferenceManager(models.Manager):
 
     def for_team(self, team):
         """Return a QS of all language preferences for the given team."""
-        return self.get_query_set().filter(team=team)
+        return self.get_queryset().filter(team=team)
 
     def on_changed(cls, sender,  instance, *args, **kwargs):
         """Perform any necessary actions when a language preference changes.
@@ -3830,7 +3830,7 @@ class Partner(models.Model):
 
     # The `admins` field specifies users who can do just about anything within
     # the partner realm.
-    admins = models.ManyToManyField('auth.CustomUser',
+    admins = models.ManyToManyField('amara_auth.CustomUser',
             related_name='managed_partners', blank=True, null=True)
 
     def __unicode__(self):

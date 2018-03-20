@@ -46,7 +46,6 @@ from django.utils.encoding import force_unicode
 from django.utils.http import urlquote_plus
 from django.utils.translation import ugettext, ugettext_lazy as _
 from django.views.decorators.http import require_POST
-from gdata.service import RequestError
 
 import widget
 from widget import rpc as widget_rpc

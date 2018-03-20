@@ -27,11 +27,7 @@ INSTALLED_APPS += (
     'sslserver',
 )
 
-BROKER_BACKEND = 'amqplib'
-BROKER_HOST = 'queue'
-BROKER_USER = 'guest'
-BROKER_PASSWORD = 'guest'
-BROKER_PORT = 5672
+BROKER_URL = 'amqp://guest:guest@queue:5672'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 FEEDWORKER_PASS_DURATION=300

@@ -609,7 +609,7 @@ def member_search(request, team, qs):
         for member in members_qs
     ]
 
-    return HttpResponse(json.dumps(data), mimetype='application/json')
+    return HttpResponse(json.dumps(data), content_type='application/json')
 
 @public_team_view
 @login_required
@@ -684,8 +684,6 @@ def activity(request, team):
 
     action_choices = ActivityRecord.type_choices()
 
-    next_page_query = request.GET.copy()
-    next_page_query['page'] = page.next_page_number()
 
     context = {
         'paginator': paginator,
@@ -695,12 +693,15 @@ def activity(request, team):
         'team': team,
         'tab': 'activity',
         'user': request.user,
-        'next_page_query': next_page_query.urlencode(),
         'breadcrumbs': [
             BreadCrumb(team, 'teams:dashboard', team.slug),
             BreadCrumb(_('Activity')),
         ],
     }
+    if page.has_next():
+        next_page_query = request.GET.copy()
+        next_page_query['page'] = page.next_page_number()
+        context['next_page_query'] = next_page_query.urlencode()
     # tells the template to use get_old_message instead
     context['use_old_messages'] = True
     if team.is_old_style():
