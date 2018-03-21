@@ -199,7 +199,6 @@ INSTALLED_APPS = (
     'django.contrib.webdesign',
     # third party apps
     'djcelery',
-    'south',
     'rest_framework',
     # third party apps forked on our repo
     'localeurl',
@@ -338,8 +337,7 @@ AUTHENTICATION_BACKENDS = (
 # Use cookie storage always since it works the best with our caching system
 MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
 
-SKIP_SOUTH_TESTS = True
-SOUTH_TESTS_MIGRATE = False
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 LOGIN_URL = '/auth/login/'
 LOGIN_REDIRECT_URL = '/'
@@ -349,6 +347,7 @@ ACCOUNT_ACTIVATION_DAYS = 9999 # we are using registration only to verify emails
 SESSION_COOKIE_AGE = 2419200 # 4 weeks
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
+SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
 
 RECENT_ACTIVITIES_ONPAGE = 10
 ACTIVITIES_ONPAGE = 20

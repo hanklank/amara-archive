@@ -74,7 +74,8 @@ class CustomUserManager(UserManager):
         username = kwargs.pop('username')
         for username_try in self._unique_username_iter(username):
             try:
-                return self.create(username=username_try, **kwargs)
+                with transaction.atomic():
+                    return self.create(username=username_try, **kwargs)
             except IntegrityError:
                 continue
         raise AssertionError("Ran out of username tries")
@@ -127,6 +128,12 @@ class CustomUserManager(UserManager):
             return qs
         else:
             return self.none()
+
+def get_amara_anonymous_user():
+    user, created = CustomUser.objects.get_or_create(
+        pk=settings.ANONYMOUS_USER_ID,
+        defaults={'username': settings.ANONYMOUS_DEFAULT_USERNAME})
+    return user
 
 class CustomUser(BaseUser, secureid.SecureIDMixin):
     AUTOPLAY_ON_BROWSER = 1
@@ -199,6 +206,7 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
     ]
 
     class Meta:
+        db_table = 'auth_customuser'
         verbose_name = 'User'
 
     def __init__(self, *args, **kwargs):
@@ -292,40 +300,41 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
         if '$' in self.username:
             raise ValidationError("usernames can't contain the '$' character")
 
-    def check_last_hidden_message_id(self, request):
-        raw_cookie_value = request.COOKIES.get('hide_new_messages')
-        if not raw_cookie_value:
-            return
-        try:
-            cookie_value = long(raw_cookie_value)
-        except (ValueError, TypeError):
-            logger.warn(
-                "Error reading the hide_new_messages cookie ({})".format(
-                    raw_cookie_value), exc_info=True)
-            return
-        if cookie_value and cookie_value != self.last_hidden_message_id:
-            self.set_last_hidden_message_id(cookie_value)
-
-    def set_last_hidden_message_id(self, message_id):
+    def set_last_hidden_message_id(self, request, message_id):
         if message_id != self.last_hidden_message_id:
             self.last_hidden_message_id = message_id
             self.save()
+            # cycle the session key to bust the varnish cache
+            request.session.cycle_key()
 
-    def unread_messages(self, after_message_id=None):
+    def new_messages_count(self):
+        """
+        Number of messages we should show in the "You have XX new messages
+        alert"
+
+        These are messages that:
+          - Are unread
+          - Have come in after the last time the user hide that message,
+            or viewed their inbox
+
+        """
         from messages.models import Message
-        qs = Message.objects.for_user(self).filter(read=False)
-        if after_message_id is not None:
-            qs = qs.filter(id__gt=after_message_id)
-        return qs
+        qs = (Message.objects.for_user(self)
+              .filter(read=False, id__gt=self.last_hidden_message_id))
+        return qs.count()
 
-    @memoize
-    def unread_messages_count(self, after_message_id=None):
-        return self.unread_messages(after_message_id).count()
+    def last_message_id(self):
+        """
+        The id of the last message for the user.
 
-    @memoize
-    def last_unread_message_id(self, after_message_id=None):
-        qs = self.unread_messages(after_message_id).aggregate(max_id=Max('id'))
-        return qs['max_id']
+        Returns: message id, or 0 if there are no messages
+        """
+        from messages.models import Message
+        qs = Message.objects.for_user(self).order_by('-id')[:1]
+        if qs:
+            return qs[0].id
+        else:
+            return 0
 
     def tutorial_was_shown(self):
         CustomUser.objects.filter(pk=self.id).update(show_tutorial=False)
@@ -511,9 +520,8 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
         avatar = self._get_avatar(110)
         return mark_safe('<span class="avatar avatar-xl"><img src="{}"></span>'.format(avatar))
 
-    @models.permalink
     def get_absolute_url(self):
-        return ('profiles:profile', [urlquote(self.username)])
+        return reverse('profiles:profile', args=(self.username,))
 
     def send_message_url(self, absolute_url=False):
         url = '{}?user={}'.format(reverse('messages:new'),
@@ -555,10 +563,7 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
 
     @classmethod
     def get_amara_anonymous(cls):
-        user, created = cls.objects.get_or_create(
-            pk=settings.ANONYMOUS_USER_ID,
-            defaults={'username': settings.ANONYMOUS_DEFAULT_USERNAME})
-        return user
+        return get_amara_anonymous_user()
 
     @property
     def is_amara_anonymous(self):
@@ -640,6 +645,9 @@ class Awards(models.Model):
     user = models.ForeignKey(CustomUser, null=True)
     created = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        db_table = 'auth_awards'
+
     def _set_points(self):
         if self.type == self.COMMENT:
             self.points = 10
@@ -703,6 +711,7 @@ class UserLanguage(models.Model):
         verbose_name=_('follow requests in language'))
 
     class Meta:
+        db_table = 'auth_userlanguage'
         unique_together = ['user', 'language']
 
     def save(self, *args, **kwargs):
@@ -723,6 +732,7 @@ class Announcement(models.Model):
     cookie_date_format = '%d/%m/%Y %H:%M:%S'
 
     class Meta:
+        db_table = 'auth_announcement'
         ordering = ['-created']
 
     @classmethod
@@ -814,6 +824,7 @@ class EmailConfirmation(models.Model):
         return u"confirmation for %s" % self.user.email
 
     class Meta:
+        db_table = 'auth_emailconfirmation'
         verbose_name = _("e-mail confirmation")
         verbose_name_plural = _("e-mail confirmations")
 
@@ -862,6 +873,9 @@ class LoginToken(models.Model):
 
     objects = LoginTokenManager()
 
+    class Meta:
+        db_table = 'auth_logintoken'
+
     @property
     def is_expired(self):
         return self.created + LoginToken.EXPIRES_IN <  datetime.now()
@@ -882,6 +896,9 @@ class AmaraApiKey(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     key = models.CharField(max_length=256, blank=True, default=generate_api_key)
 
+    class Meta:
+        db_table = 'auth_amaraapikey'
+
     def __unicode__(self):
         return u"Api key for {}: {}".format(self.user, self.key)
 
@@ -897,11 +914,14 @@ class SentMessageDateManager(models.Manager):
 
     def check_too_many_messages(self, user):
         now = dates.now()
-        self.get_query_set().filter(created__lt=now - timedelta(minutes=settings.MESSAGES_SENT_WINDOW_MINUTES)).delete()
-        return self.get_query_set().filter(user=user,
+        self.get_queryset().filter(created__lt=now - timedelta(minutes=settings.MESSAGES_SENT_WINDOW_MINUTES)).delete()
+        return self.get_queryset().filter(user=user,
                                     created__gt=now - timedelta(minutes=settings.MESSAGES_SENT_WINDOW_MINUTES)).count() > settings.MESSAGES_SENT_LIMIT
 
 class SentMessageDate(models.Model):
     user = models.ForeignKey(CustomUser)
     created = models.DateTimeField()
     objects = SentMessageDateManager()
+
+    class Meta:
+        db_table = 'auth_sentmessagedate'
