@@ -22,6 +22,7 @@ import logging
 from django import forms
 from django.forms.forms import NON_FIELD_ERRORS
 from django.conf import settings
+from django.core.files import File
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 from requests.auth import HTTPBasicAuth
@@ -34,10 +35,10 @@ logger = logging.getLogger(__name__)
 class WufooError(Exception):
     pass
 
-def make_api_request(method, path, data=None):
+def make_api_request(method, path, data=None, files=None):
     url = settings.WUFOO_API_BASE_URL + path
     auth = HTTPBasicAuth(settings.WUFOO_API_KEY, '')
-    return requests.request(method, url, data=data, auth=auth)
+    return requests.request(method, url, data=data, files=files, auth=auth)
 
 def api_get_form(form_id):
     response = make_api_request('GET', 'forms/{}.json'.format(form_id))
@@ -49,9 +50,19 @@ def api_get_fields(form_id):
     data = response.json()
     return data['Fields']
 
-def submit_entry(form_id, data):
+def submit_entry(form_id, submit_data):
+    data = {
+        key: value
+        for key, value in submit_data.items()
+        if not isinstance(value, File)
+    }
+    files = {
+        key: value
+        for key, value in submit_data.items()
+        if isinstance(value, File)
+    }
     return make_api_request('POST', 'forms/{}/entries.json'.format(form_id),
-                            data=data)
+                            data=data, files=files)
 
 class WufooForm(forms.Form):
     # Wufoo form ID
@@ -68,12 +79,13 @@ class WufooForm(forms.Form):
         """
         if not self.is_valid():
             return # don't bother posting to wufoo in this case
-        form_data = self.data.copy()
-        form_data.update(self.extra_wufoo_data())
+        form_data = self.cleaned_data.copy()
+        self.alter_data_for_wufoo(form_data)
         wufoo_data = {}
         for wufoo_name, django_name in self.field_map.items():
             if django_name in form_data:
-                wufoo_data[wufoo_name] = form_data[django_name]
+                wufoo_data[wufoo_name] = self.prep_wufoo_data(
+                    form_data[django_name])
         response = submit_entry(self.form_id, wufoo_data)
         errors_from_wufoo = {}
         try:
@@ -97,8 +109,16 @@ class WufooForm(forms.Form):
             for field, text in errors_from_wufoo.items():
                 self.errors[field] = self.error_class([text])
 
-    def extra_wufoo_data(self):
-        return {}
+    def prep_wufoo_data(self, data):
+        if isinstance(data, (list, tuple)):
+            return ','.join(data)
+        elif isinstance(data, bool):
+            return 'Yes' if data else 'No'
+        else:
+            return data
+
+    def alter_data_for_wufoo(self, data):
+        pass
 
     def get_success_message(self):
         try:
