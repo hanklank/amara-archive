@@ -81,8 +81,8 @@ class AmaraRadioSelect(widgets.RadioSelect):
         return u'<input{}>'.format(flatatt(attrs))
 
     def render_label(self, name, value, choice, input_id):
-        return u'<label for="{}"><span></span>{}</label>'.format(
-            input_id, force_unicode(choice[1]))
+        return (u'<label for="{}"><span class="radio-icon"></span>'
+                '{}</label>'.format(input_id, force_unicode(choice[1])))
 
 class SearchBar(widgets.TextInput):
     def render(self, name, value, attrs=None):

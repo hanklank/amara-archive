@@ -80,6 +80,8 @@ def calc_widget_type(field):
 def calc_label(field, reverse_required=False):
     if not field.label:
         return ''
+    elif isinstance(field.field.widget, forms.CheckboxInput):
+        return field.label
     elif not field.field.required and not reverse_required:
         return mark_safe(fmt(
             _('%(field_label)s <span class="fieldOptional">(optional)</span>'),

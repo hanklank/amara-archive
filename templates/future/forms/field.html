@@ -3,7 +3,7 @@
 {% else %}
 <div class="form-group{% if field.errors %} has-error{% endif %}">
   {% if widget_type == "checkbox" %}
-  <div class="checkbox">{{ field }}<label for="{{ field.auto_id }}"><span></span>{{ label }}</label></div>
+  <div class="checkbox">{{ field }}<label for="{{ field.auto_id }}"><span class="checkbox-icon"></span>{{ label }}</label></div>
   {% else %}
   {% if field.label %}<label for="{{ field.auto_id }}">{{ label }}</label>{% endif %}{{ field }}
   {% endif %}
