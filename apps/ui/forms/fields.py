@@ -196,7 +196,11 @@ class SearchField(forms.CharField):
         if label:
             self.widget.attrs['placeholder'] = label
 
+class UploadOrPasteField(forms.Field):
+    widget = widgets.UploadOrPasteWidget
+
 __all__ = [
     'AmaraChoiceField', 'AmaraMultipleChoiceField', 'LanguageField',
     'MultipleLanguageField', 'SearchField', 'HelpTextList',
+    'UploadOrPasteField',
 ]

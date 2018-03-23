@@ -102,6 +102,25 @@ class AmaraFileInput(widgets.FileInput):
             final_attrs['value'] = force_text(self._format_value(value))
         return mark_safe(render_to_string(self.template_name, dictionary=final_attrs))
 
+class UploadOrPasteWidget(widgets.TextInput):
+    template_name = "future/forms/widgets/upload-or-paste.html"
+
+    def render(self, name, value, attrs=None):
+        context = {
+            'name': name,
+            'initial_text': '',
+        }
+        if isinstance(value, basestring):
+            context['initial_text'] = value
+        return mark_safe(render_to_string(self.template_name, context))
+
+    def value_from_datadict(self, data, files, name):
+        selector = data.get(name + '-selector')
+        if selector == 'upload':
+            return files.get(name + '-upload')
+        else:
+            return data.get(name + '-paste')
+
 class AmaraClearableFileInput(widgets.ClearableFileInput):
     template_name = "widget/clearable_file_input.html"
     def render(self, name, value, attrs=None):
@@ -128,5 +147,6 @@ class AmaraClearableFileInput(widgets.ClearableFileInput):
         return mark_safe(render_to_string(self.template_name, dictionary=context))
 
 __all__ = [
-    'AmaraRadioSelect', 'SearchBar', 'AmaraFileInput', 'AmaraClearableFileInput',
+    'AmaraRadioSelect', 'SearchBar', 'AmaraFileInput',
+    'AmaraClearableFileInput', 'UploadOrPasteWidget',
 ]
