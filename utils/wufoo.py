@@ -29,6 +29,7 @@ from requests.auth import HTTPBasicAuth
 import requests
 
 from ui.templatetags.forms import render_field
+from utils.xml import strip_tags
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +95,8 @@ class WufooForm(forms.Form):
             if not success:
                 for error in data['FieldErrors']:
                     field_name = self.field_map[error['ID']]
-                    errors_from_wufoo[field_name] = error['ErrorText']
+                    errors_from_wufoo[field_name] = strip_tags(
+                        error['ErrorText'])
         except Exception, e:
             logger.warning(
                 'Unknown error when processing wufoo '
