@@ -2049,7 +2049,7 @@ class DeleteVideosForm(VideoManagementForm):
         choice_help_text=DELETE_HELP_TEXT, required=False, initial='',
         widget=AmaraRadioSelect,
     )
-    verify = forms.CharField(required=False, label=_('Are you sure?'))
+    verify = forms.CharField(label=_('Are you sure?'))
 
     permissions_check = staticmethod(permissions.new_can_remove_videos)
 
