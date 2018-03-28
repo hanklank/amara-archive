@@ -21,7 +21,7 @@
     {{block.super}}
     <meta property="og:title" content="{{ page_title }}" />
     <meta property="og:type" content="video"/>
-    <meta property="og:url" content="http://{{ current_site.domain }}{{ video.get_absolute_url }}"/>
+    <meta property="og:url" content="{{ BASE_URL}}{{ video.get_absolute_url }}"/>
     {% if video.thumbnail %}
         <meta property="og:image" content="{{ video.get_thumbnail }}" />
     {% else %}
@@ -65,7 +65,7 @@
                 </div>
             </li>
         </ul> 
-        {% include "future/videos/embed.html" with url=video.get_video_url team=video.get_team %}
+        {% include "future/videos/embed.html" with url=video.get_video_url team=video.get_team subtitle_language=language %}
         {% if language.get_description %}
             <div id="description"{% if language.get_description|length > 300 %} class="abbr collapsed{% endif %}">
                 <div {% if language.is_rtl %}class="is-rtl"{% endif %}>

@@ -155,14 +155,16 @@
             open: function(dialogName) {
                 VideoPlayer.pause();
                 stack.push(dialogName);
+                $scope.$emit('dialog-opened', dialogName);
             },
             close: function() {
-                stack.pop();
+                var dialogName = stack.pop();
                 if(this.current() == 'generic') {
                     this.generic = genericStack.pop();
                 } else {
                     this.generic = null;
                 }
+                $scope.$emit('dialog-closed', dialogName);
             },
             onCloseClick: function($event) {
                 $event.stopPropagation();

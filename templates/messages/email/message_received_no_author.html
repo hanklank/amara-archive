@@ -10,9 +10,6 @@ You have received a message on Amara:
 
 {{ message.content|encode_html_email|safe }}<br><br>
 
-<a href="http://{{ domain }}{% filter rmlocale %}{{ message.get_reply_url }}{% endfilter %}">
-	{% trans "Reply to this message" %}
-</a><br>
 {% endblock %}
 
 {% block dont_send %}{% endblock %}

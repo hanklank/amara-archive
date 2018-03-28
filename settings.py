@@ -27,6 +27,7 @@ import optionalapps
 
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 DEFAULT_PROTOCOL  = 'http'
+HOSTNAME = 'localhost'
 
 LOCALE_PATHS = [
     os.path.join(PROJECT_ROOT, 'locale')
@@ -119,8 +120,6 @@ TIME_ZONE = 'America/Chicago'
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
 
-SITE_ID = 1
-
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
 USE_I18N = True
@@ -197,11 +196,9 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sitemaps',
-    'django.contrib.sites',
     'django.contrib.webdesign',
     # third party apps
     'djcelery',
-    'south',
     'rest_framework',
     # third party apps forked on our repo
     'localeurl',
@@ -303,6 +300,7 @@ LOCALE_INDEPENDENT_PATHS = [
     re.compile('^/jstest/'),
     re.compile('^/sitemap.*.xml'),
     re.compile('^/externalsites/youtube-callback'),
+    re.compile('^/auth/set-hidden-message-id/'),
     re.compile('^/crossdomain.xml'),
     re.compile('^/embedder-widget-iframe/'),
 ]
@@ -336,8 +334,7 @@ AUTHENTICATION_BACKENDS = (
 # Use cookie storage always since it works the best with our caching system
 MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
 
-SKIP_SOUTH_TESTS = True
-SOUTH_TESTS_MIGRATE = False
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 LOGIN_URL = '/auth/login/'
 LOGIN_REDIRECT_URL = '/'
@@ -347,6 +344,7 @@ ACCOUNT_ACTIVATION_DAYS = 9999 # we are using registration only to verify emails
 SESSION_COOKIE_AGE = 2419200 # 4 weeks
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
+SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
 
 RECENT_ACTIVITIES_ONPAGE = 10
 ACTIVITIES_ONPAGE = 20
@@ -607,7 +605,7 @@ MEDIA_BUNDLES = {
             'src/js/third-party/jquery.autosize.js',
             'src/js/third-party/angular.1.2.9.js',
             'src/js/third-party/angular-cookies.js',
-            'src/js/third-party/underscore.1.4.4.js',
+            'src/js/third-party/underscore.1.8.3.js',
             'src/js/third-party/popcorn.js',
             'src/js/third-party/Blob.js',
             'src/js/third-party/FileSaver.js',
@@ -620,6 +618,8 @@ MEDIA_BUNDLES = {
             #'src/js/popcorn/popcorn.netflix.js',
             'src/js/subtitle-editor/app.js',
             'src/js/subtitle-editor/dom.js',
+            'src/js/subtitle-editor/durationpicker.js',
+            'src/js/subtitle-editor/gettext.js',
             'src/js/subtitle-editor/help.js',
             'src/js/subtitle-editor/lock.js',
             'src/js/subtitle-editor/preferences.js',
@@ -627,6 +627,8 @@ MEDIA_BUNDLES = {
             'src/js/subtitle-editor/notes.js',
             'src/js/subtitle-editor/blob.js',
             'src/js/subtitle-editor/session.js',
+            'src/js/subtitle-editor/shifttime.js',
+            'src/js/subtitle-editor/toolbar.js',
             'src/js/subtitle-editor/workflow.js',
             'src/js/subtitle-editor/subtitles/controllers.js',
             'src/js/subtitle-editor/subtitles/directives.js',

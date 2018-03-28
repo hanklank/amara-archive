@@ -166,8 +166,9 @@ urlpatterns = patterns('',
     ## Video shortlinks
     url(r'^v/(?P<encoded_pk>\w+)/$', 'videos.views.shortlink',
         name='shortlink'),
-    # ESI includes
     url(r'^captcha/', include('captcha.urls')),
+    url(r'^commit$', RedirectView.as_view(
+        url='https://github.com/pculture/unisubs/commit/{}'.format(settings.LAST_COMMIT_GUID))),
     url(r'^$', settings.HOMEPAGE_VIEW, name="home"),
 )
 
@@ -179,14 +180,6 @@ urlpatterns += patterns('',
 
 
 if settings.DEBUG:
-    try:
-        import debug_toolbar
-    except ImportError:
-        pass
-    else:
-        urlpatterns += patterns('',
-            url(r'^__debug__/', include(debug_toolbar.urls)),
-        )
     urlpatterns += patterns('',
         (r'^site_media/(?P<path>.*)$', 'django.views.static.serve',
          {'document_root': settings.STATIC_ROOT, 'show_indexes': True}),

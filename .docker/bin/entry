@@ -36,11 +36,12 @@ elif [ "$ACTION" = "manage" ]; then
 elif [ "$ACTION" = "test" ]; then
     cd /var/run/amara/test-output/
     source /usr/local/bin/config_env
-    manage test --settings=dev_settings_test --where=/opt/apps/amara
+    manage test --settings=dev_settings_test
 elif [ "$ACTION" = "shell" ]; then
     echo "Running shell..."
     echo "Use the manage alias to run django management commands"
     echo "source /usr/local/bin/config_env" >> ~/.bash_profile
+    export AMARASHELL=1
     exec /bin/bash -l
 else
     echo "Unknown action: $ACTION"

@@ -19,7 +19,7 @@
 goog.provide('unisubs.StatWidgetConfig');
 
 unisubs.StatWidgetConfig.siteConfig = {
-    'siteURL': 'http://{{current_site.domain}}',
+    'siteURL': '{{BASE_URL}}',
     'staticURL': '{{STATIC_URL}}'
 };
 

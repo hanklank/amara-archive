@@ -435,4 +435,47 @@
             <button ng-click="onClose($event)">{% trans "Close Editor" %}</button>
         </footer>
     </aside>
+    <aside modal-dialog="shift-forward" class="modal" ng-controller="ShiftForwardController">
+      <h3>{% trans "Shift subtitles forward" %}</h3>
+      <form>
+        <div class="formControl radioGroup">
+          <label class="radioGroup-choice"><input type="radio" ng-model="subsToShift" ng-change="validateForm()" value="all">{% trans "Shift all subtitles" %}</label>
+          <label class="radioGroup-choice"><input type="radio" ng-model="subsToShift" ng-change="validateForm()" value="after">{% trans "Shift subtitles starting from:" %}</label>
+          <div class="durationPicker" duration-picker ng-change="validateForm()" ng-model="startTime" ng-disable="subsToShift == 'all'"></div>
+        </div>
+        <div class="formControl">
+          <label>{% trans "Shift amount" %}</label>
+          <div class="durationPicker" ng-model="amount" ng-change="validateForm()" duration-picker></div>
+        </div>
+        <div class="min-lines-3 formHelp">
+          <p ng-bind="helpText" ng-class="helpTextError ? 'error' : ''"></p>
+          <p class="warningText" ng-if="helpTextWarning != ''" ng-bind="helpTextWarning"></p>
+        </div>
+        <footer class="buttons">
+          <button ng-click="onShiftClick($event)" ng-disabled="!dataValid">{% trans "Shift" %}</button>
+          <button ng-click="dialogManager.onCloseClick($event)">{% trans "Cancel" %}</button>
+        </footer>
+      </form>
+    </aside>
+    <aside modal-dialog="shift-backward" class="modal" ng-controller="ShiftBackwardController">
+      <h3>{% trans "Shift subtitles backward" %}</h3>
+      <form>
+        <div class="formControl">
+          <label>{% trans "Start time" %}</label>
+          <div class="durationPicker" ng-model="startTime" ng-change="validateForm()" duration-picker></div>
+        </div>
+        <div class="formControl">
+          <label>{% trans "End time" %}</label>
+          <div class="durationPicker" ng-model="endTime" ng-change="validateForm()" duration-picker></div>
+        </div>
+        <div class="min-lines-3 formHelp">
+          <p ng-bind="helpText" ng-class="helpTextError ? 'error' : ''"></p>
+          <p class="warningText" ng-if="helpTextWarning != ''" ng-bind="helpTextWarning"></p>
+        </div>
+        <footer class="buttons">
+          <button ng-click="onShiftClick($event)" ng-disabled="!dataValid">{% trans "Shift" %}</button>
+          <button ng-click="dialogManager.onCloseClick($event)">{% trans "Cancel" %}</button>
+        </footer>
+      </form>
+    </aside>
 </div>
