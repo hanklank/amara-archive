@@ -409,7 +409,6 @@ class BrightcoveCMSAccount(ExternalAccount):
         bc_video_id = self._get_brightcove_id(video_url)
         if bc_video_id is None:
             return
-        self.sync_video_metadata(video_url)
         syncing.brightcove.update_subtitles_cms(self.publisher_id,
                                      self.client_id,
                                      self.client_secret,
@@ -419,7 +418,6 @@ class BrightcoveCMSAccount(ExternalAccount):
         bc_video_id = self._get_brightcove_id(video_url)
         if bc_video_id is None:
             return
-        self.sync_video_metadata(video_url)
         syncing.brightcove.delete_subtitles_cms(self.publisher_id,
                                      self.client_id,
                                      self.client_secret,

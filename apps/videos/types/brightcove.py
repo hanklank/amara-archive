@@ -26,6 +26,9 @@ from base import VideoType, VideoTypeError
 from django.conf import settings
 from django.utils.html import strip_tags
 
+from externalsites import brightcove
+import externalsites
+
 BRIGHTCOVE_API_KEY = getattr(settings, 'BRIGHTCOVE_API_KEY', None)
 BRIGHTCOVE_API_SECRET = getattr(settings, 'BRIGHTCOVE_API_SECRET' , None)
 
@@ -96,6 +99,14 @@ class MP4BrightcoveVideoMatcher(object):
         query = urlparse.parse_qs(parsed.query)
         return query['videoId'][0]
 
+def get_brightcove_publisher_id(url):
+    parsed = urlparse.urlparse(url)
+    query = urlparse.parse_qs(parsed.query)
+    try:
+        return query['pubId'][0]
+    except KeyError, IndexError:
+        return None
+
 ALL_MATCHERS = [
     OldStyleBrightcoveVideoMatcher(),
     MP4BrightcoveVideoMatcher(),
@@ -126,3 +137,32 @@ class BrightcoveVideoType(VideoType):
     @classmethod
     def matches_video_url(cls, url):
         return any(matcher.matches_video_url(url) for matcher in ALL_MATCHERS)
+
+    def set_values(self, video, user, team, video_url):
+        publisher_id = get_brightcove_publisher_id(video_url.url)
+        if team and publisher_id:
+            try:
+                account = (
+                    externalsites.models.BrightcoveCMSAccount.objects
+                    .for_owner(team)
+                    .filter(publisher_id=publisher_id)
+                    .get())
+                self.set_values_from_account(video, account)
+            except externalsites.models.BrightcoveAccount.DoesNotExist:
+                pass
+
+    def set_values_from_account(self, video, account):
+        try:
+            video_info = brightcove.get_video_info(
+                account.publisher_id, account.client_id,
+                account.client_secret, self.brightcove_id)
+        except brightcove.BrightcoveAPIError, e:
+            return
+        if not video.title:
+            video.title = video_info["title"]
+        if not video.description:
+            video.description = video_info["description"]
+        if not video.thumbnail:
+            video.thumbnail = video_info["thumbnail"]
+        if not video.duration:
+            video.duration = int(video_info["duration_ms"]) / 1000    # convert from ms to s
