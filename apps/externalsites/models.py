@@ -370,10 +370,6 @@ class BrightcoveCMSAccount(ExternalAccount):
         return fmt(_('client id %(client_id)s',
                      client_id=self.client_id))
 
-    def _get_sync_account_nonteam_video(self, video, video_url):
-        return self.get(
-            type=ExternalAccount.TYPE_USER, username=video_url.owner_username)
-
     def _get_brightcove_id(self, video_url):
         video_type = video_url.get_video_type()
         if hasattr(video_type, 'brightcove_id'):
@@ -384,26 +380,6 @@ class BrightcoveCMSAccount(ExternalAccount):
            'videoId' in urlparse.parse_qs(parsed_url.query):
             return urlparse.parse_qs(parsed_url.query)['videoId'][0]
         return None
-
-    def sync_video_metadata(self, video_url):
-        bc_video_id = self._get_brightcove_id(video_url)
-        video = video_url.video
-        # check to make sure the video even has missing metadata before making a request
-        if (video.title and video.description and video.thumbnail and video.duration):
-            return
-        data = syncing.brightcove.get_metadata_cms(self.publisher_id,
-                                    self.client_id,
-                                    self.client_secret,
-                                    bc_video_id)
-        if not video.title:
-            video.title = data["title"]
-        if not video.description:
-            video.description = data["description"]
-        if not video.thumbnail:
-            video.thumbnail = data["thumbnail"]
-        if not video.duration:
-            video.duration = int(data["duration_ms"]) / 1000    # convert from ms to s
-        video.save()
 
     def do_update_subtitles(self, video_url, language, tip):
         bc_video_id = self._get_brightcove_id(video_url)
