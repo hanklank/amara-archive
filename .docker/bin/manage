@@ -1,8 +1,3 @@
 #!/bin/bash
 source /usr/local/bin/config_env
-
-if [ -z ${AMARASHELL} ]; then
-    exec python ${MANAGE_SCRIPT} "$@"
-else
-    python ${MANAGE_SCRIPT} "$@"
-fi
+exec python ${MANAGE_SCRIPT} "$@"
