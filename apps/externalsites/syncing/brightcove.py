@@ -33,13 +33,13 @@ MEDIA_WRITE_URL = 'https://api.brightcove.com/services/post'
 
 def update_subtitles_cms(account_id, client_id, client_secret, bc_video_id, subtitle_version):
     try:
-        _make_subtitle_cms_request(account_id, client_id, client_secret, bc_video_id, subtitle_version.language_code, subtitle_version)
+        brightcove._make_subtitle_cms_request(account_id, client_id, client_secret, bc_video_id, subtitle_version.language_code, subtitle_version)
     except brightcove.BrightcoveAPIError, e:
         raise SyncingError(unicode(e))
 
 def delete_subtitles_cms(account_id, client_id, client_secret, bc_video_id, subtitle_language):
     try:
-        _make_subtitle_cms_request(account_id, client_id, client_secret, bc_video_id, subtitle_language.language_code)
+        brightcove._make_subtitle_cms_request(account_id, client_id, client_secret, bc_video_id, subtitle_language.language_code)
     except brightcove.BrightcoveAPIError, e:
         raise SyncingError(unicode(e))
 
