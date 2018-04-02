@@ -18,6 +18,7 @@
 # http://www.gnu.org/licenses/agpl-3.0.html.
 
 from optparse import make_option
+import logging
 import multiprocessing
 import signal
 import sys
@@ -29,6 +30,8 @@ from django.db import connection
 
 from externalsites.models import YouTubeAccount
 from videos.models import VideoFeed
+
+logger = logging.getLogger(__name__)
 
 def commit():
     connection.cursor().execute('COMMIT')
@@ -43,24 +46,21 @@ class Command(BaseCommand):
                     type=int),
     )
     def handle(self, *args, **options):
-        self.quitting = False
         self.pool = multiprocessing.Pool(options['workers'], init_worker)
         signal.signal(signal.SIGINT, self.terminate)
         signal.signal(signal.SIGTERM, self.terminate)
         self.loop()
 
     def loop(self):
-        while not self.quitting:
+        while True:
             tasks = self.fetch_tasks()
             while not tasks:
-                print('no tasks to run, sleeping for 30 seconds')
+                logger.info('no tasks to run, sleeping for 30 seconds')
                 time.sleep(30)
                 tasks = self.fetch_tasks()
             seconds_per_task = (float(settings.FEEDWORKER_PASS_DURATION) /
                                 len(tasks))
             for task in tasks:
-                if self.quitting:
-                    break
                 task.schedule(self.pool)
                 time.sleep(seconds_per_task)
 
@@ -82,11 +82,11 @@ class Command(BaseCommand):
         return tasks
 
     def terminate(self, signum, frame):
-        print '\nterminating'
+        logger.info('terminating')
         sys.stdout.flush()
-        self.quitting = True
         self.pool.close()
         self.pool.join()
+        raise SystemExit(1)
 
 class Task(object):
     """Container for a single task that we perform."""
@@ -105,10 +105,10 @@ def update_video_feed(feed_id):
         video_feed = VideoFeed.objects.get(pk=feed_id)
         video_feed.update()
     except VideoFeed.DoesNotExist:
-        print('update_video_feed: VideoFeed does not exist. ID: %s'.format(
-            feed_id))
+        logger.info('update_video_feed: VideoFeed does not exist. '
+                    'ID: %s'.format(feed_id))
     else:
-        print('Updated {}'.format(video_feed))
+        logger.info('Updated {}'.format(video_feed))
     commit()
     sys.stdout.flush()
 
@@ -117,10 +117,10 @@ def update_youtube_account(account_id):
         account = YouTubeAccount.objects.get(id=account_id)
         account.import_videos()
     except YouTubeAccount.DoesNotExist:
-        print("update_youtube_account: "
+        logger.info("update_youtube_account: "
               "YouTubeAccount.DoesNotExist ({})".format(account_id))
     else:
-        print('Imported {}'.format(account))
+        logger.info('Imported {}'.format(account))
     commit()
     sys.stdout.flush()
 
