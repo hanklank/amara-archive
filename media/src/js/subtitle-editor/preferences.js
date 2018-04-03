@@ -36,7 +36,10 @@ var angular = angular || null;
             makePreferencesRequest: function(type, data) {
                 var config = {
                     method: 'POST',
-                    headers: {'X-CSRFToken': $cookies.csrftoken},
+                    headers: {
+                        'X-CSRFToken': $cookies.csrftoken,
+                        'Content-type': 'application/x-www-form-urlencoded'
+                    },
                     url: getPreferencesUrl(type)
                 };
 
