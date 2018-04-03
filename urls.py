@@ -20,6 +20,7 @@ from django import http
 from django.conf.urls import include, patterns, url
 from django.conf import settings
 from django.contrib import admin
+from django.contrib.auth.models import AnonymousUser
 from django.shortcuts import render
 from django.template import RequestContext, loader
 from django.views.generic.base import TemplateView, RedirectView
@@ -187,8 +188,14 @@ if settings.DEBUG:
          {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
     )
 
+def ensure_user(request):
+    if not hasattr(request, 'user'):
+        request.user = AnonymousUser()
+
 def handler500(request):
+    ensure_user(request)
     return render(request, '500.html', status=500)
 
 def handler403(request):
+    ensure_user(request)
     return render(request, '403.html', status=403)
