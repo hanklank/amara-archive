@@ -50,23 +50,23 @@ var angular = angular || null;
                 $scope.helpText = gettext('Shift subtitles forward in bulk by a set amount of time.  This feature is useful when you edit the video and insert a new segment after already creating subtitles.');
                 $scope.helpTextError = false;
             } else if(!lastSubtitle) {
-                $scope.helpText = gettext('No subtitles to shift');
+                $scope.helpText = gettext('No subtitles to shift.');
                 $scope.helpTextError = true;
             } else if(lastSubtitle.startTime < $scope.startTime) {
-                $scope.helpText = gettext('Start time after last subtitle');
+                $scope.helpText = gettext('Start time is after last subtitle.');
                 $scope.helpTextError = true;
             } else {
                 if(startTime > 0) {
-                    var helpTextTemplate = gettext('Shift subtitles starting at %(start_time)s forward by %(amount)s');
+                    var helpTextTemplate = gettext('Shift subtitles starting at %(start_time)s forward by %(amount)s.');
                 } else {
-                    var helpTextTemplate = gettext('Shift all subtitles forward by %(amount)s');
+                    var helpTextTemplate = gettext('Shift all subtitles forward by %(amount)s.');
                 }
                 $scope.helpText = interpolate(helpTextTemplate, {
                     start_time: formatTime(startTime),
                     amount: formatTime($scope.amount)
                 }, true);
                 if(lastSubtitle.startTime + $scope.amount > $scope.timeline.duration) {
-                    $scope.helpTextWarning = gettext('Shift amount would move the last subtitle past the end of the video');
+                    $scope.helpTextWarning = gettext('Shift amount would move the last subtitle past the end of the video.');
                 }
                 $scope.helpTextError = true;
                 $scope.helpTextError = false;
@@ -124,7 +124,7 @@ var angular = angular || null;
                 $scope.helpText = gettext('No subtitles to shift.');
                 $scope.helpTextError = true;
             } else if($scope.endTime <= $scope.startTime) {
-                $scope.helpText = gettext('Start time not after end time.');
+                $scope.helpText = gettext('Start time is not after end time.');
                 $scope.helpTextError = true;
             } else {
                 var helpTextTemplate = gettext('Delete subtitles between %(start_time)s and %(end_time)s.  Shift subtitles after that back by %(amount)s.');
