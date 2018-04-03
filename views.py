@@ -48,7 +48,7 @@ def one_time_url(request, token):
     """
     data = get_one_time_data(token)
     if data is not None:
-        response = HttpResponse(data, mimetype="text/plain")
+        response = HttpResponse(data, content_type="text/plain")
         response['Content-Disposition'] = 'attachment'
         return response
     else:
