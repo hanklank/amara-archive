@@ -1743,8 +1743,8 @@ class RemoveMemberForm(ManagementForm):
 
         for member in members:
             try:
-                member.delete()
                 member_remove.send(sender=member)
+                member.delete()
                 for app in member.team.applications.filter(user=member.user):
                     app.on_member_removed(self.user, "web UI")
                 self.removed_count += 1
