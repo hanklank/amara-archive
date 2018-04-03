@@ -19,9 +19,10 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.core.validators import EMPTY_VALUES
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from captcha.fields import CaptchaField
 from django.template import loader
-from django.utils.http import int_to_base36
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
@@ -119,6 +120,7 @@ class CustomPasswordResetForm(forms.Form):
     def save(self,
              subject_template_name='registration/password_reset_subject.txt',
              email_template_name='registration/password_reset_email.html',
+             html_email_template_name=None,
              use_https=False, token_generator=default_token_generator,
              from_email=None, request=None):
         """
@@ -131,7 +133,7 @@ class CustomPasswordResetForm(forms.Form):
                 'email': user.email,
                 'domain': settings.HOSTNAME,
                 'site_name': 'Amara',
-                'uid': int_to_base36(user.id),
+                'uid': urlsafe_base64_encode(force_bytes(user.id)),
                 'user': user,
                 'token': token_generator.make_token(user),
                 'protocol': use_https and 'https' or 'http',
@@ -140,6 +142,7 @@ class CustomPasswordResetForm(forms.Form):
             subject = loader.render_to_string(subject_template_name, c)
             # Email subject *must not* contain newlines
             subject = ''.join(subject.splitlines())
+            # FIXME: should use html_email_template_name if present
             email = loader.render_to_string(email_template_name, c)
             send_mail(subject, email, from_email, [user.email])
 
