@@ -18,11 +18,14 @@
 
 from __future__ import absolute_import
 
+from django import forms
 from django import template
 from django.template.loader import render_to_string
-from django import forms
+from django.utils.translation import ugettext as _
+from django.utils.safestring import mark_safe
 
 from ui.forms import HelpTextList
+from utils.text import fmt
 
 register = template.Library()
 
@@ -32,13 +35,25 @@ def render_field(field):
         'field': field,
         'widget_type': calc_widget_type(field),
         'no_help_block': isinstance(field.help_text, HelpTextList),
+        'label': calc_label(field),
     })
+
+@register.filter
+def render_field_reverse_required(field):
+    return render_to_string('future/forms/field.html', {
+        'field': field,
+        'widget_type': calc_widget_type(field),
+        'no_help_block': isinstance(field.help_text, HelpTextList),
+        'label': calc_label(field, reverse_required=True),
+    })
+
 
 @register.filter
 def render_filter_field(field):
     return render_to_string('future/forms/filter-field.html', {
         'field': field,
         'widget_type': calc_widget_type(field),
+        'label': field.label,
     })
 
 def calc_widget_type(field):
@@ -61,3 +76,19 @@ def calc_widget_type(field):
         return 'default'
     else:
         return 'default'
+
+def calc_label(field, reverse_required=False):
+    if not field.label:
+        return ''
+    elif isinstance(field.field.widget, forms.CheckboxInput):
+        return field.label
+    elif not field.field.required and not reverse_required:
+        return mark_safe(fmt(
+            _('%(field_label)s <span class="fieldOptional">(optional)</span>'),
+            field_label=field.label))
+    elif field.field.required and reverse_required:
+        return mark_safe(fmt(
+            _('%(field_label)s <span class="fieldOptional">(required)</span>'),
+            field_label=field.label))
+    else:
+        return field.label
