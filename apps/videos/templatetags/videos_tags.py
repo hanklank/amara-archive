@@ -67,17 +67,6 @@ def can_user_edit_video_urls(video, user):
 def can_user_resync(video, user):
     return permissions.can_user_resync(video, user)
 
-@register.simple_tag
-def write_video_type_js(video):
-    if not video or not bool(video.get_video_url()):
-        return
-    try:
-        vt = video_type_registrar.video_type_for_url(video.get_video_url())
-        if hasattr(vt, "js_url"):
-            return '<script type="text/javascript" src="%s"><script/>' % vt.js_url
-    except VideoTypeError:
-        return
-
 from django.template.defaulttags import URLNode
 class VideoURLNode(URLNode):
     def render(self, video, request):
