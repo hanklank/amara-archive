@@ -1989,8 +1989,9 @@ class Invite(models.Model):
 
 class EmailInvite(models.Model):
     SECRET_CODE_MAX_LENGTH = 256 # 27 characters for the actual code, and an arbitrary number for the primary key length
-    SECRET_CODE_EXPIRATION_DAYS = 3
+    SECRET_CODE_EXPIRATION_MINUTES = 4320 # 72 hours / 3 days expiration
 
+    signer = Signer(sep="/", salt='teams.emailinvite')
 
     email = models.EmailField() # the email recipient of the email-invite, not necessarily the same with the email to be used as username
     team = models.ForeignKey(Team, related_name='email_invitations')
@@ -2003,15 +2004,13 @@ class EmailInvite(models.Model):
 
     @staticmethod
     def create_invite(author, team, role=TeamMember.ROLE_CONTRIBUTOR):
-        signer = Signer(sep="/", salt='teams.emailinvite')
-
         email_invite = EmailInvite()
         email_invite.author = author
         email_invite.team = team
         email_invite.role = role
         email_invite.secret_code = ""
         email_invite.save()
-        email_invite.secret_code = signer.sign(email_invite.pk)
+        email_invite.secret_code = EmailInvite.signer.sign(email_invite.pk)
         email_invite.save()
 
         return email_invite

@@ -52,7 +52,7 @@ from .behaviors import get_main_project
 from .bulk_actions import add_videos_from_csv
 from .exceptions import ApplicationInvalidException
 from .models import (Invite, Setting, Team, Project, TeamVideo,
-                     TeamLanguagePreference, TeamMember, Application)
+                     TeamLanguagePreference, TeamMember, Application, EmailInvite)
 from .statistics import compute_statistics
 from activity.models import ActivityRecord
 from auth.models import CustomUser as User
@@ -69,6 +69,8 @@ from utils.forms import autocomplete_user_view, FormRouter
 from utils.text import fmt
 from utils.translation import get_language_label
 from videos.models import Video
+
+import datetime
 
 logger = logging.getLogger('teams.views')
 
@@ -576,11 +578,23 @@ def invite(request, team):
         ],
     })
 
-def email_invite_accept(request, signed_pk):
-    pass
 
-def email_invite_expired():
-    pass
+def email_invite_accept(request, signed_pk):
+    pk = EmailInvite.signer.unsign(signed_pk)
+    email_invite = EmailInvite.objects.get(pk=pk)
+        
+    time_delta = datetime.datetime.now() - email_invite.created
+    time_delta_minutes = time_delta.total_seconds() / 60
+
+    if (time_delta_minutes > EmailInvite.SECRET_CODE_EXPIRATION_MINUTES):
+        return redirect('teams:email_invite_expired')
+    else:
+        return HttpResponse(status=200)
+
+
+def email_invite_expired(request):
+    return HttpResponse(status=200)
+
 
 @team_view
 def autocomplete_invite_user(request, team):

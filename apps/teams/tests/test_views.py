@@ -354,9 +354,10 @@ class EmailInviteViewTest(TestCase):
 
     def test_invite_expired(self):
         self.create_test_objects()
-        self.email_invite.created = self.email_invite.created - datetime.timedelta(days=3, minutes=1)        
+        self.email_invite.created = self.email_invite.created - datetime.timedelta(days=3, minutes=1)
+        self.email_invite.save()
         response = self.client.get(self.email_invite.get_url())
-        self.assertRedirects(response, 'email_invite_expired')
+        self.assertRedirects(response, reverse('teams:email_invite_expired'))
 
     def test_invite_invalid(self):
         assert_false(True)
