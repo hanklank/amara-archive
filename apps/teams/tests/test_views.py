@@ -343,3 +343,9 @@ class ViewsTests(TestCase):
             user.save()
         return TeamMember.objects.create(user=user, role=role, team=team)
 
+class EmailInviteViewTest(TestCase):
+    def test_invite_expired(self):
+        assert_false(True)
+
+    def test_invite_invalid(self):
+        assert_false(True)

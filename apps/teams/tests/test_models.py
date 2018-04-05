@@ -54,18 +54,14 @@ class UpdateSettingsTest(TestCase):
         assert_false(self.signal_handler.called)
 
 
-class EmailInviteTest(TestCase):
+class EmailInviteModelTest(TestCase):
+	def create_test_objects(self):
+		self.author = UserFactory()
+		self.user = UserFactory()
+		self.team = TeamFactory()
+		self.team_email_invite = EmailInvite.create_invite(team=self.team, author=self.author)
 
-	def test_invite_accepted(self):
-		author = UserFactory()
-		user = UserFactory()
-		team = TeamFactory()
-		team_email_invite = EmailInvite.create_invite(team=team, author=author)
-		team_email_invite.link_to_account(user)
-		assert_true(user.teams.filter(pk=team.pk).exists())
-
-	def test_invite_expired(self):
-		assert_false(True)
-
-	def test_accepted_invite_is_invalid(self):
-		assert_false(True)
+	def test_invite_linked(self):
+		self.create_test_objects()
+		self.team_email_invite.link_to_account(self.user)
+		assert_true(self.user.teams.filter(pk=self.team.pk).exists())
