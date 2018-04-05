@@ -29,7 +29,7 @@ def sitemap_index(request, sitemaps):
             for page in range(2, pages+1):
                 sites.append('%s://%s%s?p=%s' % (protocol, settings.HOSTNAME, sitemap_url, page))
     xml = loader.render_to_string('sitemap_index.xml', {'sitemaps': sites})
-    return HttpResponse(xml, mimetype='application/xml')
+    return HttpResponse(xml, content_type='application/xml')
 
 def sitemap_view(request, sitemaps, section=None):
     maps, urls = [], []
@@ -57,7 +57,7 @@ def sitemap_view(request, sitemaps, section=None):
         xml = smart_str(loader.render_to_string('sitemap.xml', {'urlset': urls}))
         cache.set(cache_key, xml, 60*60*24)
 
-    return HttpResponse(xml, mimetype='application/xml')
+    return HttpResponse(xml, content_type='application/xml')
 
 class AbstractSitemap(object):
     '''

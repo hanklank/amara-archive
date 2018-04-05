@@ -1102,7 +1102,7 @@ div.upload-draft-modal {
             padding: 0;
         }
 
-        input[type="text"], input[type="password"], textarea {
+        input[type="text"], input[type="password"], input[type="url"], textarea {
             border: 1px solid $faint;
             @include block-level;
             @include border-radius(2px);
@@ -1539,7 +1539,7 @@ body.account {
         margin-top: -.75em;
     }
     form fieldset {
-        input[type="text"], input[type="password"] {
+        input[type="text"], input[type="password"], input[type="email"] {
             width: 95%;
         }
     }

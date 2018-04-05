@@ -319,6 +319,9 @@ FACEBOOK_SECRET_KEY = ''
 VIMEO_API_KEY = None
 VIMEO_API_SECRET = None
 
+WUFOO_API_KEY = None
+WUFOO_API_BASE_URL = 'https://participatoryculture.wufoo.com/api/v3/'
+
 # NOTE: all of these backends store the User.id value in the session data,
 # which we rely on in AmaraAuthenticationMiddleware.  Other backends should
 # use the same system.
