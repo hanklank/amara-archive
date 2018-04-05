@@ -576,6 +576,12 @@ def invite(request, team):
         ],
     })
 
+def email_invite_accept(request, signed_pk):
+    pass
+
+def email_invite_expired():
+    pass
+
 @team_view
 def autocomplete_invite_user(request, team):
     return autocomplete_user_view(request, team.invitable_users())

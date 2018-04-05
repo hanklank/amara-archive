@@ -59,9 +59,9 @@ class EmailInviteModelTest(TestCase):
 		self.author = UserFactory()
 		self.user = UserFactory()
 		self.team = TeamFactory()
-		self.team_email_invite = EmailInvite.create_invite(team=self.team, author=self.author)
+		self.email_invite = EmailInvite.create_invite(team=self.team, author=self.author)
 
 	def test_invite_linked(self):
 		self.create_test_objects()
-		self.team_email_invite.link_to_account(self.user)
+		self.email_invite.link_to_account(self.user)
 		assert_true(self.user.teams.filter(pk=self.team.pk).exists())

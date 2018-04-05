@@ -2003,7 +2003,7 @@ class EmailInvite(models.Model):
 
     @staticmethod
     def create_invite(author, team, role=TeamMember.ROLE_CONTRIBUTOR):
-        signer = Signer()
+        signer = Signer(sep="/", salt='teams.emailinvite')
 
         email_invite = EmailInvite()
         email_invite.author = author
@@ -2026,6 +2026,9 @@ class EmailInvite(models.Model):
 
     def create_account(username, email, password, **kwargs):
         pass
+
+    def get_url(self):
+        return reverse('teams:email_invite_accept', kwargs={'signed_pk' : self.secret_code})
 
 
 # Workflows
