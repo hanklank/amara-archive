@@ -20,17 +20,29 @@ import json
 
 from django.utils.encoding import force_unicode
 from django.utils.html import conditional_escape
-from django.utils.safestring import mark_safe
+from django.utils.safestring import mark_safe, SafeUnicode
 from django.utils.translation import ugettext_lazy as _
 from django import forms
 
 from utils import translation
 from ui.forms import widgets
 
+class HelpTextList(SafeUnicode):
+    """
+    Help text displayed as a bullet list
+    """
+    def __new__(cls, *items):
+        output = []
+        output.append(u'<ul class="helpList">')
+        for item in items:
+            output.extend([u'<li>', unicode(item), u'</li>'])
+        output.append(u'</ul>')
+        return SafeUnicode.__new__(cls, u''.join(output))
+
 class AmaraChoiceFieldMixin(object):
-    def __init__(self, allow_search=True, border=False, max_choices=None,
+    def __init__(self, allow_search=True, filter=False, max_choices=None,
                  choice_help_text=None, *args, **kwargs):
-        self.border = border
+        self.filter = filter
         if choice_help_text:
             self.choice_help_text = dict(choice_help_text)
         else:
@@ -82,8 +94,8 @@ class AmaraChoiceFieldMixin(object):
 
     def widget_attrs(self, widget):
         if isinstance(widget, forms.Select):
-            if self.border:
-                return { 'class': 'select border' }
+            if self.filter:
+                return { 'class': 'select selectFilter' }
             else:
                 return { 'class': 'select' }
         else:
@@ -184,7 +196,11 @@ class SearchField(forms.CharField):
         if label:
             self.widget.attrs['placeholder'] = label
 
+class UploadOrPasteField(forms.Field):
+    widget = widgets.UploadOrPasteWidget
+
 __all__ = [
     'AmaraChoiceField', 'AmaraMultipleChoiceField', 'LanguageField',
-    'MultipleLanguageField', 'SearchField',
+    'MultipleLanguageField', 'SearchField', 'HelpTextList',
+    'UploadOrPasteField',
 ]

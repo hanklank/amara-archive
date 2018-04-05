@@ -1,5 +1,5 @@
 <div class="input-group fileUpload">
-  <input type="text" class="form-control" readonly />
+  <input type="text" class="fileUpload-text" readonly />
   {% if widget.is_initial %}{{initial_text}}: <a href="{{value.url}}">{{value}}</a>
   {% if not widget.required %}
   <input type="checkbox" name="{{checkbox_name}}" id="{{checkbox_id}}" />

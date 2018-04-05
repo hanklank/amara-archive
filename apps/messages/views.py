@@ -88,14 +88,7 @@ def message(request, message_id):
                        template_object_name='message',
                        extra_context=extra_context)
     if messages:
-        request.user.set_last_hidden_message_id(messages[0].id)
-    try:
-        last_message = messages[0]
-        max_age = 60*60*24*365
-        expires = cookie_date(time.time()+max_age)
-        response.set_cookie(Message.hide_cookie_name, last_message.pk, max_age, expires)
-    except Message.DoesNotExist:
-        pass
+        request.user.set_last_hidden_message_id(request, messages[0].id)
     return response
 
 @login_required
@@ -136,11 +129,7 @@ def inbox(request, message_pk=None):
                        template_object_name='message',
                        extra_context=extra_context)
     if qs:
-        last_message = qs[0]
-        request.user.set_last_hidden_message_id(last_message.id)
-        max_age = 60*60*24*365
-        expires = cookie_date(time.time()+max_age)
-        response.set_cookie(Message.hide_cookie_name, last_message.pk, max_age, expires)
+        request.user.set_last_hidden_message_id(request, qs[0].id)
 
     return response
 

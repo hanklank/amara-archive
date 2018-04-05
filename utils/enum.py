@@ -21,11 +21,13 @@ utils.enum -- Enum handling
 
 from __future__ import absolute_import
 
+from django.core import exceptions
 from django.db import models
-from south.modelsinspector import add_introspection_rules
+from django.utils.deconstruct import deconstructible
 
 RAISE_KEY_ERROR = object()
 
+@deconstructible
 class EnumMember(object):
     def __init__(self, enum_name, name, label, number):
         self.enum_name = enum_name
@@ -168,6 +170,17 @@ class EnumField(models.PositiveSmallIntegerField):
             enum = Enum('FakeEnum', [])
         super(EnumField, self).__init__(**kwargs)
         self.enum = enum
+        # remove the validators from PositiveSmallIntegerField
+        self.validators = [ ]
+
+    def validate(self, value, model_instance):
+        super(EnumField, self).validate(value, model_instance)
+        if value is not None and value not in self.enum.members:
+            raise exceptions.ValidationError(
+                self.error_messages['invalid_choice'],
+                code='invalid_choice',
+                params={'value': value},
+            )
 
     def get_default(self):
         if self.has_default() and isinstance(self.default, EnumMember):
@@ -217,15 +230,3 @@ class EnumField(models.PositiveSmallIntegerField):
             return self.enum.lookup_slug(value).number
         else:
             return value.number
-
-add_introspection_rules([
-    (
-        [EnumField],
-        [],
-        {
-            'default': ['raw_default', {}],
-        }
-    ),
-], [
-    "^utils\.enum\.EnumField$",
-])

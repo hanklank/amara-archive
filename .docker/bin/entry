@@ -16,7 +16,7 @@ elif [ "$ACTION" = "master_worker" ]; then
 elif [ "$ACTION" = "feed_worker" ]; then
     echo "Running feed worker..."
     source /usr/local/bin/config_env
-    manage feedworker
+    exec manage feedworker
 elif [ "$ACTION" = "worker" ]; then
     echo "Running worker..."
     exec /usr/local/bin/worker
@@ -32,14 +32,14 @@ elif [ "$ACTION" = "reset_db" ]; then
 elif [ "$ACTION" = "manage" ]; then
     source /usr/local/bin/config_env
     shift
-    manage "$@"
+    exec manage "$@"
 elif [ "$ACTION" = "test" ]; then
     cd /var/run/amara/test-output/
     source /usr/local/bin/config_env
-    manage test --settings=dev_settings_test --where=/opt/apps/amara
+    exec manage test --settings=dev_settings_test
 elif [ "$ACTION" = "shell" ]; then
     echo "Running shell..."
-    echo "Use the manage alias to run django management commands"
+    echo "Use the manage script to run django management commands"
     echo "source /usr/local/bin/config_env" >> ~/.bash_profile
     exec /bin/bash -l
 else

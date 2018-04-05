@@ -20,6 +20,7 @@ from django import http
 from django.conf.urls import include, patterns, url
 from django.conf import settings
 from django.contrib import admin
+from django.contrib.auth.models import AnonymousUser
 from django.shortcuts import render
 from django.template import RequestContext, loader
 from django.views.generic.base import TemplateView, RedirectView
@@ -70,10 +71,12 @@ urlpatterns = patterns('',
     url(r'^admin/billing/$', 'teams.views.billing', name='billing'),
     url(r'^admin/password_reset/$', 'auth.views.password_reset', name='password_reset'),
     url(r'^password_reset/done/$',
-        'django.contrib.auth.views.password_reset_done'),
-    url(r'^reset/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/$',
+        'django.contrib.auth.views.password_reset_done',
+        name='password_reset_done'),
+    url(r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/'
+        '(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
         'django.contrib.auth.views.password_reset_confirm', {'post_reset_redirect': '/reset/done/'}, name='password_reset_confirm'),
-    url(r'^reset-external/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/$',
+    url(r'^reset-external/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
         'django.contrib.auth.views.password_reset_confirm',
         {'extra_context': {'external_account': True}, 'post_reset_redirect': '/reset/done/'},
         name='password_reset_confirm_external'),
@@ -166,8 +169,9 @@ urlpatterns = patterns('',
     ## Video shortlinks
     url(r'^v/(?P<encoded_pk>\w+)/$', 'videos.views.shortlink',
         name='shortlink'),
-    # ESI includes
     url(r'^captcha/', include('captcha.urls')),
+    url(r'^commit$', RedirectView.as_view(
+        url='https://github.com/pculture/unisubs/commit/{}'.format(settings.LAST_COMMIT_GUID))),
     url(r'^$', settings.HOMEPAGE_VIEW, name="home"),
 )
 
@@ -186,8 +190,14 @@ if settings.DEBUG:
          {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
     )
 
+def ensure_user(request):
+    if not hasattr(request, 'user'):
+        request.user = AnonymousUser()
+
 def handler500(request):
+    ensure_user(request)
     return render(request, '500.html', status=500)
 
 def handler403(request):
+    ensure_user(request)
     return render(request, '403.html', status=403)

@@ -137,7 +137,7 @@ class AlreadyEditingException(Exception):
 
 # Video
 class VideoManager(models.Manager):
-    def get_query_set(self):
+    def get_queryset(self):
         return VideoQueryset(self.model, using=self._db)
 
     def featured(self):
@@ -378,7 +378,8 @@ class Video(models.Model):
             (120,90),))
     edited = models.DateTimeField(null=True, editable=False)
     created = models.DateTimeField()
-    user = models.ForeignKey(User, null=True, blank=True)
+    user = models.ForeignKey(User, null=True, blank=True,
+                             default=settings.ANONYMOUS_USER_ID)
     followers = models.ManyToManyField(User, blank=True, related_name='followed_videos', editable=False)
     complete_date = models.DateTimeField(null=True, blank=True, editable=False)
     featured = models.DateTimeField(null=True, blank=True)
@@ -938,7 +939,8 @@ class Video(models.Model):
                                                         ignore_video=self)
         new_team_id = team.id if team else 0
         try:
-            self.videourl_set.update(team_id=new_team_id)
+            with transaction.atomic():
+                self.videourl_set.update(team_id=new_team_id)
         except IntegrityError:
             for vurl in self.get_video_urls():
                 try:
@@ -1549,7 +1551,7 @@ class SubtitleVersion(models.Model):
     language = models.ForeignKey(SubtitleLanguage)
     version_no = models.PositiveIntegerField(default=0)
     datetime_started = models.DateTimeField(editable=False)
-    user = models.ForeignKey(User, default=User.get_amara_anonymous)
+    user = models.ForeignKey(User, default=None)
     note = models.CharField(max_length=512, blank=True)
     time_change = models.FloatField(null=True, blank=True, editable=False)
     text_change = models.FloatField(null=True, blank=True, editable=False)
@@ -1616,12 +1618,14 @@ def update_followers(sender, instance, created, **kwargs):
     lang = instance.language
     if created and user and user.notify_by_email:
         try:
-            lang.followers.add(user)
+            with transaction.atomic():
+                lang.followers.add(user)
         except IntegrityError:
             # User already follows the language.
             pass
         try:
-            lang.video.followers.add(user)
+            with transaction.atomic():
+                lang.video.followers.add(user)
         except IntegrityError:
             # User already follows the video.
             pass
@@ -2187,7 +2191,7 @@ class Action(models.Model):
             instance.save()
 
 class VideoUrlManager(models.Manager):
-    def get_query_set(self):
+    def get_queryset(self):
         return VideoUrlQueryset(self.model, using=self._db)
 
 class VideoUrlQueryset(query.QuerySet):

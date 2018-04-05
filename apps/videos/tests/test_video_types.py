@@ -271,7 +271,10 @@ class BrightcoveVideoTypeTest(TestCase):
         vt = BrightcoveVideoType(url)
         self.assertEquals(vt.video_id, self.video_id)
 
-    def test_urls(self):
+    def check_no_match(self, url):
+        self.assertFalse(BrightcoveVideoType.matches_video_url(url))
+
+    def test_old_style_urls(self):
         # test URLs with the video_id in the path
         self.check_url(self.make_url(
             'http://link.brightcove.com'
@@ -284,6 +287,22 @@ class BrightcoveVideoTypeTest(TestCase):
             'http://link.brightcove.com'
             '/services/link/bcpid{player_id}'
             '?bckey=foo&bctid={video_id}'))
+
+    def test_mp4_urls(self):
+        self.check_url(self.make_url(
+            'https://foo-a.akamaihd.net/123/132_456_789.mp4'
+            '?pubId=123&videoId={video_id}'))
+        # Don't match if the host is different
+        self.check_no_match(self.make_url(
+            'https://foo-a.example.com/123/132_456_789.mp4'
+            '?pubId=123&videoId={video_id}'))
+        # Don't match if the query parameters are different
+        self.check_no_match(self.make_url(
+            'https://foo-a.akamaihd.net/123/132_456_789.mp4'
+            '?pubId=123&videoId={video_id}&foo=bar'))
+        self.check_no_match(self.make_url(
+            'https://foo-a.akamaihd.net/123/132_456_789.mp4'
+            '?videoId={video_id}'))
 
     def test_redirection(self):
         # test URLs in bcove.me that redirect to another brightcove URL
