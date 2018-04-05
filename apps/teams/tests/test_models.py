@@ -50,3 +50,15 @@ class UpdateSettingsTest(TestCase):
     def test_no_changes(self):
         self.change_settings(description='test')
         assert_false(self.signal_handler.called)
+
+
+class EmailInviteTest(TestCase):
+
+	def test_invite_accepted(self):
+		assert_false(True)
+
+	def test_invite_expired(self):
+		assert_false(True)
+
+	def test_accepted_invite_is_invalid(self):
+		assert_false(True)
