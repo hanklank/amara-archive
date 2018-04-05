@@ -18,6 +18,8 @@
 
 from django.test import TestCase
 
+from teams.models import EmailInvite, TeamMember
+
 from utils.factories import *
 from utils.test_utils import *
 import teams.signals
@@ -55,7 +57,12 @@ class UpdateSettingsTest(TestCase):
 class EmailInviteTest(TestCase):
 
 	def test_invite_accepted(self):
-		assert_false(True)
+		author = UserFactory()
+		user = UserFactory()
+		team = TeamFactory()
+		team_email_invite = EmailInvite.create_invite(team=team, author=author)
+		team_email_invite.link_to_account(user)
+		assert_true(user.teams.filter(pk=team.pk).exists())
 
 	def test_invite_expired(self):
 		assert_false(True)

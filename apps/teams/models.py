@@ -27,6 +27,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.core.files import File
+from django.core.signing import Signer
 from django.db import connection
 from django.db import models
 from django.db import transaction
@@ -1984,6 +1985,41 @@ class Invite(models.Model):
     def message_json_data(self, data, msg):
         data['can-reply'] = False
         return data
+
+
+class EmailInvite(models.Model):
+    SECRET_CODE_MAX_LENGTH = 256
+    email = models.EmailField() # the email recipient of the email-invite, not necessarily the same with the email to be used as username
+    team = models.ForeignKey(Team, related_name='email_invitations')
+    note = models.TextField(blank=True, max_length=200)
+    author = models.ForeignKey(User)
+    role = models.CharField(max_length=16, choices=TeamMember.ROLES,
+                            default=TeamMember.ROLE_CONTRIBUTOR)
+    secret_code = models.CharField(max_length=SECRET_CODE_MAX_LENGTH)
+
+    @staticmethod
+    def create_invite(author, team, role=TeamMember.ROLE_CONTRIBUTOR):
+        signer = Signer()
+
+        email_invite = EmailInvite()
+        email_invite.author = author
+        email_invite.team = team
+        email_invite.role = role
+        email_invite.secret_code = signer.sign(email_invite.pk)
+        email_invite.save()
+
+        return email_invite
+
+    @staticmethod
+    def get_by_code(secret_code):
+        pass
+
+    def link_to_account(self, user):
+        member = TeamMember.objects.create(team=self.team, user=user, role=self.role)
+        notifier.team_member_new.delay(member.pk)
+
+    def create_account(username, email, password, **kwargs):
+        pass
 
 
 # Workflows
