@@ -1029,19 +1029,19 @@ class InviteForm(forms.Form):
         notifier.team_invitation_sent.delay(invite_pk)
 
     def process_emails(self):
-        try:
-            invitee = User.objects.get(email=self.cleaned_data['email'])
-            invite = Invite.objects.create(
-                team=self.team, user=invitee, 
-                author=self.user, role=self.cleaned_data['role'],
-                note=self.cleaned_data['message'])
-            invite.save()
-            self.send_notif_for_invite(invite.pk)
-        except(User.DoesNotExist):
-            EmailInvite.create_invite(email=self.cleaned_data['email'], 
-                author=self.user, team=self.team, role=self.cleaned_data['role'])
-            pass
-            # TODO code for email sending
+        if self.cleaned_data['email']:
+            try:
+                invitee = User.objects.get(email=self.cleaned_data['email'])
+                invite = Invite.objects.create(
+                    team=self.team, user=invitee, 
+                    author=self.user, role=self.cleaned_data['role'],
+                    note=self.cleaned_data['message'])
+                invite.save()
+                self.send_notif_for_invite(invite.pk)
+            except(User.DoesNotExist):
+                email_invite = EmailInvite.create_invite(email=self.cleaned_data['email'], 
+                    author=self.user, team=self.team, role=self.cleaned_data['role'])
+                email_invite.send_mail()
 
 class ProjectForm(forms.ModelForm):
     class Meta:

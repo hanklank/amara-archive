@@ -2031,6 +2031,9 @@ class EmailInvite(models.Model):
         time_delta_minutes = time_delta.total_seconds() / 60
         return (time_delta_minutes > EmailInvite.SECRET_CODE_EXPIRATION_MINUTES)
 
+    def send_mail(self):
+        pass
+
 
 # Workflows
 class Workflow(models.Model):
