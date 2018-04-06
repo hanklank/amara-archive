@@ -579,7 +579,6 @@ def invite(request, team):
         ],
     })
 
-
 def email_invite(request, signed_pk):
     try:
         pk = EmailInvite.signer.unsign(signed_pk)
@@ -591,17 +590,14 @@ def email_invite(request, signed_pk):
             return redirect('teams:email_invite_accept', pk=pk)
     except (BadSignature, EmailInvite.DoesNotExist):
         return redirect('teams:email_invite_invalid')
-            
 
 def email_invite_accept(request, pk):
     # TODO redirect to account creation form
     return HttpResponse(status=200)
 
-
 def email_invite_invalid(request):
     # TODO redirect to a page saying the invite is invalid, expired,  or has been used
     return HttpResponse(status=200)
-
 
 @team_view
 def autocomplete_invite_user(request, team):

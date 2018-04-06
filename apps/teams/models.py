@@ -2006,11 +2006,6 @@ class EmailInvite(models.Model):
     def create_invite(author, team, role=TeamMember.ROLE_CONTRIBUTOR):
         email_invite = EmailInvite.objects.create(author=author,
             team=team, role=role, secret_code="")
-        email_invite.author = author
-        email_invite.team = team
-        email_invite.role = role
-        email_invite.secret_code = ""
-        email_invite.save()
         email_invite.secret_code = EmailInvite.signer.sign(email_invite.pk)
         email_invite.save()
 
