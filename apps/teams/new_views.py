@@ -581,12 +581,9 @@ def invite(request, team):
 
 def email_invite_accept(request, signed_pk):
     pk = EmailInvite.signer.unsign(signed_pk)
-    email_invite = EmailInvite.objects.get(pk=pk)
-        
-    time_delta = datetime.datetime.now() - email_invite.created
-    time_delta_minutes = time_delta.total_seconds() / 60
+    email_invite = EmailInvite.objects.get(pk=pk)   
 
-    if (time_delta_minutes > EmailInvite.SECRET_CODE_EXPIRATION_MINUTES):
+    if (email_invite.is_expired()):
         return redirect('teams:email_invite_expired')
     else:
         return HttpResponse(status=200)

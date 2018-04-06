@@ -361,3 +361,4 @@ class EmailInviteViewTest(TestCase):
 
     def test_invite_invalid(self):
         assert_false(True)
+        

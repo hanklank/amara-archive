@@ -2029,6 +2029,11 @@ class EmailInvite(models.Model):
     def get_url(self):
         return reverse('teams:email_invite_accept', kwargs={'signed_pk' : self.secret_code})
 
+    def is_expired(self):
+        time_delta = datetime.datetime.now() - self.created
+        time_delta_minutes = time_delta.total_seconds() / 60
+        return (time_delta_minutes > EmailInvite.SECRET_CODE_EXPIRATION_MINUTES)
+
 
 # Workflows
 class Workflow(models.Model):
