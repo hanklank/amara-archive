@@ -587,13 +587,13 @@ def email_invite(request, signed_pk):
         if (email_invite.is_expired()):
             return redirect('teams:email_invite_invalid')
         else:
-            return redirect('teams:email_invite_accept', pk=pk)
+            return email_invite_accept(request, pk)
     except (BadSignature, EmailInvite.DoesNotExist):
         return redirect('teams:email_invite_invalid')
 
 def email_invite_accept(request, pk):
-    # TODO redirect to account creation form
-    return HttpResponse(status=200)
+    # TODO render account creation form
+    return render(request, 'new-teams/email_invite_accept.html')
 
 def email_invite_invalid(request):
     # TODO redirect to a page saying the invite is invalid, expired,  or has been used

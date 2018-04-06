@@ -59,7 +59,7 @@ from teams.signals import (member_leave, api_subtitles_approved,
                            team_settings_changed)
 from utils import DEFAULT_PROTOCOL
 from utils import enum
-from utils import translation
+from utils import translation, send_templated_email
 from utils.amazon import S3EnabledImageField, S3EnabledFileField
 from utils.panslugify import pan_slugify
 from utils.text import fmt
@@ -2032,7 +2032,12 @@ class EmailInvite(models.Model):
         return (time_delta_minutes > EmailInvite.SECRET_CODE_EXPIRATION_MINUTES)
 
     def send_mail(self):
-        pass
+        send_templated_email(to=self.email,
+            subject=_('Amara - Team Invite for {}'.format(self.team.name)),
+            body_template='new-teams/email_invite.html',
+            body_dict={ 'team_name': self.team.name,
+                'invite_url': self.get_url()})
+            
 
 
 # Workflows

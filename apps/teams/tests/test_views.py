@@ -355,7 +355,7 @@ class EmailInviteViewTest(TestCase):
 
     def test_invite_valid(self):
         response = self.client.get(self.email_invite.get_url())
-        self.assertRedirects(response, reverse('teams:email_invite_accept', kwargs={'pk':self.email_invite.pk}))
+        self.assertTemplateUsed(response, 'new-teams/email_invite_accept.html')
 
     def test_invite_expired(self):
         self.email_invite.created = self.email_invite.created - datetime.timedelta(days=3, minutes=1)
@@ -367,4 +367,3 @@ class EmailInviteViewTest(TestCase):
         self.email_invite.link_to_account(self.user)
         response = self.client.get(self.email_invite.get_url())
         self.assertRedirects(response, reverse('teams:email_invite_invalid'))
-        
