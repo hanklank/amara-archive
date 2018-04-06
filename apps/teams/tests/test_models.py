@@ -55,13 +55,12 @@ class UpdateSettingsTest(TestCase):
 
 
 class EmailInviteModelTest(TestCase):
-	def create_test_objects(self):
+	def setUp(self):
 		self.author = UserFactory()
 		self.user = UserFactory()
 		self.team = TeamFactory()
 		self.email_invite = EmailInvite.create_invite(team=self.team, author=self.author)
 
 	def test_invite_linked(self):
-		self.create_test_objects()
 		self.email_invite.link_to_account(self.user)
 		assert_true(self.user.teams.filter(pk=self.team.pk).exists())
