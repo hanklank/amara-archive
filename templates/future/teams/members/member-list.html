@@ -25,15 +25,14 @@
   {% for member in page %}
   <li>
     {% if is_team_admin %}
+    {% if member.user != user %}
     <div class="checkbox">
-      {% if member.user == user %}
-      <input type="checkbox" class="disabled" disabled="disabled">
-      <label><span class="checkbox-icon"></span></label>
-      {% else %}
       <input id="member-{{member.id}}" type="checkbox" value="{{member.id}}" class="selectList-checkbox">
       <label for="member-{{member.id}}"><span class="checkbox-icon"></span></label>
-      {% endif %}
     </div>
+    {% else %}
+    <div class="checkbox-spacer"></div>
+    {% endif %}
     {% endif %}
     <div>
       <a href="{% url 'teams:member-profile' slug=team.slug username=member.user.username %}">
