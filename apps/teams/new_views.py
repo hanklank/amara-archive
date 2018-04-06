@@ -35,6 +35,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import redirect_to_login
 from django.core.cache import cache
 from django.core.paginator import Paginator
+from django.core.signing import BadSignature
 from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.core.exceptions import PermissionDenied
@@ -579,17 +580,26 @@ def invite(request, team):
     })
 
 
-def email_invite_accept(request, signed_pk):
-    pk = EmailInvite.signer.unsign(signed_pk)
-    email_invite = EmailInvite.objects.get(pk=pk)   
+def email_invite(request, signed_pk):
+    try:
+        pk = EmailInvite.signer.unsign(signed_pk)
+        email_invite = EmailInvite.objects.get(pk=pk)
 
-    if (email_invite.is_expired()):
-        return redirect('teams:email_invite_expired')
-    else:
-        return HttpResponse(status=200)
+        if (email_invite.is_expired()):
+            return redirect('teams:email_invite_invalid')
+        else:
+            return redirect('teams:email_invite_accept', pk=pk)
+    except (BadSignature, EmailInvite.DoesNotExist):
+        return redirect('teams:email_invite_invalid')
+            
+
+def email_invite_accept(request, pk):
+    # TODO redirect to account creation form
+    return HttpResponse(status=200)
 
 
-def email_invite_expired(request):
+def email_invite_invalid(request):
+    # TODO redirect to a page saying the invite is invalid, expired,  or has been used
     return HttpResponse(status=200)
 
 

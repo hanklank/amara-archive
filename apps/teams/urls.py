@@ -68,8 +68,9 @@ urlpatterns = patterns('teams.views',
 )
 
 urlpatterns += patterns('teams.new_views',
-    url(r'^email_invite/accept/(?P<signed_pk>[0-9]+/[A-Za-z0-9_=-]+)/$', 'email_invite_accept', name='email_invite_accept'),
-    url(r'^email_invite/expired/', 'email_invite_expired', name='email_invite_expired'),
+    url(r'^email_invite/(?P<signed_pk>[0-9]+/[A-Za-z0-9_=-]+)/$', 'email_invite', name='email_invite'),
+    url(r'^email_invite/accept/(?P<pk>[0-9]+)/$', 'email_invite_accept', name='email_invite_accept'),
+    url(r'^email_invite/invalid/', 'email_invite_invalid', name='email_invite_invalid'),
     url(r'^(?P<slug>[-\w]+)/applications/$', 'applications', name='applications'),
     url(r'^(?P<slug>[-\w]+)/$', 'dashboard', name='dashboard'),
     url(r'^(?P<slug>[-\w]+)/join/$', 'join', name='join'),

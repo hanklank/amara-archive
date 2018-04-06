@@ -2004,7 +2004,8 @@ class EmailInvite(models.Model):
 
     @staticmethod
     def create_invite(author, team, role=TeamMember.ROLE_CONTRIBUTOR):
-        email_invite = EmailInvite()
+        email_invite = EmailInvite.objects.create(author=author,
+            team=team, role=role, secret_code="")
         email_invite.author = author
         email_invite.team = team
         email_invite.role = role
@@ -2022,12 +2023,13 @@ class EmailInvite(models.Model):
     def link_to_account(self, user):
         member = TeamMember.objects.create(team=self.team, user=user, role=self.role)
         notifier.team_member_new.delay(member.pk)
+        self.delete()
 
     def create_account(username, email, password, **kwargs):
         pass
 
     def get_url(self):
-        return reverse('teams:email_invite_accept', kwargs={'signed_pk' : self.secret_code})
+        return reverse('teams:email_invite', kwargs={'signed_pk' : self.secret_code})
 
     def is_expired(self):
         time_delta = datetime.datetime.now() - self.created
