@@ -1993,7 +1993,7 @@ class EmailInvite(models.Model):
 
     signer = Signer(sep="/", salt='teams.emailinvite')
 
-    email = models.EmailField() # the email recipient of the email-invite, not necessarily the same with the email to be used as username
+    email = models.EmailField(max_length=254) # the email recipient of the email-invite, not necessarily the same with the email to be used as username
     team = models.ForeignKey(Team, related_name='email_invitations')
     note = models.TextField(blank=True, max_length=200)
     author = models.ForeignKey(User)
@@ -2003,8 +2003,8 @@ class EmailInvite(models.Model):
     created = models.DateTimeField(auto_now_add=True)
 
     @staticmethod
-    def create_invite(author, team, role=TeamMember.ROLE_CONTRIBUTOR):
-        email_invite = EmailInvite.objects.create(author=author,
+    def create_invite(email, author, team, role=TeamMember.ROLE_CONTRIBUTOR):
+        email_invite = EmailInvite.objects.create(email=email, author=author,
             team=team, role=role, secret_code="")
         email_invite.secret_code = EmailInvite.signer.sign(email_invite.pk)
         email_invite.save()

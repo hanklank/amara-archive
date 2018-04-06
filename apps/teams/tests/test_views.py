@@ -350,7 +350,8 @@ class EmailInviteViewTest(TestCase):
         self.author = UserFactory()
         self.user = UserFactory()
         self.team = TeamFactory()
-        self.email_invite = EmailInvite.create_invite(team=self.team, author=self.author)
+        self.email_invite = EmailInvite.create_invite(email=self.user.email,
+            team=self.team, author=self.author)
 
     def test_invite_valid(self):
         response = self.client.get(self.email_invite.get_url())

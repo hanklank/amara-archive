@@ -9,6 +9,7 @@
 <form method="post" action="" class="team-invite">
   {% csrf_token %}
   {% include "_field.html" with field=form.username %}
+  {% include "_field.html" with field=form.email %}
   {% include "_field.html" with field=form.message %}
   {% include "_field.html" with field=form.role %}
 

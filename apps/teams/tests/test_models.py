@@ -59,7 +59,8 @@ class EmailInviteModelTest(TestCase):
 		self.author = UserFactory()
 		self.user = UserFactory()
 		self.team = TeamFactory()
-		self.email_invite = EmailInvite.create_invite(team=self.team, author=self.author)
+		self.email_invite = EmailInvite.create_invite(email=self.user.email,
+			team=self.team, author=self.author)
 
 	def test_invite_linked(self):
 		self.email_invite.link_to_account(self.user)

@@ -49,7 +49,7 @@ from subtitles.pipeline import add_subtitles
 from teams.models import (
     Team, TeamMember, TeamVideo, Task, Project, Workflow, Invite,
     BillingReport, MembershipNarrowing, Application, TeamVisibility,
-    VideoVisibility,
+    VideoVisibility, EmailInvite
 )
 from teams import behaviors, permissions, tasks
 from teams.exceptions import ApplicationInvalidException
@@ -995,6 +995,7 @@ class InviteForm(forms.Form):
     username = UserAutocompleteField(error_messages={
         'invalid': _(u'User has a pending invite or is already a member of this team'),
     })
+    email = forms.EmailField(required=False, max_length=254)
     message = forms.CharField(required=False,
                               widget=forms.Textarea(attrs={'rows': 4}),
                               label=_("Message to user"))
@@ -1014,14 +1015,33 @@ class InviteForm(forms.Form):
         )
 
     def save(self):
-        from messages import tasks as notifier
         invite = Invite.objects.create(
             team=self.team, user=self.cleaned_data['username'], 
             author=self.user, role=self.cleaned_data['role'],
             note=self.cleaned_data['message'])
         invite.save()
-        notifier.team_invitation_sent.delay(invite.pk)
+        self.send_notif_for_invite(invite.pk)
+        self.process_emails()
         return invite
+
+    def send_notif_for_invite(self, invite_pk):
+        from messages import tasks as notifier        
+        notifier.team_invitation_sent.delay(invite_pk)
+
+    def process_emails(self):
+        try:
+            invitee = User.objects.get(email=self.cleaned_data['email'])
+            invite = Invite.objects.create(
+                team=self.team, user=invitee, 
+                author=self.user, role=self.cleaned_data['role'],
+                note=self.cleaned_data['message'])
+            invite.save()
+            self.send_notif_for_invite(invite.pk)
+        except(User.DoesNotExist):
+            EmailInvite.create_invite(email=self.cleaned_data['email'], 
+                author=self.user, team=self.team, role=self.cleaned_data['role'])
+            pass
+            # TODO code for email sending
 
 class ProjectForm(forms.ModelForm):
     class Meta:
