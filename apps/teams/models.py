@@ -2016,10 +2016,6 @@ class EmailInvite(models.Model):
         notifier.team_member_new.delay(member.pk)
         self.delete()
 
-    def create_account(username, email, password, **kwargs):
-        # TODO
-        pass
-
     def get_url(self):
         return reverse('teams:email_invite', kwargs={'signed_pk' : self.secret_code})
 

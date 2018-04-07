@@ -31,6 +31,7 @@ from collections import namedtuple, OrderedDict
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import authenticate, login as auth_login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import redirect_to_login
 from django.core.cache import cache
@@ -57,6 +58,7 @@ from .models import (Invite, Setting, Team, Project, TeamVideo,
 from .statistics import compute_statistics
 from activity.models import ActivityRecord
 from auth.models import CustomUser as User
+from auth.forms import CustomUserCreationForm
 from messages import tasks as messages_tasks
 from subtitles.models import SubtitleLanguage
 from teams.workflows import TeamWorkflow
@@ -68,7 +70,7 @@ from utils.decorators import staff_member_required
 from utils.pagination import AmaraPaginator, AmaraPaginatorFuture
 from utils.forms import autocomplete_user_view, FormRouter
 from utils.text import fmt
-from utils.translation import get_language_label
+from utils.translation import get_language_label, get_user_languages_from_cookie
 from videos.models import Video
 
 import datetime
@@ -584,20 +586,36 @@ def email_invite(request, signed_pk):
         pk = EmailInvite.signer.unsign(signed_pk)
         email_invite = EmailInvite.objects.get(pk=pk)
 
+        form = CustomUserCreationForm(request.POST or None, label_suffix="")
+
+        if(request.POST):
+            # form = CustomUserCreationForm(request.POST, label_suffix="")
+            if form.is_valid():
+                new_user = form.save()
+                user = authenticate(username=new_user.username,
+                                    password=form.cleaned_data['password1'])
+                langs = get_user_languages_from_cookie(request)
+                for l in langs:
+                    UserLanguage.objects.get_or_create(user=user, language=l)
+                auth_login(request, user)
+
+                email_invite.link_to_account(user)
+
+                return redirect(reverse("teams:dashboard", kwargs={"slug": email_invite.team.slug}))
+
         if (email_invite.is_expired()):
             return redirect('teams:email_invite_invalid')
         else:
-            return email_invite_accept(request, pk)
+            return render(request, 'new-teams/email_invite_accept.html', {
+                'creation_form': form,
+                'team_name': email_invite.team.name,
+            })
     except (BadSignature, EmailInvite.DoesNotExist):
         return redirect('teams:email_invite_invalid')
 
-def email_invite_accept(request, pk):
-    # TODO render account creation form
-    return render(request, 'new-teams/email_invite_accept.html')
-
 def email_invite_invalid(request):
     # TODO redirect to a page saying the invite is invalid, expired,  or has been used
-    return HttpResponse(status=200)
+    return HttpResponse("teams.new_views.email_invite_accept")
 
 @team_view
 def autocomplete_invite_user(request, team):
