@@ -992,7 +992,7 @@ class AddMembersForm(forms.Form):
         return summary
 
 class InviteForm(forms.Form):
-    username = UserAutocompleteField(error_messages={
+    username = UserAutocompleteField(required=False, error_messages={
         'invalid': _(u'User has a pending invite or is already a member of this team'),
     })
     email = forms.EmailField(required=False, max_length=254)
@@ -1014,14 +1014,30 @@ class InviteForm(forms.Form):
             reverse('teams:autocomplete-invite-user', args=(team.slug,))
         )
 
+    def clean(self):
+        cleaned_data = super(InviteForm, self).clean()
+        email = cleaned_data.get('email')
+        username = cleaned_data.get('username')
+
+        if not (email or username):
+            raise forms.ValidationError(_(u"A username or email address must be provided"))
+
+        return cleaned_data
+
     def save(self):
+        if self.cleaned_data['email']:
+            self.process_emails()
+        if self.cleaned_data['username']:
+            return self.create_invite(self.cleaned_data['username'])
+
+    def create_invite(self, user):
         invite = Invite.objects.create(
-            team=self.team, user=self.cleaned_data['username'], 
+            team=self.team, user=user, 
             author=self.user, role=self.cleaned_data['role'],
             note=self.cleaned_data['message'])
         invite.save()
         self.send_notif_for_invite(invite.pk)
-        self.process_emails()
+
         return invite
 
     def send_notif_for_invite(self, invite_pk):
@@ -1029,24 +1045,18 @@ class InviteForm(forms.Form):
         notifier.team_invitation_sent.delay(invite_pk)
 
     def process_emails(self):
-        if self.cleaned_data['email']:
-            try:
-                invitee = User.objects.get(email=self.cleaned_data['email'])
-                invite = Invite.objects.create(
-                    team=self.team, user=invitee, 
-                    author=self.user, role=self.cleaned_data['role'],
-                    note=self.cleaned_data['message'])
-                invite.save()
-                self.send_notif_for_invite(invite.pk)
-                '''
-                If email notifs for the existing user is turned off, should we still send an email message?
-                Taking into account that possibly the intention of the team owner/admin is to communicate
-                the email invite via email.
-                '''
-            except(User.DoesNotExist):
-                email_invite = EmailInvite.create_invite(email=self.cleaned_data['email'], 
-                    author=self.user, team=self.team, role=self.cleaned_data['role'])
-                email_invite.send_mail()
+        try:
+            invitee = User.objects.get(email=self.cleaned_data['email'])
+            self.create_invite(invitee)
+            '''
+            If email notifs for the existing user is turned off, should we still send an email message?
+            Taking into account that possibly the intention of the team owner/admin is to communicate
+            the email invite via email.
+            '''
+        except(User.DoesNotExist):
+            email_invite = EmailInvite.create_invite(email=self.cleaned_data['email'], 
+                author=self.user, team=self.team, role=self.cleaned_data['role'])
+            email_invite.send_mail()
 
 class ProjectForm(forms.ModelForm):
     class Meta:

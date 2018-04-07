@@ -2011,16 +2011,13 @@ class EmailInvite(models.Model):
 
         return email_invite
 
-    @staticmethod
-    def get_by_code(secret_code):
-        pass
-
     def link_to_account(self, user):
         member = TeamMember.objects.create(team=self.team, user=user, role=self.role)
         notifier.team_member_new.delay(member.pk)
         self.delete()
 
     def create_account(username, email, password, **kwargs):
+        # TODO
         pass
 
     def get_url(self):
@@ -2036,8 +2033,7 @@ class EmailInvite(models.Model):
             subject=_('Amara - Team Invite for {}'.format(self.team.name)),
             body_template='new-teams/email_invite.html',
             body_dict={ 'team_name': self.team.name,
-                'invite_url': self.get_url()})
-            
+                'invite_url': self.get_url()})           
 
 
 # Workflows
