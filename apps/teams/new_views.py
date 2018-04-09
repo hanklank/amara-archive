@@ -594,20 +594,18 @@ def email_invite(request, signed_pk):
 
         form = CustomUserCreationForm(request.POST or None, label_suffix="")
 
-        if(request.POST):
-            # form = CustomUserCreationForm(request.POST, label_suffix="")
-            if form.is_valid():
-                new_user = form.save()
-                user = authenticate(username=new_user.username,
-                                    password=form.cleaned_data['password1'])
-                langs = get_user_languages_from_cookie(request)
-                for l in langs:
-                    UserLanguage.objects.get_or_create(user=user, language=l)
-                auth_login(request, user)
+        if(request.method == 'POST' and form.is_valid()):
+            new_user = form.save()
+            user = authenticate(username=new_user.username,
+                                password=form.cleaned_data['password1'])
+            langs = get_user_languages_from_cookie(request)
+            for l in langs:
+                UserLanguage.objects.get_or_create(user=user, language=l)
+            auth_login(request, user)
 
-                email_invite.link_to_account(user)
+            email_invite.link_to_account(user)
 
-                return redirect(reverse("teams:dashboard", kwargs={"slug": email_invite.team.slug}))
+            return redirect(reverse("teams:dashboard", kwargs={"slug": email_invite.team.slug}))
 
         if (email_invite.is_expired()):
             return redirect('teams:email_invite_invalid')
