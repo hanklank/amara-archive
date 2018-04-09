@@ -16,6 +16,7 @@
 # along with this program.  If not, see
 # http://www.gnu.org/licenses/agpl-3.0.html.
 
+import bleach
 import datetime
 import json
 import logging
@@ -758,6 +759,15 @@ class MessageTextField(forms.CharField):
         super(MessageTextField, self).__init__(
             required=False, widget=forms.Textarea,
             *args, **kwargs)
+
+    def clean(self, value):
+        value = super(MessageTextField, self).clean(value)
+        value = bleach.clean(
+                    value,
+                    tags=['a', 'b', 'strong', 'i', 'em', 'u', 'li', 'ol', 'ul'],
+                    attributes={'a': 'href'},
+                    protocols=['http', 'https'])
+        return value
 
 class GuidelinesMessagesForm(forms.Form):
     pagetext_welcome_heading = MessageTextField(
