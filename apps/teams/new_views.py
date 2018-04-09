@@ -570,6 +570,12 @@ def invite(request, team):
         template_name = 'teams/invite_members.html'
     else:
         template_name = 'new-teams/invite.html'
+        # template_name = 'future/teams/members/invite.html'
+        '''
+        The future UI invite member page still need works
+        1. Make autocomplete work with the new field
+        2. The text-box does not render properly
+        '''
 
     return render(request, template_name,  {
         'team': team,
