@@ -162,7 +162,7 @@ var angular = angular || null;
         };
         $scope.toggleTutorial = function(shown) {
            $scope.tutorialShown = (typeof shown === "undefined") ? (!$scope.tutorialShown) : shown;
-           if($scope.tutorialShown) {
+           if($scope.tutorialShown && !$scope.isTyping()) {
                $scope.timelineShown = true;
            }
         };
