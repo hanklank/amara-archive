@@ -614,8 +614,7 @@ def email_invite(request, signed_pk):
         return redirect('teams:email_invite_invalid')
 
 def email_invite_invalid(request):
-    # TODO redirect to a page saying the invite is invalid, expired,  or has been used
-    return HttpResponse("teams.new_views.email_invite_accept")
+    return render(request, 'new-teams/email_invite_error.html')
 
 @team_view
 def autocomplete_invite_user(request, team):

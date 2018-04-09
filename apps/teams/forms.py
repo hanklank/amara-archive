@@ -1020,9 +1020,19 @@ class InviteForm(forms.Form):
         username = cleaned_data.get('username')
 
         if not (email or username):
-            raise forms.ValidationError(_(u"A username or email address must be provided"))
+            raise forms.ValidationError(_(u"A valid username or email address must be provided"))            
 
         return cleaned_data
+
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        
+        if self.team.users.filter(email=email).exists():
+            invitee = User.objects.get(email=email)
+            raise forms.ValidationError(_(u"This email address belongs to {} who is already a part of the team!".format(invitee)))
+
+        return email
+        
 
     def save(self):
         if self.cleaned_data['email']:
