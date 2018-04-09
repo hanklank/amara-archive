@@ -995,7 +995,8 @@ class InviteForm(forms.Form):
     username = UserAutocompleteField(required=False, error_messages={
         'invalid': _(u'User has a pending invite or is already a member of this team'),
     })
-    email = forms.EmailField(required=False, max_length=254)
+    email = forms.EmailField(required=False, max_length=254,
+                            widget=forms.TextInput(attrs={'width':'100%'}) )
     message = forms.CharField(required=False,
                               widget=forms.Textarea(attrs={'rows': 4}),
                               label=_("Message to user"))
