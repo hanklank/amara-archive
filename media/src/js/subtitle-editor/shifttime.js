@@ -115,7 +115,7 @@ var angular = angular || null;
             $scope.helpTextWarning = '';
 
             if(isNaN($scope.startTime) || isNaN($scope.endTime)) {
-                $scope.helpText = gettext('Invalid time entered.');
+                $scope.helpText = gettext('An invalid time was entered.');
                 $scope.helpTextError = true;
             } else if($scope.endTime == 0) {
                 $scope.helpText = gettext('Delete all subtitles in a time range, and shift subtitles afterwards back by the duration.  This feature is useful when you edit the video and delete a segment after already creating subtitles.');
