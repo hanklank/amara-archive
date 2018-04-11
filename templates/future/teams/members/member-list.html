@@ -15,7 +15,7 @@
   {% if is_team_admin %}
   <div class="checkbox">
     <input id="select_all" type="checkbox" class="selectAll" data-target="#memberDirectory-selectList">
-    <label for="select_all" class="text-gray"><span class="checkbox-icon"></span>Select All</label>
+    <label for="select_all" class="text-gray"><span class="checkbox-icon"></span>{% trans "Select all" %}</label>
   </div>
   {% endif %}
 </nav>
@@ -23,7 +23,7 @@
 {% if page %}
 <ul id="memberDirectory-selectList" class="selectList-members selectList" data-target="#memberDirectory-actionBar">
   {% for member in page %}
-  <li>
+  <li class="selectList-item">
     {% if is_team_admin %}
     {% if member.user != user %}
     <div class="checkbox">
