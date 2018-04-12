@@ -207,18 +207,18 @@ class VideoAdded(ActivityType):
 class VideoTitleChanged(ActivityType):
     slug = 'video-title-changed'
     label = _('Video Title Changed')
-    # The subtitle version history tells the story better
-    active = False
 
     def get_message(self, record, user):
         return self.format_message(
                 record,
-                _('<strong>%(user)s</strong> edited a video title'))
+                _('<strong>%(user)s</strong> edited the title for: '
+                  '<a href="%(video_url)s">%(video)s</a>'))
 
     def get_old_message(self, record, user):
         return self.format_message(
                 record,
-                _('edited a video title'))
+                _('edited the title for: '
+                  '<a href="%(video_url)s">%(video)s</a>'))
 
     def get_action_name(self):
         return _('changed title')
@@ -780,6 +780,11 @@ class ActivityManager(models.Manager):
                                          user=video_url.added_by,
                                          created=video_url.created,
                                          related_obj_id=url_edit.id)
+
+    def create_for_video_title_edited(self, video, user):
+        return self.create_for_video('video-title-changed', video,
+                                     user=user,
+                                     created=dates.now())
 
     def create_for_version_approved(self, version, user):
         return self.create_for_video('version-approved', version.video,
