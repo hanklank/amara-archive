@@ -206,7 +206,7 @@ class VideoAdded(ActivityType):
 
 class VideoTitleChanged(ActivityType):
     slug = 'video-title-changed'
-    label = _('Video Title Changed')
+    label = _('Video title changed')
 
     def get_message(self, record, user):
         return self.format_message(
