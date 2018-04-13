@@ -27,6 +27,13 @@ var angular = angular || null;
 
     var module = angular.module('amara.SubtitleEditor.subtitles.models', []);
 
+    // Add function to match by attributes with in the xml namespace
+    $.fn.findXmlID = function(value) {
+        return this.filter(function() {
+            return $(this).attr('xml:id') == value
+        });
+    };
+
     function emptyDFXP(languageCode) {
         /* Get a DFXP string for an empty subtitle set */
         return '<tt xmlns="http://www.w3.org/ns/ttml" xmlns:tts="http://www.w3.org/ns/ttml#styling" xml:lang="' + languageCode + '">\
@@ -36,18 +43,43 @@ var angular = angular || null;
             <ttm:description/>\
             <ttm:copyright/>\
         </metadata>\
-        <styling>\
-            <style xml:id="amara-style" tts:color="white" tts:fontFamily="proportionalSansSerif" tts:fontSize="18px" tts:backgroundColor="transparent" tts:textOutline="black 1px 0px" tts:textAlign="center"/>\
-        </styling>\
-        <layout>\
-            <region xml:id="bottom" style="amara-style" tts:extent="100% 20%" tts:origin="0 80%" />\
-            <region xml:id="top" style="amara-style" tts:extent="100% 20%" tts:origin="0 0" tts:textAlign="center"/>\
-        </layout>\
+        <styling>' + amaraStyle() + '</styling>\
+        <layout>' + bottomRegion() + topRegion() + '</layout>\
     </head>\
     <body region="bottom"><div /></body>\
 </tt>';
     };
 
+    function amaraStyle() {
+        return '<style xml:id="amara-style" tts:color="white" tts:fontFamily="proportionalSansSerif" tts:fontSize="18px" tts:backgroundColor="transparent" tts:textOutline="black 1px 0px" tts:textAlign="center"/>';
+    }
+
+    function bottomRegion() {
+        return '<region xml:id="bottom" style="amara-style" tts:extent="100% 20%" tts:origin="0 80%" />';
+    }
+
+    function topRegion() {
+        return '<region xml:id="top" style="amara-style" tts:extent="100% 20%" tts:origin="0 0" />';
+    }
+
+    function preprocessDFXP(xml) {
+        // Alter XML that we're loading to ensure that it can work with the editor.
+        //
+        // This means doing things like ensuring that our expected regions are present
+        var doc = $($.parseXML(xml));
+        var styling = doc.find('styling');
+        var layout = doc.find('layout');
+        if(styling.find("style").findXmlID('amara-style').length == 0) {
+            styling.append($(amaraStyle()));
+        }
+        if(layout.find("region").findXmlID('bottom').length == 0) {
+            layout.append($(bottomRegion()));
+        }
+        if(layout.find("region").findXmlID('top').length == 0) {
+            layout.append($(topRegion()));
+        }
+        return doc[0];
+    }
     function Subtitle(startTime, endTime, markdown, startOfParagraph) {
         /* Represents a subtitle in our system
          *
@@ -724,7 +756,8 @@ var angular = angular || null;
                     that.metadata[key] = subtitleData.metadata[key];
                 }
                 that.description = subtitleData.description;
-                that.subtitleList.loadXML(subtitleData.subtitles);
+                var subtitles = preprocessDFXP(subtitleData.subtitles);
+                that.subtitleList.loadXML(subtitles);
             });
         },
         initEmptySubtitles: function(languageCode, baseLanguage) {
