@@ -63,6 +63,14 @@ describe('Test the SubtitleList class', function() {
         expect(subtitleList.syncedCount).toEqual(2);
     });
 
+    it('should get and update regions', function() {
+        var sub = subtitleList.insertSubtitleBefore(null);
+        expect(subtitleList.getRegion(sub)).toEqual(undefined);
+        subtitleList.setRegion(sub, 'top');
+        expect($(sub.node).attr('region')).toEqual('top');
+        expect(subtitleList.getRegion(sub)).toEqual('top');
+    });
+
     it('should invoke change callbacks', function() {
         var handler = jasmine.createSpyObj('handler', ['onChange']);
         subtitleList.addChangeCallback(handler.onChange);

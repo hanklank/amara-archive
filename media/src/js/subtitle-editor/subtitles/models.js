@@ -80,17 +80,20 @@ var angular = angular || null;
         }
         return doc[0];
     }
-    function Subtitle(startTime, endTime, markdown, startOfParagraph) {
+    function Subtitle(startTime, endTime, markdown, region, startOfParagraph) {
         /* Represents a subtitle in our system
          *
          * Subtitle has the following properties:
          *   - startTime -- start time in seconds
          *   - endTime -- end time in seconds
          *   - markdown -- subtitle content in our markdown-style format
+         *   - region -- subtitle display region (top, or undefined for the default/bottom)
+         *   - startOfParagraph -- Are we the start of a new paragraph?
          */
         this.startTime = startTime;
         this.endTime = endTime;
         this.markdown = markdown;
+        this.region = region;
         this.startOfParagraph = startOfParagraph;
     }
 
@@ -196,7 +199,7 @@ var angular = angular || null;
          * */
         var text = $(node).text().trim();
         Subtitle.call(this, parser.startTime(node), parser.endTime(node),
-                text, parser.startOfParagraph(node));
+                text, parser.region(node), parser.startOfParagraph(node));
         this.node = node;
         this.id = id;
     }
@@ -210,7 +213,7 @@ var angular = angular || null;
     function DraftSubtitle(storedSubtitle) {
         /* Subtitle that we are currently changing */
         Subtitle.call(this, storedSubtitle.startTime, storedSubtitle.endTime,
-                storedSubtitle.markdown);
+                storedSubtitle.markdown, storedSubtitle.region, storedSubtitle.startOfParagraph);
         this.storedSubtitle = storedSubtitle;
     }
 
@@ -472,6 +475,16 @@ var angular = angular || null;
 
     SubtitleList.prototype.getSubtitleParagraph = function(subtitle) {
 	return this.parser.startOfParagraph(subtitle.node);
+    }
+
+    SubtitleList.prototype.getRegion = function(subtitle) {
+	return this.parser.region(subtitle.node);
+    }
+
+    SubtitleList.prototype.setRegion = function(subtitle, region) {
+        subtitle.region = region;
+	this.parser.region(subtitle.node, region);
+        this.emitChange('update', subtitle);
     }
 
     SubtitleList.prototype.computeTimingsForInsertion = function(firstStart, firstEnd, secondStart, secondEnd) {
