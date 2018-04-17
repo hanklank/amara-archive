@@ -21,6 +21,7 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.db import transaction
 from django.db.models import Q
+from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import ugettext, ungettext
 
@@ -209,16 +210,19 @@ class VideoTitleChanged(ActivityType):
     label = _('Video title changed')
 
     def get_message(self, record, user):
-        return self.format_message(
-                record,
-                _('<strong>%(user)s</strong> edited the title for: '
-                  '<a href="%(video_url)s">%(video)s</a>'))
+        return format_html(
+            _('<strong>{user}</strong> edited the title for: '
+              '<a href="{video_url}">{video}</a>'),
+            user=record.get_user_display(),
+            video_url=record.get_video_url(),
+            video=record.get_video_title())
 
     def get_old_message(self, record, user):
-        return self.format_message(
-                record,
-                _('edited the title for: '
-                  '<a href="%(video_url)s">%(video)s</a>'))
+        return format_html(
+            _('edited the title for: <a href="{video_url}">%(video}</a>'),
+            user=record.get_user_display(),
+            video_url=record.get_video_url(),
+            video=record.get_video_title())
 
     def get_action_name(self):
         return _('changed title')
@@ -1011,6 +1015,12 @@ class ActivityRecord(models.Model):
             return self.video.title_display()
         else:
             return ''
+
+    def get_user_display(self):
+        if self.user is None:
+            return _("Somebody (possibly automatically)")
+        else:
+            return self.user.username
 
     def get_message(self, user=None):
         return self.type_obj.get_message(self, user)
