@@ -1987,8 +1987,9 @@ class EditVideosForm(VideoManagementForm):
         for video in qs:
             team_video = video.teamvideo
 
-            if self.fields.get('title', None) and self.cleaned_data['title']:
-                self._update_video_title(video, self.cleaned_data['title'])
+            new_title = self.cleaned_data.get('title')
+            if new_title and new_title != video.title:
+                video.update_title(self.user, new_title)
 
             if project is not None and project != team_video.project:
                 team_video.project = project
@@ -1999,21 +2000,6 @@ class EditVideosForm(VideoManagementForm):
                 video.save()
             if thumbnail:
                 team_video.video.s3_thumbnail.save(thumbnail.name, thumbnail)
-
-    def _update_video_title(self, video, title):
-        with transaction.atomic():
-            video.title = self.cleaned_data['title']
-            video.save()
-            subtitle_language = video.get_primary_audio_subtitle_language()
-            if subtitle_language:
-                version = subtitle_language.get_tip(full=True)
-                if version:
-                    subtitles = version.get_subtitles()
-                    add_subtitles(video, subtitle_language.language_code, subtitles,
-                                  title=video.title, author=self.user, committer=self.user,
-                                  visibility=version.visibility,
-                                  origin=ORIGIN_MANAGEMENT_PAGE,
-                                  visibility_override=version.visibility_override)
 
     def message(self):
         msg = ungettext('Video has been edited',
