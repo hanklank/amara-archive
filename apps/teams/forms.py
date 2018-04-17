@@ -1988,8 +1988,8 @@ class EditVideosForm(VideoManagementForm):
             team_video = video.teamvideo
 
             new_title = self.cleaned_data.get('title')
-            if new_title != video.title:
-                video.update_title(self.user, self.cleaned_data['title'])
+            if new_title and new_title != video.title:
+                video.update_title(self.user, new_title)
 
             if project is not None and project != team_video.project:
                 team_video.project = project
