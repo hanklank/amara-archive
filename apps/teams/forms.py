@@ -1296,7 +1296,7 @@ class VideoFiltersForm(FiltersForm):
     q = SearchField(label=_('Search for videos'), required=False)
     language = NewLanguageField(label=_("Video language"), required=False,
                                 placeholder=_("All languages"), filter=True)
-    project = ProjectField(required=False, futureui=True)
+    project = ProjectField(required=False, futureui=True, filter=True)
     duration = VideoDurationField(required=False, widget=AmaraRadioSelect)
     sort = AmaraChoiceField(label="", choices=[
         ('-time', _('Time, newest')),
