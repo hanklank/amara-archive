@@ -1948,33 +1948,38 @@ class EditVideosForm(VideoManagementForm):
     label = _('Edit')
     permissions_check = staticmethod(permissions.can_edit_videos)
 
-    title = forms.CharField(max_length=2048, label=_('Edit video title'),
-                            required=False)
-    language = NewLanguageField(label=_("Video Language"), required=False,
-                                options="null popular all",
-                                placeholder=_('No change'))
+    title = forms.CharField(max_length=2048, label=_('Title'))
+    language = NewLanguageField(label=_("Language"), options="null popular all")
     project = ProjectField(label=_('Project'), required=False,
                            null_label=_('No change'))
     thumbnail = forms.ImageField(widget=AmaraClearableFileInput,
-                                 label=_('Change thumbnail'), required=False)
+                                 label=_('Thumbnail'), required=False)
 
     def setup_fields(self):
         self.fields['project'].setup(self.team)
-        if not self.single_selection():
-            del self.fields['title']
 
     def setup_single_selection(self, video):
         team_video = video.teamvideo
+        self.fields['title'].required = True
         self.fields['project'].required = True
         self.fields['project'].initial = team_video.project.id
         self.fields['project'].choices = self.fields['project'].choices[1:]
-        self.fields['language'].set_placeholder(_('No language set'))
+        if video.primary_audio_language_code:
+            self.fields['language'].set_options("popular all unset")
+        else:
+            self.fields['language'].set_options("null popular all dont-set")
         self.fields['language'].initial = video.primary_audio_language_code
+        self.fields['language'].required = True
 
         if can_change_video_titles(self.user, team_video):
             self.fields['title'].widget.attrs['value'] = team_video.video.title
         else:
             del self.fields['title']
+
+    def setup_multiple_selection(self):
+        del self.fields['title']
+        self.fields['language'].required = False
+        self.fields['language'].set_placeholder(_('No change'))
 
     def perform_submit(self, qs):
         project = self.cleaned_data.get('project')
