@@ -219,7 +219,7 @@ class VideoTitleChanged(ActivityType):
 
     def get_old_message(self, record, user):
         return format_html(
-            _('edited the title for: <a href="{video_url}">%(video}</a>'),
+            _('edited the title for: <a href="{video_url}">{video}</a>'),
             user=record.get_user_display(),
             video_url=record.get_video_url(),
             video=record.get_video_title())
