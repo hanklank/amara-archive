@@ -479,6 +479,7 @@ class Video(models.Model):
             return 'No title'
 
     def update_title(self, user, new_title):
+        from subtitles.pipeline import add_subtitles
         old_title = self.title
         with transaction.atomic():
             self.title = new_title
