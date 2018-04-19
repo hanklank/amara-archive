@@ -174,19 +174,20 @@ var angular = angular || null;
             var bottomOverlay = overlays.filter('.bottom');
 
             function recalcSubtitlePosition() {
-                if($scope.timeline.shownSubtitle.region == 'top') {
+                if($scope.currentSubtitle === null) {
+                    bottomOverlay.append(text);
+                } else if($scope.currentSubtitle.region == 'top') {
                     topOverlay.append(text);
                 } else {
                     bottomOverlay.append(text);
                 }
             }
 
-            $scope.$watch('timeline.shownSubtitle', recalcSubtitlePosition);
+            $scope.$watch('currentSubtitle', recalcSubtitlePosition);
             $scope.workingSubtitles.subtitleList.addChangeCallback(function(change) {
                 if(change.subtitle == $scope.timeline.shownSubtitle) {
                     recalcSubtitlePosition();
                 }
-                console.log(change.subtitle);
             });
         }
         return function link($scope, elem, attrs) {
