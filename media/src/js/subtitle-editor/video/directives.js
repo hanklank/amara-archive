@@ -174,7 +174,7 @@ var angular = angular || null;
             var bottomOverlay = overlays.filter('.bottom');
 
             function recalcSubtitlePosition() {
-                if($scope.currentSubtitle === null) {
+                if(!$scope.currentSubtitle) {
                     bottomOverlay.append(text);
                 } else if($scope.currentSubtitle.region == 'top') {
                     topOverlay.append(text);
@@ -185,9 +185,7 @@ var angular = angular || null;
 
             $scope.$watch('currentSubtitle', recalcSubtitlePosition);
             $scope.workingSubtitles.subtitleList.addChangeCallback(function(change) {
-                if(change.subtitle == $scope.timeline.shownSubtitle) {
-                    recalcSubtitlePosition();
-                }
+                recalcSubtitlePosition();
             });
         }
         return function link($scope, elem, attrs) {
@@ -242,7 +240,9 @@ var angular = angular || null;
             }).on('drop', function(evt) {
                 var dataTransfer = evt.originalEvent.dataTransfer;
                 var subtitleId = dataTransfer.getData('application/vnd.pculture.amara.subtitle');
-                if(subtitleId) {
+                if(subtitleId == 0 && $scope.currentEdit.draft) {
+                    $scope.currentEdit.updateRegion(calcRegionForDrop($(this)), $scope.workingSubtitles.subtitleList);
+                } else if(subtitleId) {
                     var sub = $scope.workingSubtitles.subtitleList.getSubtitleById(subtitleId);
                     $scope.workingSubtitles.subtitleList.setRegion(sub, calcRegionForDrop($(this)));
                     evt.preventDefault();

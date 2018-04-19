@@ -197,6 +197,7 @@ var angular = angular || null;
                 var clicked = $(evt.target);
                 var textarea = $('textarea.subtitle-edit', li);
                 if(clicked[0] != textarea[0] &&
+                    !clicked.hasClass('subtitle-overlay-text') &&
                     !clicked.hasClass('info-tray') &&
                     clicked.parents('.info-tray').length == 0) {
                     $scope.$apply(function() {
