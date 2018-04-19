@@ -518,7 +518,7 @@ var angular = angular || null;
 	}
     }
 
-    SubtitleList.prototype.insertSubtitleBefore = function(otherSubtitle) {
+    SubtitleList.prototype.insertSubtitleBefore = function(otherSubtitle, region) {
         if(otherSubtitle !== null) {
             var pos = this.getIndex(otherSubtitle);
         } else {
@@ -563,6 +563,9 @@ var angular = angular || null;
             }
         } else {
             attrs = {}
+        }
+        if(region !== undefined) {
+            attrs.region = region;
         }
         var node = this.parser.addSubtitle(after, attrs);
         var subtitle = this.makeItem(node);

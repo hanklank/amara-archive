@@ -214,8 +214,8 @@ var angular = angular || null;
             }
         };
 
-        function insertAndStartEdit(before) {
-            var newSub = subtitleList.insertSubtitleBefore(before);
+        function insertAndStartEdit(before, region) {
+            var newSub = subtitleList.insertSubtitleBefore(before, region);
             $scope.currentEdit.start(newSub);
         }
 
@@ -302,7 +302,7 @@ var angular = angular || null;
                 finishEdit(true);
                 if(nextSubtitle === null) {
                     if(!$scope.timelineShown) {
-                        insertAndStartEdit(null);
+                        insertAndStartEdit(null, subtitle.region);
                     }
                 } else {
                     $scope.currentEdit.start(nextSubtitle);
