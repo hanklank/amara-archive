@@ -285,12 +285,12 @@ var angular = angular || null;
         baseLanguageParser.getSubtitles().each(function(index, node) {
             startTime = baseLanguageParser.startTime(node);
             endTime = baseLanguageParser.endTime(node);
-            startOfParagraph = baseLanguageParser.startOfParagraph(node);
             if(startTime >= 0 && endTime >= 0) {
                 baseAttributes.push({
                     'startTime': startTime,
                     'endTime': endTime,
-                    'startOfParagraph': startOfParagraph
+                    'startOfParagraph': baseLanguageParser.startOfParagraph(node),
+                    'region': baseLanguageParser.region(node)
                 });
             }
         });
@@ -304,6 +304,7 @@ var angular = angular || null;
                 end: baseAttribute.endTime,
             });
             that.parser.startOfParagraph(node, baseAttribute.startOfParagraph);
+            that.parser.region(node, baseAttribute.region);
             that.subtitles.push(that.makeItem(node));
             that.syncedCount++;
         });
