@@ -216,6 +216,7 @@ def members(request, team):
         'next': next_page,
         'previous': prev_page,
         'filters_form': filters_form,
+        'team_nav': 'member_directory',
         'show_invite_link': permissions.can_invite(team, request.user),
         'show_add_link': permissions.can_add_members(team, request.user),
         'show_application_link': show_application_link,

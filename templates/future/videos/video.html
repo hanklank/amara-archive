@@ -112,7 +112,7 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <h4>{% trans "Delete Video URL" %}</h4>
-      <h6 class="url"></h6>
+      <h4 class="url"></h4>
       <p class="warning">{% trans "Warning: this cannot be undone. Only delete URLs for non-matching videos or videos where subtitles fail to display correctly." %}</p>
         <form action="" class="ajaxForm" method="post">
           {% csrf_token %}
@@ -132,7 +132,7 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <h4>{% trans "Make Video URL Primary" %}</h4>
-      <h6 class="url"></h6>
+      <h4 class="url"></h4>
       <p>{% trans "This will make it the default playback URL" %}</p>
         <form action="" class="ajaxForm" method="post">
           {% csrf_token %}
