@@ -729,12 +729,6 @@ var angular = angular || null;
             this.draft = this.LI = null;
             return updateNeeded;
         },
-        updateRegion: function(newRegion, subtitleList) {
-            if(this.draft !== null) {
-                this.draft.region = newRegion;
-                subtitleList.setRegion(this.draft.storedSubtitle, newRegion);
-            }
-        },
         storedSubtitle: function() {
             if(this.draft !== null) {
                 return this.draft.storedSubtitle;

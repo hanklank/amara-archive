@@ -183,7 +183,7 @@ var angular = angular || null;
                 }
             }
 
-            $scope.$watch('currentSubtitle', recalcSubtitlePosition);
+            $scope.$watch('currentSubtitle.region', recalcSubtitlePosition);
             $scope.workingSubtitles.subtitleList.addChangeCallback(function(change) {
                 recalcSubtitlePosition();
             });
@@ -196,13 +196,17 @@ var angular = angular || null;
 
             text.attr('draggable', true);
             text.on('dragstart', function(evt) {
-                var subtitle = $scope.timeline.shownSubtitle;
-                if(subtitle === null) {
+                var subtitle = $scope.currentSubtitle;
+                if(!subtitle) {
                     return;
                 }
                 var dataTransfer = evt.originalEvent.dataTransfer;
                 dataTransfer.setData('text/plain', text.text());
-                dataTransfer.setData('application/vnd.pculture.amara.subtitle', subtitle.id);
+                if(!subtitle.isDraft) {
+                    dataTransfer.setData('application/vnd.pculture.amara.subtitle', subtitle.id);
+                } else {
+                    dataTransfer.setData('application/vnd.pculture.amara.subtitle', subtitle.storedSubtitle.id);
+                }
                 dataTransfer.effectAllowed = 'copyMove';
                 dataTransfer.dropEffect = 'move';
                 overlays.addClass('dragging');
@@ -240,13 +244,15 @@ var angular = angular || null;
             }).on('drop', function(evt) {
                 var dataTransfer = evt.originalEvent.dataTransfer;
                 var subtitleId = dataTransfer.getData('application/vnd.pculture.amara.subtitle');
-                if(subtitleId == 0 && $scope.currentEdit.draft) {
-                    $scope.currentEdit.updateRegion(calcRegionForDrop($(this)), $scope.workingSubtitles.subtitleList);
-                } else if(subtitleId) {
-                    var sub = $scope.workingSubtitles.subtitleList.getSubtitleById(subtitleId);
-                    $scope.workingSubtitles.subtitleList.setRegion(sub, calcRegionForDrop($(this)));
-                    evt.preventDefault();
+                var sub = $scope.workingSubtitles.subtitleList.getSubtitleById(subtitleId);
+                if(sub) {
+                    var region = calcRegionForDrop($(this));
+                    $scope.workingSubtitles.subtitleList.setRegion(sub, region);
+                    if($scope.currentEdit.draft && $scope.currentEdit.draft.storedSubtitle.id == sub.id) {
+                        $scope.currentEdit.draft.region = region;
+                    }
                 }
+                evt.preventDefault();
             });
 
             function calcRegionForDrop(elt) {
