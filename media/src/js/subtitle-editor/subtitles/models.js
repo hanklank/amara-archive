@@ -151,6 +151,10 @@ var angular = angular || null;
         }
     }
 
+    Subtitle.prototype.isWhiteSpaceOnly = function() {
+        return !$.trim(this.markdown)
+    }
+
     function StoredSubtitle(parser, node, id) {
         /* Subtitle stored in a SubtitleList
          *

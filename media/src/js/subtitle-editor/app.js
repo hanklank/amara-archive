@@ -322,6 +322,7 @@ var angular = angular || null;
             $event.preventDefault();
         };
 
+
         $scope.clearText = function() {
             var nextWorkingSubtitle = $scope.workingSubtitles.subtitleList.firstSubtitle();
             while (nextWorkingSubtitle) {
@@ -330,6 +331,26 @@ var angular = angular || null;
              }
             $scope.$root.$emit('work-done');
         };
+
+        $scope.showDeleteEmptySubtitlesModal = function($event) {
+            $scope.dialogManager.openDialog('confirmDeleteEmptySubtitles', {
+                continueButton: $scope.deleteEmptySubtitles
+            });
+            $event.stopPropagation();
+            $event.preventDefault();
+        };
+
+        $scope.deleteEmptySubtitles = function() {
+            var nextWorkingSubtitle = $scope.workingSubtitles.subtitleList.firstSubtitle();
+            while (nextWorkingSubtitle) {
+                if(nextWorkingSubtitle.isWhiteSpaceOnly) {
+                    $scope.workingSubtitles.subtitleList.removeSubtitle(nextWorkingSubtitle);
+                }
+                nextWorkingSubtitle = $scope.workingSubtitles.subtitleList.nextSubtitle(nextWorkingSubtitle);
+            }
+            $scope.$root.$emit('work-done');
+        };
+
         $scope.showTutorial = function($event) {
             $scope.toggleTutorial(true);
             $event.stopPropagation();
