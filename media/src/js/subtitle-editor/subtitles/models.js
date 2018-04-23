@@ -597,7 +597,7 @@ var angular = angular || null;
         this._updateSubtitleContent(subtitle, firstSubtitleMarkdown);
 
         var newNode = this.parser.addSubtitle(subtitle.node, {
-            begin: midpointTime, end: endTime
+            begin: midpointTime, end: endTime, region: subtitle.region
         }, secondSubtitleMarkdown);
         var newSubtitle = this.makeItem(newNode);
 

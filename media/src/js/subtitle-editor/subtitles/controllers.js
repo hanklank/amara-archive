@@ -243,12 +243,12 @@ var angular = angular || null;
                     break;
 
                 case 'insert-top':
-                    insertAndStartEdit(subtitle);
+                    insertAndStartEdit(subtitle, subtitle.region);
                     madeChange = true;
                     break;
 
                 case 'insert-down':
-                    insertAndStartEdit(subtitleList.nextSubtitle(subtitle));
+                    insertAndStartEdit(subtitleList.nextSubtitle(subtitle), subtitle.region);
                     madeChange = true;
                     break;
 
