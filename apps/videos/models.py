@@ -480,13 +480,14 @@ class Video(models.Model):
 
     def update_title(self, user, new_title):
         from subtitles.pipeline import add_subtitles
+        from subtitles.models import ORIGIN_MANAGEMENT_PAGE
         old_title = self.title
         with transaction.atomic():
             self.title = new_title
             self.save()
             subtitle_language = self.get_primary_audio_subtitle_language()
             if subtitle_language:
-                version = subtitle_language.get_tip(full=True)
+                version = subtitle_language.get_tip()
                 if version:
                     subtitles = version.get_subtitles()
                     add_subtitles(
