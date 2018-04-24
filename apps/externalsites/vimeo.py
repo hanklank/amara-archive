@@ -22,8 +22,6 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 import base64, requests, logging
 
-import json
-
 logger = logging.getLogger(__name__)
 
 VIMEO_API_KEY = getattr(settings, 'VIMEO_API_KEY')
