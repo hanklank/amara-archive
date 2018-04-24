@@ -7,9 +7,11 @@
         {% blocktrans %}
             {{ team_name }} is inviting you to join their subtitling team!
         {% endblocktrans %}
-        <br/>
-        <br/>
-        {{ message }}
+        {% if message %}
+            <br/>
+            <br/>
+            {{ message }}
+        {% endif %}
         <br/>
         <br/>
         {% trans "Please click on " %}
