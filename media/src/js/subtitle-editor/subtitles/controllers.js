@@ -139,7 +139,7 @@ var angular = angular || null;
         $scope.$watch('versionNumber', $scope.versionNumberChanged);
     }]);
 
-    module.controller('WorkingSubtitlesController', ["$scope", "DomWindow", "$filter", function($scope, DomWindow, $filter) {
+    module.controller('WorkingSubtitlesController', ["$scope", "DomWindow", "$filter", "VideoPlayer", function($scope, DomWindow, $filter, VideoPlayer) {
         /**
          * Handles the subtitles the user is working on.
          */
@@ -176,6 +176,13 @@ var angular = angular || null;
             }
 
         });
+        $scope.$root.$on("video-playback-changes", function() {
+            console.log('video-changes');
+            if(VideoPlayer.isPlaying() && $scope.currentEdit.inProgress()) {
+                $scope.currentEdit.finish(true, subtitleList);
+            }
+        });
+
 
         $scope.splitCurrentSubtitle = function() {
             var currentSubtitle = $scope.currentEdit.storedSubtitle();
