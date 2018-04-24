@@ -1058,15 +1058,16 @@ class InviteForm(forms.Form):
         notifier.team_invitation_sent.delay(invite_pk)
 
     def process_emails(self):
-        try:
-            invitee = User.objects.get(email=self.cleaned_data['email'])
+        invitees = User.objects.filter(email=self.cleaned_data['email'])
+        for invitee in invitees:
             self.create_invite(invitee)
             '''
             If email notifs for the existing user is turned off, should we still send an email message?
             Taking into account that possibly the intention of the team owner/admin is to communicate
             the email invite via email.
             '''
-        except(User.DoesNotExist):
+
+        if invitees.count() == 0:
             email_invite = EmailInvite.create_invite(email=self.cleaned_data['email'], 
                 author=self.user, team=self.team, role=self.cleaned_data['role'])
             email_invite.send_mail(self.cleaned_data['message'])
