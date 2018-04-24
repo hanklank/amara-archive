@@ -993,10 +993,12 @@ class AddMembersForm(forms.Form):
 
 class InviteForm(forms.Form):
     username = UserAutocompleteField(required=False, error_messages={
-        'invalid': _(u'User has a pending invite or is already a member of this team'),
-    })
+        'invalid': _(u'User has a pending invite or is already a member of this team')
+        },
+        help_text="Amara username of the user you want to invite")
     email = forms.EmailField(required=False, max_length=254,
-                            widget=forms.TextInput(attrs={'width':'100%'}) )
+                            widget=forms.TextInput(attrs={'width':'100%'}),
+                            help_text=_("You can also invite a team member via email--both a username and an email works too!") )
     message = forms.CharField(required=False,
                               widget=forms.Textarea(attrs={'rows': 4}),
                               label=_("Message to user"))
@@ -1067,7 +1069,7 @@ class InviteForm(forms.Form):
         except(User.DoesNotExist):
             email_invite = EmailInvite.create_invite(email=self.cleaned_data['email'], 
                 author=self.user, team=self.team, role=self.cleaned_data['role'])
-            email_invite.send_mail()
+            email_invite.send_mail(self.cleaned_data['message'])
 
 class ProjectForm(forms.ModelForm):
     class Meta:

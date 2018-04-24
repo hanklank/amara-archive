@@ -8,6 +8,10 @@
             {{ team_name }} is inviting you to join their subtitling team!
         {% endblocktrans %}
         <br/>
+        <br/>
+        {{ message }}
+        <br/>
+        <br/>
         {% trans "Please click on " %}
         <a href="{{ url_base }}{{ invite_url|rmlocale }}">{% trans "this link" %}</a>        
         {% trans " to accept the invite and create an account." %}

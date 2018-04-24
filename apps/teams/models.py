@@ -2024,11 +2024,12 @@ class EmailInvite(models.Model):
         time_delta_minutes = time_delta.total_seconds() / 60
         return (time_delta_minutes > EmailInvite.SECRET_CODE_EXPIRATION_MINUTES)
 
-    def send_mail(self):
+    def send_mail(self, message):
         send_templated_email(to=self.email,
             subject=_('Amara - Team Invite for {}'.format(self.team.name)),
             body_template='new-teams/email_invite.html',
             body_dict={ 'team_name': self.team.name,
+                'message': message,
                 'invite_url': self.get_url()})           
 
 

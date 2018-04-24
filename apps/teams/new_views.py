@@ -561,6 +561,12 @@ def invite(request, team):
             # sending invites twice for the same user, and that borks
             # the naive signal for only created invitations
             form.save()
+            success_msg = []
+            if form.cleaned_data['username']:
+                success_msg.append(u'{} has been invited to the team.'.format(form.cleaned_data['username']))
+            if form.cleaned_data['email']:
+                success_msg.append(u'{} has been sent an email invite.'.format(form.cleaned_data['email']))
+            messages.success(request, _("<br/>".join(success_msg)))
             return HttpResponseRedirect(reverse('teams:members',
                                                 args=[team.slug]))
     else:
