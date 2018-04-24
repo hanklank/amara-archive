@@ -1633,7 +1633,7 @@ div.timeline {
         top: 10px;
         @include border-radius(3px);
 
-        span {
+        .timeline-subtitle-text {
             padding: 7px 12px;
             display: block;
             overflow: hidden;

@@ -202,6 +202,7 @@
                 cancelTimer();
             }
         });
+        $scope.$root.$on("work-done", updateTimeline);
 
         $scope.$root.$on('dialog-opened', function() {
             $scope.hideContextMenu();
