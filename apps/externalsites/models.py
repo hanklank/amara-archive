@@ -334,6 +334,16 @@ class BrightcoveAccount(ExternalAccount):
             tags = tuple(path_parts[i+1:])
         return player_id, tags
 
+class BrightcoveCMSAccountManager(ExternalAccountManager):
+    def _get_sync_account_team_video(self, team_video, video_url):
+        return self.get(
+            type=ExternalAccount.TYPE_TEAM, owner_id=team_video.team_id)
+
+    def _get_sync_account_nonteam_video(self, video, video_url):
+        user_id = video.user.id if video.user else None
+        return self.get(
+            type=ExternalAccount.TYPE_USER, owner_id=user_id)
+
 class BrightcoveCMSAccount(ExternalAccount):
     account_type = 'C'
     video_url_types = [videos.models.VIDEO_TYPE_BRIGHTCOVE,
@@ -344,6 +354,8 @@ class BrightcoveCMSAccount(ExternalAccount):
                                     verbose_name=_('Client ID'))
     client_secret = models.CharField(max_length=100,
                                     verbose_name=_('Client Secret'))
+
+    objects = BrightcoveCMSAccountManager()
 
     class Meta:
         verbose_name = _('Brightcove CMS account')

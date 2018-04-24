@@ -153,7 +153,6 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
     'auth.middleware.AmaraAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'openid_consumer.middleware.OpenIDMiddleware',
@@ -318,6 +317,9 @@ FACEBOOK_SECRET_KEY = ''
 
 VIMEO_API_KEY = None
 VIMEO_API_SECRET = None
+
+WUFOO_API_KEY = None
+WUFOO_API_BASE_URL = 'https://participatoryculture.wufoo.com/api/v3/'
 
 # NOTE: all of these backends store the User.id value in the session data,
 # which we rely on in AmaraAuthenticationMiddleware.  Other backends should

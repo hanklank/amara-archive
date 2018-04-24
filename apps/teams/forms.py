@@ -1341,10 +1341,10 @@ class OldMoveVideosForm(forms.Form):
 class VideoFiltersForm(FiltersForm):
     q = SearchField(label=_('Search for videos'), required=False)
     language = NewLanguageField(label=_("Video language"), required=False,
-                                placeholder=_("All languages"))
-    project = ProjectField(required=False, futureui=True)
+                                placeholder=_("All languages"), filter=True)
+    project = ProjectField(required=False, futureui=True, filter=True)
     duration = VideoDurationField(required=False, widget=AmaraRadioSelect)
-    sort = AmaraChoiceField(label="", border=True, choices=[
+    sort = AmaraChoiceField(label="", choices=[
         ('-time', _('Time, newest')),
         ('time', _('Time, oldest')),
         ('name', _('Name, a-z')),
@@ -1402,13 +1402,15 @@ class ManagementVideoFiltersForm(VideoFiltersForm):
     language = NewLanguageField(label=_("Video language"),
                                 required=False,
                                 placeholder=_('All languages'),
-                                options="null popular all")
+                                options="null popular all", filter=True)
     completed_subtitles = NewLanguageField(label=_("Completed subtitles"),
                                            required=False,
-                                           options="null popular all")
+                                           options="null popular all",
+                                           filter=True)
     needs_subtitles = NewLanguageField(label=_("Needs subtitles"), 
                                        required=False,
-                                       options="null popular all")
+                                       options="null popular all",
+                                       filter=True)
 
     promote_main_project = False
 
@@ -1504,11 +1506,11 @@ class MemberFiltersForm(forms.Form):
         (TeamMember.ROLE_ADMIN, _('Admins')),
         (TeamMember.ROLE_MANAGER, _('Managers')),
         (TeamMember.ROLE_CONTRIBUTOR, _('Contributors')),
-    ], initial='any', required=False)
+    ], initial='any', required=False, filter=True)
     language = AmaraChoiceField(choices=LANGUAGE_CHOICES,
                                  label=_('Language spoken'),
-                                 initial='any', required=False)
-    sort = AmaraChoiceField(label="", border=True, choices=[
+                                 initial='any', required=False, filter=True)
+    sort = AmaraChoiceField(label="", choices=[
         ('recent', _('Date joined, most recent')),
         ('oldest', _('Date joined, oldest')),
     ], initial='recent', required=False)
@@ -2031,8 +2033,9 @@ class EditVideosForm(VideoManagementForm):
         for video in qs:
             team_video = video.teamvideo
 
-            if self.fields.get('title', None) and self.cleaned_data['title']:
-                self._update_video_title(video, self.cleaned_data['title'])
+            new_title = self.cleaned_data.get('title')
+            if new_title and new_title != video.title:
+                video.update_title(self.user, new_title)
 
             if project is not None and project != team_video.project:
                 team_video.project = project
@@ -2043,21 +2046,6 @@ class EditVideosForm(VideoManagementForm):
                 video.save()
             if thumbnail:
                 team_video.video.s3_thumbnail.save(thumbnail.name, thumbnail)
-
-    def _update_video_title(self, video, title):
-        with transaction.atomic():
-            video.title = self.cleaned_data['title']
-            video.save()
-            subtitle_language = video.get_primary_audio_subtitle_language()
-            if subtitle_language:
-                version = subtitle_language.get_tip(full=True)
-                if version:
-                    subtitles = version.get_subtitles()
-                    add_subtitles(video, subtitle_language.language_code, subtitles,
-                                  title=video.title, author=self.user, committer=self.user,
-                                  visibility=version.visibility,
-                                  origin=ORIGIN_MANAGEMENT_PAGE,
-                                  visibility_override=version.visibility_override)
 
     def message(self):
         msg = ungettext('Video has been edited',
@@ -2093,7 +2081,7 @@ class DeleteVideosForm(VideoManagementForm):
         choice_help_text=DELETE_HELP_TEXT, required=False, initial='',
         widget=AmaraRadioSelect,
     )
-    verify = forms.CharField(required=False, label=_('Are you sure?'))
+    verify = forms.CharField(label=_('Are you sure?'))
 
     permissions_check = staticmethod(permissions.new_can_remove_videos)
 
