@@ -322,7 +322,6 @@ var angular = angular || null;
             $event.preventDefault();
         };
 
-
         $scope.clearText = function() {
             var nextWorkingSubtitle = $scope.workingSubtitles.subtitleList.firstSubtitle();
             while (nextWorkingSubtitle) {
@@ -343,7 +342,7 @@ var angular = angular || null;
         $scope.deleteEmptySubtitles = function() {
             var nextWorkingSubtitle = $scope.workingSubtitles.subtitleList.firstSubtitle();
             while (nextWorkingSubtitle) {
-                if(nextWorkingSubtitle.isWhiteSpaceOnly) {
+                if(nextWorkingSubtitle.isWhiteSpaceOnly()) {
                     $scope.workingSubtitles.subtitleList.removeSubtitle(nextWorkingSubtitle);
                 }
                 nextWorkingSubtitle = $scope.workingSubtitles.subtitleList.nextSubtitle(nextWorkingSubtitle);
