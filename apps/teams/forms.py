@@ -792,9 +792,7 @@ class GuidelinesMessagesForm(forms.Form):
                         team=team, key=Setting.KEY_IDS[key])
                     setting.data = val
                     setting.save()
-            print self.cleaned_data
             team.resources_page_content = self.cleaned_data['resources_page_content']
-            print team.resources_page_content
             team.save()
 
 class GuidelinesLangMessagesForm(forms.Form):

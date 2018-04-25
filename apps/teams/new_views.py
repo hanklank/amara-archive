@@ -986,6 +986,7 @@ def settings_messages(request, team):
         return old_views.settings_messages(request, team)
 
     initial = team.settings.all_messages()
+    initial['resources_page_content'] = team.resources_page_content
     if request.POST:
         form = forms.GuidelinesMessagesForm(request.POST, initial=initial)
 
