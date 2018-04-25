@@ -449,6 +449,7 @@ var USER_IDLE_MINUTES = 15;
                     case 'reload':
                         reloadSubtitles();
                 }
+                $scope.$emit('subtitle-list-changed');
             }
 
             function startEditOn(draft) {

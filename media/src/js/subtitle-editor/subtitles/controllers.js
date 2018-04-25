@@ -162,11 +162,7 @@ var angular = angular || null;
             updateSyncHelpers();
         });
 
-        subtitleList.addChangeCallback(function(change) {
-            if(change == 'insert' || change == 'remove') {
-                updateSyncHelpers();
-            }
-        });
+        $scope.$on('subtitle-list-changed', updateSyncHelpers);
 
         $scope.$watch('currentEdit.inProgress()', function(value) {
             if(value) {
