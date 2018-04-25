@@ -674,6 +674,10 @@ var angular = angular || null;
                this.firstUnsyncedSubtitle();
     }
 
+    SubtitleList.prototype.lastSubtitle = function() {
+        return this.subtitles[this.subtitles.length -1];
+    }
+
     SubtitleList.prototype.subtitleAt = function(time) {
         /* Find the subtitle that occupies a given time.
          *

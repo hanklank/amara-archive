@@ -288,7 +288,8 @@ var angular = angular || null;
         }
 
         $scope.newSubtitleClicked = function(evt) {
-            insertAndStartEdit(null);
+            var lastSubtitle = subtitleList.lastSubtitle();
+            insertAndStartEdit(null, lastSubtitle.region);
             evt.preventDefault();
             $scope.$root.$emit('work-done');
         }
