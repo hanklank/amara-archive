@@ -183,7 +183,6 @@ def get_values(video_id, user=None, team=None):
                                     headers=headers)
             if response.ok:
                 video_data = response.json()
-                print(json.dumps(video_data, indent=4, sort_keys=True))
     if video_data is not None:
         thumbnail = sorted(video_data['pictures']['sizes'], key=lambda x: -x["width"])[0]['link']
         return (video_data["name"],
