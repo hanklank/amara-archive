@@ -1979,6 +1979,7 @@ class EditVideosForm(VideoManagementForm):
     def setup_multiple_selection(self):
         del self.fields['title']
         self.fields['language'].required = False
+        self.fields['language'].set_options("popular all unset")
         self.fields['language'].set_placeholder(_('No change'))
 
     def perform_submit(self, qs):
