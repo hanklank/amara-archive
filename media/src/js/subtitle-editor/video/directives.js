@@ -21,6 +21,11 @@ var angular = angular || null;
 (function() {
     var module = angular.module('amara.SubtitleEditor.video.directives', []);
 
+    // var SUBTITLE_MIME_TYPE = 'application/vnd.pculture.amara.subtitle';
+    // Can't use the mime type we want because of an Edge bug (https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/8007622/).
+    // So, (ab)use a known mime type.
+    var SUBTITLE_MIME_TYPE = 'text/html';
+
     module.directive('volumeBar', ["VideoPlayer", function(VideoPlayer) {
         return function link($scope, elem, attrs) {
             elem = $(elem);
@@ -203,9 +208,9 @@ var angular = angular || null;
                 var dataTransfer = evt.originalEvent.dataTransfer;
                 dataTransfer.setData('text/plain', text.text());
                 if(!subtitle.isDraft) {
-                    dataTransfer.setData('application/vnd.pculture.amara.subtitle', subtitle.id);
+                    dataTransfer.setData(SUBTITLE_MIME_TYPE, subtitle.id);
                 } else {
-                    dataTransfer.setData('application/vnd.pculture.amara.subtitle', subtitle.storedSubtitle.id);
+                    dataTransfer.setData(SUBTITLE_MIME_TYPE, subtitle.storedSubtitle.id);
                 }
                 dataTransfer.effectAllowed = 'copyMove';
                 dataTransfer.dropEffect = 'move';
@@ -220,7 +225,7 @@ var angular = angular || null;
             overlays.data('dragcount', 0);
             overlays.on('dragenter', function(evt) {
                 var dataTransfer = evt.originalEvent.dataTransfer;
-                if(_.contains(dataTransfer.types, 'application/vnd.pculture.amara.subtitle')) {
+                if(_.contains(dataTransfer.types, SUBTITLE_MIME_TYPE)) {
                     var elt = $(this);
                     elt.data('dragcount', elt.data('dragcount') + 1);
                     dataTransfer.dropEffect = 'move';
@@ -229,7 +234,7 @@ var angular = angular || null;
                 }
             }).on('dragover', function(evt) {
                 var dataTransfer = evt.originalEvent.dataTransfer;
-                if(_.contains(dataTransfer.types, 'application/vnd.pculture.amara.subtitle')) {
+                if(_.contains(dataTransfer.types, SUBTITLE_MIME_TYPE)) {
                     var elt = $(this);
                     dataTransfer.dropEffect = 'move';
                     evt.preventDefault();
@@ -243,7 +248,7 @@ var angular = angular || null;
                 }
             }).on('drop', function(evt) {
                 var dataTransfer = evt.originalEvent.dataTransfer;
-                var subtitleId = dataTransfer.getData('application/vnd.pculture.amara.subtitle');
+                var subtitleId = dataTransfer.getData(SUBTITLE_MIME_TYPE);
                 var sub = $scope.workingSubtitles.subtitleList.getSubtitleById(subtitleId);
                 if(sub) {
                     var region = calcRegionForDrop($(this));
