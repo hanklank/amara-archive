@@ -2,6 +2,7 @@ describe('Test the SubtitleList class', function() {
     var subtitleList = null;
 
     beforeEach(module('amara.SubtitleEditor.subtitles.models'));
+    beforeEach(module('amara.SubtitleEditor.mocks'));
 
     beforeEach(inject(function(SubtitleList) {
         subtitleList = new SubtitleList();

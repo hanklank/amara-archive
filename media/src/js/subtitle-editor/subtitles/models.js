@@ -234,7 +234,7 @@ var angular = angular || null;
      *
      */
 
-    module.service('SubtitleList', [function() {
+    module.service('SubtitleList', ['gettext', function(gettext) {
 
         var SubtitleList = function() {
             this.parser = new AmaraDFXPParser();
@@ -511,12 +511,12 @@ var angular = angular || null;
 
         SubtitleList.prototype.updateSubtitleTime = function(subtitle, startTime, endTime) {
             this._updateSubtitle(subtitle, {startTime: startTime, endTime: endTime});
-            this.changesDone('Time change');
+            this.changesDone(gettext('Time change'));
         }
 
         SubtitleList.prototype.updateSubtitleContent = function(subtitle, content) {
             this._updateSubtitle(subtitle, {content: content});
-            this.changesDone('Subtitle edit');
+            this.changesDone(gettext('Subtitle edit'));
         }
 
         SubtitleList.prototype.updateSubtitleParagraph = function(subtitle, startOfParagraph) {
@@ -525,7 +525,7 @@ var angular = angular || null;
                 startOfParagraph = !subtitle.startOfParagraph;
             }
             this._updateSubtitle(subtitle, {startOfParagraph: startOfParagraph});
-            this.changesDone('Paragraph change');
+            this.changesDone(gettext('Paragraph change'));
         }
 
         SubtitleList.prototype.getSubtitleParagraph = function(subtitle) {
@@ -540,7 +540,7 @@ var angular = angular || null;
 
         SubtitleList.prototype.setRegion = function(subtitle, region) {
             this._setRegion(subtitle, region);
-            this.changesDone('Position change');
+            this.changesDone(gettext('Position change'));
         }
 
         SubtitleList.prototype.insertSubtitleBefore = function(otherSubtitle, region) {
@@ -583,7 +583,7 @@ var angular = angular || null;
                 }
             }
             var subtitle = this._insertSubtitleBefore(otherSubtitle, attrs);
-            this.changesDone('Insert subtitle');
+            this.changesDone(gettext('Insert subtitle'));
             return subtitle;
         }
 
@@ -610,14 +610,14 @@ var angular = angular || null;
                 this._updateSubtitle(subtitle, {content: firstSubtitleMarkdown});
             }
             var newSubtitle = this._insertSubtitleBefore(this.nextSubtitle(subtitle), newSubAttrs, secondSubtitleMarkdown);
-            this.changesDone('Split subtitle');
+            this.changesDone(gettext('Split subtitle'));
 
             return newSubtitle;
         }
 
         SubtitleList.prototype.removeSubtitle = function(subtitle) {
             this._removeSubtitle(subtitle);
-            this.changesDone();
+            this.changesDone(gettext('Remove subtitle'));
         }
 
         SubtitleList.prototype.lastSyncedSubtitle = function() {
