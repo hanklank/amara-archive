@@ -49,7 +49,7 @@ from subtitles.pipeline import add_subtitles
 from teams.models import (
     Team, TeamMember, TeamVideo, Task, Project, Workflow, Invite,
     BillingReport, MembershipNarrowing, Application, TeamVisibility,
-    VideoVisibility,
+    VideoVisibility, Setting,
 )
 from teams import behaviors, permissions, tasks
 from teams.exceptions import ApplicationInvalidException
@@ -774,12 +774,26 @@ class GuidelinesMessagesForm(forms.Form):
     messages_admin = MessageTextField(
         label=_('When a member is given the Admin role'))
 
+    resources_page_content = MessageTextField(
+        label=_('Team resource page text'))
+
     guidelines_subtitle = MessageTextField(
         label=('When transcribing'))
     guidelines_translate = MessageTextField(
         label=('When translating'))
     guidelines_review = MessageTextField(
         label=('When reviewing'))
+
+    def save(self, team):
+        with transaction.atomic():
+            for key, val in self.cleaned_data.items():
+                if key in Setting.KEY_IDS:
+                    setting, _ = Setting.objects.get_or_create(
+                        team=team, key=Setting.KEY_IDS[key])
+                    setting.data = val
+                    setting.save()
+            team.resources_page_content = self.cleaned_data['resources_page_content']
+            team.save()
 
 class GuidelinesLangMessagesForm(forms.Form):
   def __init__(self, *args, **kwargs):
