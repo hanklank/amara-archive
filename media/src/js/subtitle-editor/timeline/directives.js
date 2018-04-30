@@ -78,10 +78,10 @@ var angular = angular || null;
     }
 
     VisibleTimespan.prototype.fitsInBuffer = function(bufferTimespan) {
-        if(this.startTime < bufferTimespan.startTime) {
+        if(this.startTime < bufferTimespan.startTime && bufferTimespan > 0) {
             return false;
         }
-        if(this.endTime > bufferTimespan.endTime) {
+        if(this.endTime > bufferTimespan.endTime && bufferTimespan.endTime < scope.duration) {
             return false;
         }
         return true;
