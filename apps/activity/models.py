@@ -203,16 +203,22 @@ class VideoAdded(ActivityType):
 
 class VideoTitleChanged(ActivityType):
     slug = 'video-title-changed'
-    label = _('Video Title Changed')
-    # The subtitle version history tells the story better
-    active = False
+    label = _('Video title changed')
 
     def get_message(self, record, user):
-        data = ActivityMessageDict(record)
-        return format_html(mark_safe(_('<strong>{}</strong> edited a video title')), data['user'])
+        return format_html(
+            _('<strong>{user}</strong> edited the title for: '
+              '<a href="{video_url}">{video}</a>'),
+            user=record.get_user_display(),
+            video_url=record.get_video_url(),
+            video=record.get_video_title())
 
     def get_old_message(self, record, user):
-        return _('edited a video title')
+        return format_html(
+            _('edited the title for: <a href="{video_url}">{video}</a>'),
+            user=record.get_user_display(),
+            video_url=record.get_video_url(),
+            video=record.get_video_title())
 
     def get_action_name(self):
         return _('changed title')
@@ -809,6 +815,11 @@ class ActivityManager(models.Manager):
                                          created=video_url.created,
                                          related_obj_id=url_edit.id)
 
+    def create_for_video_title_edited(self, video, user):
+        return self.create_for_video('video-title-changed', video,
+                                     user=user,
+                                     created=dates.now())
+
     def create_for_version_approved(self, version, user):
         return self.create_for_video('version-approved', version.video,
                                      user=user,
@@ -1034,6 +1045,12 @@ class ActivityRecord(models.Model):
             return self.video.title_display()
         else:
             return ''
+
+    def get_user_display(self):
+        if self.user is None:
+            return _("Somebody (possibly automatically)")
+        else:
+            return self.user.username
 
     def get_message(self, user=None):
         return self.type_obj.get_message(self, user)

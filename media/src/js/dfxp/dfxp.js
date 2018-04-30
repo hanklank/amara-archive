@@ -593,6 +593,23 @@ var AmaraDFXPParser = function() {
 
         return isNaN(val) ? -1 : val;
     };
+    this.region = function(node, region) {
+        /*
+         * Either get or set the region for the subtitle.
+         *
+         * Returns: current region (string or undefined)
+         */
+
+        if (!node) {
+            return -1;
+        }
+
+        if (typeof region !== 'undefined') {
+            $(node).attr('region', region);
+        }
+
+        return $(node).attr('region');
+    };
     this.getFirstSubtitle = function() {
         /*
          * Retrieve the first subtitle in this set.
