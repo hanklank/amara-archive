@@ -245,10 +245,115 @@ var angular = angular || null;
             this.pendingChanges = [];
         }
 
-        SubtitleList.prototype.contentForMarkdown = function(markdown) {
-            return dfxp.markdownToHTML(markdown);
+        // Low-level methods to make changes to the list
+
+        SubtitleList.prototype._makeItem = function(node) {
+            var idKey = (this.idCounter++).toString(16);
+
+            return new StoredSubtitle(this.parser, node, idKey);
         }
 
+        SubtitleList.prototype._insertSubtitle = function(index, attrs) {
+            if(attrs === undefined) {
+                attrs = {};
+            }
+            if(index < 0 || index > this.subtitles.length) {
+                throw 'Invalid insert index: ' + index;
+            }
+            // We insert the subtitle before the reference point, but AmaraDFXPParser
+            // wants to insert it after, so we need to adjust things a bit.
+            if(index > 0) {
+                var after = this.subtitles[index-1].node;
+            } else {
+                var after = -1;
+            }
+            // Convert attrs to things that AmaraDFXPParser expects
+            var nodeAttrs = {
+                begin: attrs.startTime,
+                end: attrs.endTime,
+                region: attrs.region
+            };
+            var nextSubtitle = (index < this.subtitles.length) ? this.subtitles[index] : null;
+            var node = this.parser.addSubtitle(after, nodeAttrs, attrs.content);
+            if(attrs.startOfParagraph) {
+                this.parser.startOfParagraph(node, true);
+            }
+            var subtitle = this._makeItem(node);
+            this.subtitles.splice(index, 0, subtitle);
+            if(subtitle.isSynced()) {
+                this.syncedCount++;
+            }
+            this._addChange('insert', subtitle, { 'before': nextSubtitle});
+            return subtitle;
+        }
+
+        SubtitleList.prototype._removeSubtitle = function(index, attrs) {
+            var subtitle = this.subtitles[index];
+            this.parser.removeSubtitle(subtitle.node);
+            this.subtitles.splice(index, 1);
+            if(subtitle.isSynced()) {
+                this.syncedCount--;
+            }
+            this._addChange('remove', subtitle);
+        }
+
+        SubtitleList.prototype._updateSubtitle = function(index, attrs) {
+            var subtitle = this.subtitles[index];
+            var wasSynced = subtitle.isSynced();
+
+            if('startTime' in attrs && subtitle.startTime != attrs.startTime) {
+                this.parser.startTime(subtitle.node, attrs.startTime);
+                subtitle.startTime = attrs.startTime;
+            }
+            if('endTime' in attrs && subtitle.endTime != attrs.endTime) {
+                this.parser.endTime(subtitle.node, attrs.endTime);
+                subtitle.endTime = attrs.endTime;
+            }
+
+            if('content' in attrs && subtitle.markdown != attrs.content) {
+                this.parser.content(subtitle.node, attrs.content);
+                subtitle.markdown = attrs.content;
+            }
+
+            if('region' in attrs && subtitle.region != attrs.region) {
+                // Passing undefined change the region, so we need to do some more work.
+                if(attrs.region) {
+                    this.parser.region(subtitle.node, attrs.region);
+                } else {
+                    this.parser.region(subtitle.node, null);
+                }
+                subtitle.region = attrs.region;
+            }
+
+            if('startOfParagraph' in attrs && subtitle.startOfParagraph != attrs.startOfParagraph) {
+                this.parser.startOfParagraph(subtitle.node, attrs.startOfParagraph);
+                subtitle.startOfParagraph = attrs.startOfParagraph;
+            }
+
+            if(subtitle.isSynced() && !wasSynced) {
+                this.syncedCount++;
+            }
+            if(!subtitle.isSynced() && wasSynced) {
+                this.syncedCount--;
+            }
+            this._addChange('update', subtitle);
+        }
+
+        // bulkChange -- Make multiple changes at once
+        //
+        // Pass this method a list of changes, each one should be a list with the following elements
+        //   - function (_insertSubtitle, _removeSubtitle, or _updateSubtitle)
+        //   - pos
+        //   - attrs
+        // Returns a list of subtitles changed
+        SubtitleList.prototype._bulkChange = function(changes) {
+            var self = this;
+            _.each(changes, function(change) {
+                change[0].call(self, change[1], change[2]);
+            });
+        }
+
+        // High-level functions
         SubtitleList.prototype.loadEmptySubs = function(languageCode) {
             this.loadXML(emptyDFXP(languageCode));
         }
@@ -260,7 +365,7 @@ var angular = angular || null;
             // Needed because each() changes the value of this
             var self = this;
             this.parser.getSubtitles().each(function(index, node) {
-                var subtitle = self.makeItem(node);
+                var subtitle = self._makeItem(node);
                 if(subtitle.isSynced()) {
                     syncedSubs.push(subtitle);
                 } else {
@@ -275,7 +380,7 @@ var angular = angular || null;
             this.subtitles = syncedSubs;
             // append all unsynced subs to the list
             this.subtitles.push.apply(this.subtitles, unsyncedSubs);
-            this.reloadDone();
+            this._reloadDone();
         }
 
         SubtitleList.prototype.addSubtitlesFromBaseLanguage = function(xml) {
@@ -310,54 +415,10 @@ var angular = angular || null;
                 });
                 that.parser.startOfParagraph(node, baseAttribute.startOfParagraph);
                 that.parser.region(node, baseAttribute.region);
-                that.subtitles.push(that.makeItem(node));
+                that.subtitles.push(that._makeItem(node));
                 that.syncedCount++;
             });
-            this.reloadDone();
-        }
-
-        SubtitleList.prototype.addChangeCallback = function(callback) {
-            this.changeCallbacks.push(callback);
-        }
-
-        SubtitleList.prototype.removeChangeCallback = function(callback) {
-            var pos = this.changeCallbacks.indexOf(callback);
-            if(pos >= 0) {
-                this.changeCallbacks.splice(pos, 1);
-            }
-        }
-
-        SubtitleList.prototype.addChange = function(type, subtitle, extraProps) {
-            changeObj = { type: type, subtitle: subtitle };
-            if(extraProps) {
-                for(key in extraProps) {
-                    changeObj[key] = extraProps[key];
-                }
-            }
-            this.pendingChanges.push(changeObj);
-        }
-
-        SubtitleList.prototype._invokeChangeCallbacks = function() {
-            var changes = this.pendingChanges;
-            this.pendingChanges = [];
-            for(var i=0; i < this.changeCallbacks.length; i++) {
-                this.changeCallbacks[i](changes);
-            }
-        }
-        SubtitleList.prototype.changesDone = function(changeDescription) {
-            this._invokeChangeCallbacks();
-        }
-
-        SubtitleList.prototype.reloadDone = function() {
-            this.addChange('reload', null);
-            this._invokeChangeCallbacks();
-        }
-
-
-        SubtitleList.prototype.makeItem = function(node) {
-            var idKey = (this.idCounter++).toString(16);
-
-            return new StoredSubtitle(this.parser, node, idKey);
+            this._reloadDone();
         }
 
         SubtitleList.prototype.length = function() {
@@ -444,79 +505,14 @@ var angular = angular || null;
             }
         }
 
-        SubtitleList.prototype._updateSubtitle = function(subtitle, attrs) {
-            var wasSynced = subtitle.isSynced();
-
-            if(attrs.startTime !== undefined && subtitle.startTime != attrs.startTime) {
-                this.parser.startTime(subtitle.node, attrs.startTime);
-                subtitle.startTime = attrs.startTime;
-            }
-            if(attrs.endTime !== undefined && subtitle.endTime != attrs.endTime) {
-                this.parser.endTime(subtitle.node, attrs.endTime);
-                subtitle.endTime = attrs.endTime;
-            }
-
-            if(attrs.content !== undefined) {
-                this.parser.content(subtitle.node, attrs.content);
-                subtitle.markdown = attrs.content;
-            }
-
-            if(attrs.startOfParagraph !== undefined) {
-                this.parser.startOfParagraph(subtitle.node, attrs.startOfParagraph);
-                subtitle.startOfParagraph = attrs.startOfParagraph;
-            }
-
-            if(subtitle.isSynced() && !wasSynced) {
-                this.syncedCount++;
-            }
-            if(!subtitle.isSynced() && wasSynced) {
-                this.syncedCount--;
-            }
-            this.addChange('update', subtitle);
-        }
-
-        SubtitleList.prototype._insertSubtitleBefore = function(otherSubtitle, attrs, content) {
-            if(otherSubtitle !== null) {
-                var pos = this.getIndex(otherSubtitle);
-            } else {
-                var pos = this.subtitles.length;
-            }
-            // We insert the subtitle before the reference point, but AmaraDFXPParser
-            // wants to insert it after, so we need to adjust things a bit.
-            if(pos > 0) {
-                var after = this.subtitles[pos-1].node;
-            } else {
-                var after = -1;
-            }
-            var node = this.parser.addSubtitle(after, attrs, content);
-            var subtitle = this.makeItem(node);
-            this.subtitles.splice(pos, 0, subtitle);
-            if(subtitle.isSynced()) {
-                this.syncedCount++;
-            }
-            this.addChange('insert', subtitle, { 'before': otherSubtitle});
-            return subtitle;
-        }
-
-        SubtitleList.prototype._removeSubtitle = function(subtitle) {
-            var pos = this.getIndex(subtitle);
-            this.parser.removeSubtitle(subtitle.node);
-            this.subtitles.splice(pos, 1);
-            if(subtitle.isSynced()) {
-                this.syncedCount--;
-            }
-            this.addChange('remove', subtitle);
-        }
-
-
         SubtitleList.prototype.updateSubtitleTime = function(subtitle, startTime, endTime) {
-            this._updateSubtitle(subtitle, {startTime: startTime, endTime: endTime});
-            this.changesDone(gettext('Time change'));
+            this._updateSubtitle(this.getIndex(subtitle), {startTime: startTime, endTime: endTime});
+            this._changesDone(gettext('Time change'));
         }
 
         SubtitleList.prototype.updateSubtitleContent = function(subtitle, content) {
-            this._updateSubtitle(subtitle, {content: content});
-            this.changesDone(gettext('Subtitle edit'));
+            this._updateSubtitle(this.getIndex(subtitle), {content: content});
+            this._changesDone(gettext('Subtitle edit'));
         }
 
         SubtitleList.prototype.updateSubtitleParagraph = function(subtitle, startOfParagraph) {
@@ -524,23 +520,17 @@ var angular = angular || null;
             if(startOfParagraph === undefined) {
                 startOfParagraph = !subtitle.startOfParagraph;
             }
-            this._updateSubtitle(subtitle, {startOfParagraph: startOfParagraph});
-            this.changesDone(gettext('Paragraph change'));
+            this._updateSubtitle(this.getIndex(subtitle), {startOfParagraph: startOfParagraph});
+            this._changesDone(gettext('Paragraph change'));
         }
 
         SubtitleList.prototype.getSubtitleParagraph = function(subtitle) {
             return this.parser.startOfParagraph(subtitle.node);
         }
 
-        SubtitleList.prototype._setRegion = function(subtitle, region) {
-            subtitle.region = region;
-            this.parser.region(subtitle.node, region);
-            this.addChange('update', subtitle);
-        }
-
-        SubtitleList.prototype.setRegion = function(subtitle, region) {
-            this._setRegion(subtitle, region);
-            this.changesDone(gettext('Position change'));
+        SubtitleList.prototype.updateSubtitleRegion = function(subtitle, region) {
+            this._updateSubtitle(this.getIndex(subtitle), {region: region});
+            this._changesDone(gettext('Position change'));
         }
 
         SubtitleList.prototype.insertSubtitleBefore = function(otherSubtitle, region) {
@@ -549,41 +539,42 @@ var angular = angular || null;
             }
             var defaultDuration = 3000;
 
+            var index = (otherSubtitle === null) ? this.subtitles.length : this.getIndex(otherSubtitle);
+
             if(otherSubtitle && otherSubtitle.isSynced()) {
-                // If we are inserting between 2 synced subtitles, then we can set the
-                // time
-                var previousSubtitle = this.prevSubtitle(otherSubtitle);
-                if(previousSubtitle) {
+                // If we are inserting between before a synced subtitle, then we can set the time
+                if(index > 0) {
+                    var previousSubtitle = this.subtitles[index-1];
                     // Inserting a subtitle between two others.
                     var gapDuration = otherSubtitle.startTime - previousSubtitle.endTime;
                     if(gapDuration > defaultDuration) {
                         // The gap between the previousSubtitle and otherSubtitle is long enough to fit the new subtitle inside.  Put the subtitle in the middle of that gap
-                        attrs.begin = previousSubtitle.endTime + ((gapDuration - defaultDuration) / 2);
-                        attrs.end = attrs.begin + defaultDuration;
+                        attrs.startTime = previousSubtitle.endTime + ((gapDuration - defaultDuration) / 2);
+                        attrs.endTime = attrs.startTime + defaultDuration;
                     } else {
                         // The gap is not enough to fit new subtitle inside, move the previousSubtitle.endTime back to fit it.
                         // But... don't move it so far back that previousSubtitle is now shorter than the new subtitle
-                        attrs.begin = Math.max(otherSubtitle.startTime - defaultDuration, (previousSubtitle.startTime + otherSubtitle.startTime) / 2);
-                        this._updateSubtitle(previousSubtitle, {endTime: attrs.begin});
-                        attrs.end = otherSubtitle.startTime;
+                        attrs.startTime = Math.max(otherSubtitle.startTime - defaultDuration, (previousSubtitle.startTime + otherSubtitle.startTime) / 2);
+                        this._updateSubtitle(index-1, {endTime: attrs.startTime});
+                        attrs.endTime = otherSubtitle.startTime;
                     }
                 } else {
                     // Inserting a subtitle as the start of the list.
                     if(otherSubtitle.startTime >= defaultDuration) {
                         // The gap is large enough for the new subtitle, put it in the middle
-                        attrs.begin = (otherSubtitle.startTime - defaultDuration) / 2;
-                        attrs.end = attrs.begin + defaultDuration;
+                        attrs.startTime = (otherSubtitle.startTime - defaultDuration) / 2;
+                        attrs.endTime = attrs.startTime + defaultDuration;
                     } else {
                         // The gap is not large enough for the new subtitle to fit inside, move otherSubtitle.startTime forward to fit it in
                         // But don't move it so far forward that otherSubtitle is now shorter than the new subtitle
-                        attrs.begin = 0;
-                        attrs.end = Math.min(defaultDuration, otherSubtitle.endTime / 2);
-                        this._updateSubtitle(otherSubtitle, {startTime: attrs.end});
+                        attrs.startTime = 0;
+                        attrs.endTime = Math.min(defaultDuration, otherSubtitle.endTime / 2);
+                        this._updateSubtitle(0, {startTime: attrs.endTime});
                     }
                 }
             }
-            var subtitle = this._insertSubtitleBefore(otherSubtitle, attrs);
-            this.changesDone(gettext('Insert subtitle'));
+            var subtitle = this._insertSubtitle(index, attrs);
+            this._changesDone(gettext('Insert subtitle'));
             return subtitle;
         }
 
@@ -592,32 +583,32 @@ var angular = angular || null;
         // subtitle will now take up only the first half of the time and get firstSubtitleMarkdown as its content
         // A new subtitle will be created to take up the second half of the time and get secondSubtitleMarkdown as its content
         SubtitleList.prototype.splitSubtitle = function(subtitle, firstSubtitleMarkdown, secondSubtitleMarkdown) {
+            var index = this.getIndex(subtitle);
             if(subtitle.isSynced()) {
                 var midpointTime = (subtitle.startTime + subtitle.endTime) / 2;
                 var newSubAttrs = {
-                    begin: midpointTime,
-                    end: subtitle.endTime,
-                    region: subtitle.region
+                    startTime: midpointTime,
+                    endTime: subtitle.endTime,
+                    region: subtitle.region,
+                    content: secondSubtitleMarkdown,
                 }
 
-                this._updateSubtitle(subtitle, {
+                this._updateSubtitle(index, {
                     endTime: midpointTime,
                     content: firstSubtitleMarkdown
                 });
             } else {
                 var newSubAttrs = { region: subtitle.region }
-
-                this._updateSubtitle(subtitle, {content: firstSubtitleMarkdown});
+                this._updateSubtitle(index, {content: firstSubtitleMarkdown});
             }
-            var newSubtitle = this._insertSubtitleBefore(this.nextSubtitle(subtitle), newSubAttrs, secondSubtitleMarkdown);
-            this.changesDone(gettext('Split subtitle'));
-
+            var newSubtitle = this._insertSubtitle(index + 1, newSubAttrs);
+            this._changesDone(gettext('Split subtitle'));
             return newSubtitle;
         }
 
         SubtitleList.prototype.removeSubtitle = function(subtitle) {
-            this._removeSubtitle(subtitle);
-            this.changesDone(gettext('Remove subtitle'));
+            this._removeSubtitle(this.getIndex(subtitle));
+            this._changesDone(gettext('Remove subtitle'));
         }
 
         SubtitleList.prototype.lastSyncedSubtitle = function() {
@@ -710,6 +701,48 @@ var angular = angular || null;
                 }
             }
             return rv;
+        }
+
+        // Change callbacks
+        //
+        // Use addChangeCallback if you want to get notified when the list changes
+
+        SubtitleList.prototype.addChangeCallback = function(callback) {
+            this.changeCallbacks.push(callback);
+        }
+
+        SubtitleList.prototype.removeChangeCallback = function(callback) {
+            var pos = this.changeCallbacks.indexOf(callback);
+            if(pos >= 0) {
+                this.changeCallbacks.splice(pos, 1);
+            }
+        }
+
+        SubtitleList.prototype._addChange = function(type, subtitle, extraProps) {
+            changeObj = { type: type, subtitle: subtitle };
+            if(extraProps) {
+                for(key in extraProps) {
+                    changeObj[key] = extraProps[key];
+                }
+            }
+            this.pendingChanges.push(changeObj);
+        }
+
+        SubtitleList.prototype._invokeChangeCallbacks = function() {
+            var changes = this.pendingChanges;
+            this.pendingChanges = [];
+            for(var i=0; i < this.changeCallbacks.length; i++) {
+                this.changeCallbacks[i](changes);
+            }
+        }
+
+        SubtitleList.prototype._changesDone = function(changeDescription) {
+            this._invokeChangeCallbacks();
+        }
+
+        SubtitleList.prototype._reloadDone = function() {
+            this._addChange('reload', null);
+            this._invokeChangeCallbacks();
         }
 
         return SubtitleList;

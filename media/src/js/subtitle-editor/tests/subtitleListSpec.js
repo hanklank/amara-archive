@@ -21,37 +21,154 @@ describe('Test the SubtitleList class', function() {
         });
     }));
 
-    it('should start empty', function() {
-        expect(subtitleList.subtitles).toEqual([]);
-    });
+    describe('low level change functions', function() {
+        it('inserts subtitles', function() {
+            var sub1 = subtitleList._insertSubtitle(0);
+            var sub2 = subtitleList._insertSubtitle(0, {
+                startTime: 0,
+                endTime: 100,
+                region: 'top',
+                content: 'test-content'
+            });
+            var sub3 = subtitleList._insertSubtitle(2, {startOfParagraph: true, content: 'test-content2'});
+            expect(subtitleList.subtitles).toEqual([sub2, sub1, sub3]);
+            expect(subtitleList.syncedCount).toEqual(1);
 
-    it('should support insertion and removal', function() {
-        var sub1 = subtitleList.insertSubtitleBefore(null);
-        var sub2 = subtitleList.insertSubtitleBefore(sub1);
-        var sub3 = subtitleList.insertSubtitleBefore(null);
-        expect(subtitleList.subtitles).toEqual([sub2, sub1, sub3]);
-        subtitleList.removeSubtitle(sub1);
-        expect(subtitleList.subtitles).toEqual([sub2, sub3]);
-        subtitleList.removeSubtitle(sub2);
-        expect(subtitleList.subtitles).toEqual([sub3]);
-        subtitleList.removeSubtitle(sub3);
-        expect(subtitleList.subtitles).toEqual([]);
-    });
+            expect(sub1).toHaveTimes([-1, -1]);
+            expect(sub1.region).toEqual(undefined);
+            expect(sub1.startOfParagraph).toEqual(true); // sub1 was the first subtitle, so startOfParagraph is true 
+            expect(sub1.markdown).toEqual('');
 
-    it('supports regions when inserting', function() {
-        var sub = subtitleList.insertSubtitleBefore(null, "top");
-        expect(sub.region).toEqual('top');
-    });
+            expect(sub2).toHaveTimes([0, 100]);
+            expect(sub2.region).toEqual('top');
+            expect(sub2.startOfParagraph).toEqual(true);
+            expect(sub2.markdown).toEqual('test-content');
 
-    it('should update content', function() {
-        var sub1 = subtitleList.insertSubtitleBefore(null);
-        expect(sub1.content()).toEqual('');
-        subtitleList.updateSubtitleContent(sub1, 'test');
-        expect(sub1.content()).toEqual('test');
-        subtitleList.updateSubtitleContent(sub1, '*test*');
-        expect(sub1.content()).toEqual('<i>test</i>');
-        subtitleList.updateSubtitleContent(sub1, '**test**');
-        expect(sub1.content()).toEqual('<b>test</b>');
+            expect(sub3).toHaveTimes([-1, -1]);
+            expect(sub3.region).toEqual(undefined);
+            expect(sub3.startOfParagraph).toEqual(true);
+            expect(sub3.markdown).toEqual('test-content2');
+        });
+
+        it('updates subtitles', function() {
+            subtitleList._insertSubtitle(0);
+            var sub = subtitleList._insertSubtitle(1);
+
+            subtitleList._updateSubtitle(1, {
+                startTime: 500,
+                endTime: 1000,
+                region: 'top',
+                startOfParagraph: true,
+                content: 'test'
+            });
+
+            expect(sub.startTime).toEqual(500);
+            expect($(sub.node).attr('begin')).toEqual('500');
+            expect(sub.endTime).toEqual(1000);
+            expect($(sub.node).attr('end')).toEqual('1000');
+            expect(sub.region).toEqual('top');
+            expect($(sub.node).attr('region')).toEqual('top');
+            expect(sub.markdown).toEqual('test');
+            expect($(sub.node).text()).toEqual('test');
+        });
+
+        it('removes subtitles', function() {
+            var sub1 = subtitleList._insertSubtitle(0, {startTime: 500, endTime: 1000});
+            var sub2 = subtitleList._insertSubtitle(1);
+            var sub3 = subtitleList._insertSubtitle(2);
+            expect(subtitleList.subtitles).toEqual([sub1, sub2, sub3]);
+            expect(subtitleList.syncedCount).toEqual(1);
+
+            subtitleList._removeSubtitle(1);
+            expect(subtitleList.subtitles).toEqual([sub1, sub3]);
+            expect(subtitleList.syncedCount).toEqual(1);
+
+            subtitleList._removeSubtitle(1);
+            expect(subtitleList.subtitles).toEqual([sub1]);
+            expect(subtitleList.syncedCount).toEqual(1);
+
+            subtitleList._removeSubtitle(0);
+            expect(subtitleList.subtitles).toEqual([]);
+            expect(subtitleList.syncedCount).toEqual(0);
+        });
+
+        it('supports bulk changes', function() {
+            subtitleList._bulkChange([
+                [subtitleList._insertSubtitle, 0, {startTime: 0, endTime: 100}],
+                [subtitleList._insertSubtitle, 1, {startTime: 100, endTime: 200}],
+                [subtitleList._insertSubtitle, 2, {startTime: 200, endTime:300}],
+                [subtitleList._updateSubtitle, 2, {content: 'test-content'}],
+                [subtitleList._removeSubtitle, 1, {}],
+            ]);
+            expect(subtitleList.subtitles.length).toEqual(2);
+            expect(subtitleList.subtitles[0]).toHaveTimes([0, 100]);
+            expect(subtitleList.subtitles[1]).toHaveTimes([200, 300]);
+            expect(subtitleList.subtitles[1].markdown).toEqual('test-content');
+        });
+
+
+        it('invokes change callbacks', function() {
+            var handler = jasmine.createSpyObj('handler', ['onChange']);
+            subtitleList.addChangeCallback(handler.onChange);
+
+            var sub = subtitleList._insertSubtitle(0);
+            subtitleList._invokeChangeCallbacks();
+            expect(handler.onChange).toHaveBeenCalledWith([{
+                type: 'insert',
+                subtitle: sub,
+                before: null,
+            }]);
+
+            handler.onChange.calls.reset();
+            var sub2 = subtitleList._insertSubtitle(0);
+            subtitleList._invokeChangeCallbacks();
+            expect(handler.onChange).toHaveBeenCalledWith([{
+                type: 'insert',
+                subtitle: sub2,
+                before: sub
+            }]);
+
+            handler.onChange.calls.reset();
+            subtitleList.updateSubtitleTime(sub, 500, 1500);
+            subtitleList._invokeChangeCallbacks();
+            expect(handler.onChange).toHaveBeenCalledWith([{
+                type: 'update',
+                subtitle: sub,
+            }]);
+
+            handler.onChange.calls.reset();
+            subtitleList.updateSubtitleTime(sub, 500, 1500);
+            subtitleList._invokeChangeCallbacks();
+            expect(handler.onChange).toHaveBeenCalledWith([{
+                type: 'update',
+                subtitle: sub,
+            }]);
+
+            handler.onChange.calls.reset();
+            subtitleList.updateSubtitleContent(sub, 'content');
+            subtitleList._invokeChangeCallbacks();
+            expect(handler.onChange).toHaveBeenCalledWith([{
+                type: 'update',
+                subtitle: sub,
+            }]);
+
+            handler.onChange.calls.reset();
+            subtitleList._removeSubtitle(1);
+            subtitleList._invokeChangeCallbacks();
+            expect(handler.onChange).toHaveBeenCalledWith([{
+                type: 'remove',
+                subtitle: sub,
+            }]);
+
+            handler.onChange.calls.reset();
+            subtitleList.removeChangeCallback(handler.onChange);
+            var sub3 = subtitleList._insertSubtitle(0);
+            subtitleList.updateSubtitleTime(sub3, 500, 1500);
+            subtitleList.updateSubtitleContent(sub3, 'content');
+            subtitleList._removeSubtitle(0);
+            expect(handler.onChange.calls.count()).toEqual(0);
+        });
+
     });
 
     it('should update timing', function() {
@@ -72,50 +189,13 @@ describe('Test the SubtitleList class', function() {
     it('should get and update regions', function() {
         var sub = subtitleList.insertSubtitleBefore(null);
         expect(sub.region).toEqual(undefined);
-        subtitleList.setRegion(sub, 'top');
+        subtitleList.updateSubtitleRegion(sub, 'top');
         expect($(sub.node).attr('region')).toEqual('top');
         expect(sub.region).toEqual('top');
-    });
 
-    it('should invoke change callbacks', function() {
-        var handler = jasmine.createSpyObj('handler', ['onChange']);
-        subtitleList.addChangeCallback(handler.onChange);
-
-        var sub = subtitleList.insertSubtitleBefore(null);
-        expect(handler.onChange.calls.count()).toEqual(1);
-        expect(handler.onChange).toHaveBeenCalledWith([{
-            type: 'insert',
-            subtitle: sub,
-            before: null,
-        }]);
-
-        subtitleList.updateSubtitleTime(sub, 500, 1500);
-        expect(handler.onChange.calls.count()).toEqual(2);
-        expect(handler.onChange).toHaveBeenCalledWith([{
-            type: 'update',
-            subtitle: sub,
-        }]);
-
-        subtitleList.updateSubtitleContent(sub, 'content');
-        expect(handler.onChange.calls.count()).toEqual(3);
-        expect(handler.onChange).toHaveBeenCalledWith([{
-            type: 'update',
-            subtitle: sub,
-        }]);
-
-        subtitleList.removeSubtitle(sub);
-        expect(handler.onChange.calls.count()).toEqual(4);
-        expect(handler.onChange).toHaveBeenCalledWith([{
-            type: 'remove',
-            subtitle: sub,
-        }]);
-
-        subtitleList.removeChangeCallback(handler.onChange);
-        var sub2 = subtitleList.insertSubtitleBefore(null);
-        subtitleList.updateSubtitleTime(sub2, 500, 1500);
-        subtitleList.updateSubtitleContent(sub2, 'content');
-        subtitleList.removeSubtitle(sub2);
-        expect(handler.onChange.calls.count()).toEqual(4);
+        subtitleList.updateSubtitleRegion(sub, undefined);
+        expect($(sub.node).attr('region')).toEqual(undefined);
+        expect(sub.region).toEqual(undefined);
     });
 
     describe('insertBefore unsynced subtitle', function() {
@@ -137,9 +217,10 @@ describe('Test the SubtitleList class', function() {
     describe('insertBefore with two synced subtitles', function() {
         var sub1, sub2;
         beforeEach(function() {
-            sub1 = subtitleList.insertSubtitleBefore(null);
-            sub2 = subtitleList.insertSubtitleBefore(null);
+            sub1 = subtitleList._insertSubtitle(0);
+            sub2 = subtitleList._insertSubtitle(1);
         });
+
         it('inserts a 3 second subtitle in the between otherSubtitle and the previous subtitle, if there is a 3 second gap', function() {
             subtitleList.updateSubtitleTime(sub1, 0, 1000);
             subtitleList.updateSubtitleTime(sub2, 5000, 6000);
@@ -244,43 +325,12 @@ describe('Test the SubtitleList class', function() {
         it('preserves region when splitting subtitles', function() {
             var sub1 = subtitleList.insertSubtitleBefore(null);
             subtitleList.updateSubtitleTime(sub1, 0, 8000);
-            subtitleList.setRegion(sub1, 'top');
+            subtitleList.updateSubtitleRegion(sub1, 'top');
 
             var sub2 = subtitleList.splitSubtitle(sub1, 'foo', 'bar');
             expect(sub2.region).toBe('top');
         });
 
-        it('invokes change callbacks on split subtitles', function() {
-
-            var sub1 = subtitleList.insertSubtitleBefore(null);
-            subtitleList.updateSubtitleTime(sub1, 0, 8000);
-
-            var handler = jasmine.createSpyObj('handler', ['onChange']);
-            subtitleList.addChangeCallback(handler.onChange);
-
-            var sub2 = subtitleList.splitSubtitle(sub1, 'foo', 'bar');
-            expect(handler.onChange).toHaveBeenCalledWith([{
-                type: 'update',
-                subtitle: sub1,
-            }, {
-                type: 'insert',
-                subtitle: sub2,
-                before: null,
-            }]);
-
-            handler.onChange.calls.reset();
-            var sub3 = subtitleList.splitSubtitle(sub1, 'f', 'oo');
-
-            expect(handler.onChange).toHaveBeenCalledWith([{
-                type: 'update',
-                subtitle: sub1,
-            }, {
-                type: 'insert',
-                subtitle: sub3,
-                before: sub2,
-            }]);
-
-        });
     });
 });
 
