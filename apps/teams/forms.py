@@ -2000,9 +2000,8 @@ class EditVideosForm(VideoManagementForm):
         project = self.cleaned_data.get('project')
         language = self.cleaned_data['language']
         thumbnail = self.cleaned_data['thumbnail']
-        if language is None and self.single_selection():
-            language = ''
-
+        if language == '' and not self.single_selection():
+            language = None
 
         for video in qs:
             team_video = video.teamvideo
