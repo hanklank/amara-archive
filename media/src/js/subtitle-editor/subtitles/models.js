@@ -234,7 +234,7 @@ var angular = angular || null;
      *
      */
 
-    module.service('SubtitleList', ['gettext', function(gettext) {
+    module.service('SubtitleList', ['gettext', 'interpolate', function(gettext, interpolate) {
 
         var SubtitleList = function() {
             this.parser = new AmaraDFXPParser();
@@ -243,6 +243,13 @@ var angular = angular || null;
             this.syncedCount = 0;
             this.changeCallbacks = [];
             this.pendingChanges = [];
+
+            this.undoStack = [];
+            this.redoStack = [];
+            // List of change items to undo all changes since the last
+            // _changesDone() call.  This gets moved to the undoStack/redoStack
+            // in _changesDone
+            this.rollbackStack = [];
         }
 
         // Low-level methods to make changes to the list
@@ -283,39 +290,53 @@ var angular = angular || null;
             if(subtitle.isSynced()) {
                 this.syncedCount++;
             }
+            this.rollbackStack.push([this._removeSubtitle, index, {}]);
             this._addChange('insert', subtitle, { 'before': nextSubtitle});
             return subtitle;
         }
 
         SubtitleList.prototype._removeSubtitle = function(index, attrs) {
             var subtitle = this.subtitles[index];
+            var rollbackAttrs = {
+                startTime: subtitle.startTime,
+                endTime: subtitle.endTime,
+                content: subtitle.markdown,
+                startOfParagraph: subtitle.startOfParagraph,
+                region: subtitle.region
+            };
             this.parser.removeSubtitle(subtitle.node);
             this.subtitles.splice(index, 1);
             if(subtitle.isSynced()) {
                 this.syncedCount--;
             }
+            this.rollbackStack.push([this._insertSubtitle, index, rollbackAttrs]);
             this._addChange('remove', subtitle);
         }
 
         SubtitleList.prototype._updateSubtitle = function(index, attrs) {
             var subtitle = this.subtitles[index];
             var wasSynced = subtitle.isSynced();
+            var rollbackAttrs = {};
 
             if('startTime' in attrs && subtitle.startTime != attrs.startTime) {
+                rollbackAttrs.startTime = subtitle.startTime;
                 this.parser.startTime(subtitle.node, attrs.startTime);
                 subtitle.startTime = attrs.startTime;
             }
             if('endTime' in attrs && subtitle.endTime != attrs.endTime) {
+                rollbackAttrs.endTime = subtitle.endTime;
                 this.parser.endTime(subtitle.node, attrs.endTime);
                 subtitle.endTime = attrs.endTime;
             }
 
             if('content' in attrs && subtitle.markdown != attrs.content) {
+                rollbackAttrs.content = subtitle.markdown;
                 this.parser.content(subtitle.node, attrs.content);
                 subtitle.markdown = attrs.content;
             }
 
             if('region' in attrs && subtitle.region != attrs.region) {
+                rollbackAttrs.region = subtitle.region;
                 // Passing undefined change the region, so we need to do some more work.
                 if(attrs.region) {
                     this.parser.region(subtitle.node, attrs.region);
@@ -326,6 +347,7 @@ var angular = angular || null;
             }
 
             if('startOfParagraph' in attrs && subtitle.startOfParagraph != attrs.startOfParagraph) {
+                rollbackAttrs.startOfParagraph = subtitle.startOfParagraph;
                 this.parser.startOfParagraph(subtitle.node, attrs.startOfParagraph);
                 subtitle.startOfParagraph = attrs.startOfParagraph;
             }
@@ -336,21 +358,39 @@ var angular = angular || null;
             if(!subtitle.isSynced() && wasSynced) {
                 this.syncedCount--;
             }
+            this.rollbackStack.push([this._updateSubtitle, index, rollbackAttrs]);
             this._addChange('update', subtitle);
         }
 
-        // bulkChange -- Make multiple changes at once
-        //
-        // Pass this method a list of changes, each one should be a list with the following elements
-        //   - function (_insertSubtitle, _removeSubtitle, or _updateSubtitle)
-        //   - pos
-        //   - attrs
-        // Returns a list of subtitles changed
+        /*
+         * bulkChange -- Make multiple changes at once
+         *
+         * Pass this method a list of changes, each one should be a list with the following elements
+         *   - function (_insertSubtitle, _removeSubtitle, or _updateSubtitle)
+         *   - pos
+         *   - attrs
+         *
+         * Returns a list of subtitles changed
+         */
         SubtitleList.prototype._bulkChange = function(changes) {
             var self = this;
             _.each(changes, function(change) {
                 change[0].call(self, change[1], change[2]);
             });
+        }
+
+        SubtitleList.prototype._changesDone = function(changeDescription) {
+            this.rollbackStack.reverse();
+            this.undoStack.push([changeDescription, this.rollbackStack]);
+            this.redoStack = [];
+            this.rollbackStack = [];
+            this._invokeChangeCallbacks();
+        }
+
+        SubtitleList.prototype._reloadDone = function() {
+            this._addChange('reload', null);
+            this._resetUndo();
+            this._invokeChangeCallbacks();
         }
 
         // High-level functions
@@ -736,12 +776,54 @@ var angular = angular || null;
             }
         }
 
-        SubtitleList.prototype._changesDone = function(changeDescription) {
+        // Undo/redo stack related functions
+        SubtitleList.prototype._resetUndo = function() {
+            this.undoStack = [];
+            this.redoStack = [];
+            this.rollbackStack = [];
+        }
+
+        SubtitleList.prototype.canUndo = function() {
+            return this.undoStack.length > 0;
+        }
+
+        SubtitleList.prototype.canRedo = function() {
+            return this.redoStack.length > 0;
+        }
+
+        SubtitleList.prototype.undoText = function() {
+            if(this.canUndo()) {
+                var fmtString = gettext('Undo: %(command)s')
+                return interpolate(fmtString, {command: _.last(this.undoStack)[0]}, true);
+            } else {
+                return '';
+            }
+        }
+
+        SubtitleList.prototype.redoText = function() {
+            if(this.canRedo()) {
+                var fmtString = gettext('Redo: %(command)s')
+                return interpolate(fmtString, {command: _.last(this.redoStack)[0]}, true);
+            } else {
+                return '';
+            }
+        }
+
+        SubtitleList.prototype.undo = function () {
+            var lastUndo = this.undoStack.pop();
+            this._bulkChange(lastUndo[1]);
+            this.rollbackStack.reverse();
+            this.redoStack.push([lastUndo[0], this.rollbackStack]);
+            this.rollbackStack = [];
             this._invokeChangeCallbacks();
         }
 
-        SubtitleList.prototype._reloadDone = function() {
-            this._addChange('reload', null);
+        SubtitleList.prototype.redo = function() {
+            var lastRedo = this.redoStack.pop();
+            this._bulkChange(lastRedo[1]);
+            this.rollbackStack.reverse();
+            this.undoStack.push([lastRedo[0], this.rollbackStack]);
+            this.rollbackStack = [];
             this._invokeChangeCallbacks();
         }
 

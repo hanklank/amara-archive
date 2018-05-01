@@ -330,7 +330,168 @@ describe('Test the SubtitleList class', function() {
             var sub2 = subtitleList.splitSubtitle(sub1, 'foo', 'bar');
             expect(sub2.region).toBe('top');
         });
+    });
 
+    describe('undo', function() {
+        it('can undo operations', function() {
+            var sub = subtitleList._insertSubtitle(0, {
+                startTime: 0, endTime: 100, content: 'test-content'
+            });
+            subtitleList._resetUndo();
+
+            subtitleList.splitSubtitle(sub, 'test', 'content');
+            expect(subtitleList.canUndo()).toEqual(true);
+            subtitleList.undo();
+
+            expect(subtitleList.subtitles.length).toEqual(1);
+            expect(subtitleList.subtitles[0]).toHaveTimes([0, 100]);
+            expect(subtitleList.subtitles[0].markdown).toEqual('test-content');
+            expect(subtitleList.canUndo()).toEqual(false);
+        });
+
+        it('can redo operations', function() {
+            var sub = subtitleList._insertSubtitle(0, {
+                startTime: 0, endTime: 100, content: 'test-content'
+            });
+            subtitleList._resetUndo();
+
+            subtitleList.splitSubtitle(sub, 'test', 'content');
+            subtitleList.undo();
+
+            expect(subtitleList.canRedo()).toEqual(true);
+            subtitleList.redo();
+
+            expect(subtitleList.subtitles.length).toEqual(2);
+            expect(subtitleList.subtitles[0]).toHaveTimes([0, 50]);
+            expect(subtitleList.subtitles[0].markdown).toEqual('test');
+
+            expect(subtitleList.subtitles[1]).toHaveTimes([50, 100]);
+            expect(subtitleList.subtitles[1].markdown).toEqual('content');
+
+            expect(subtitleList.canUndo()).toEqual(true);
+            expect(subtitleList.canRedo()).toEqual(false);
+        });
+
+        it('can recreate removed subtitles', function() {
+            subtitleList._insertSubtitle(0, { startTime: 0, endTime: 100 });
+            subtitleList._resetUndo();
+
+            var sub = subtitleList.insertSubtitleBefore(null);
+            subtitleList.updateSubtitleContent(sub, 'test-content');
+            subtitleList.updateSubtitleTime(sub, 200, 300);
+            subtitleList.updateSubtitleParagraph(sub, true);
+            subtitleList.updateSubtitleRegion(sub, 'top');
+            subtitleList.removeSubtitle(sub);
+
+            subtitleList.undo();
+
+            // test that all attributes were successfully recreated
+            var sub = subtitleList.subtitles[1];
+            expect(sub.startTime).toEqual(200);
+            expect(sub.endTime).toEqual(300);
+            expect(sub.markdown).toEqual('test-content');
+            expect(sub.startOfParagraph).toEqual(true);
+            expect(sub.region).toEqual('top');
+        });
+
+        it('can recreate updated subtitles', function() {
+            subtitleList._insertSubtitle(0, { startTime: 0, endTime: 100 });
+            subtitleList._resetUndo();
+
+            var sub = subtitleList.insertSubtitleBefore(null);
+
+            subtitleList.updateSubtitleContent(sub, 'changed');
+            subtitleList.updateSubtitleTime(sub, 1000, 2000);
+            subtitleList.updateSubtitleParagraph(sub, true);
+            subtitleList.updateSubtitleRegion(sub, 'top');
+
+            subtitleList.undo();
+            subtitleList.undo();
+            subtitleList.undo();
+            subtitleList.undo();
+
+            // test that all attributes were successfully recreated
+
+            var sub = subtitleList.subtitles[1];
+            expect(sub).toHaveTimes([-1, -1]);
+            expect(sub.markdown).toEqual('');
+            expect(sub.startOfParagraph).toEqual(false);
+            expect(sub.region).toEqual(undefined);
+        });
+
+        it('undos operations in the correct order', function() {
+            subtitleList._insertSubtitle(0, {
+                startTime: 0, endTime: 100, content: 'test-content'
+            });
+            subtitleList._removeSubtitle(0, {});
+            subtitleList._changesDone('test');
+
+            // When we undo multiple changes, we need to undo them in reverse
+            // order.  If we try to undo the insert before undoing the remove,
+            // then things will fail
+            subtitleList.undo();
+            expect(subtitleList.subtitles).toEqual([]);
+
+            // Try redo and undo again to test the code there
+            subtitleList.redo();
+            subtitleList.undo();
+
+            expect(subtitleList.subtitles).toEqual([]);
+        });
+
+        it('has helper methods for the undo/redo menu items', function() {
+            expect(subtitleList.canUndo()).toEqual(false);
+            expect(subtitleList.canRedo()).toEqual(false);
+
+            subtitleList._insertSubtitle(0, {});
+            subtitleList._changesDone('change 1');
+            expect(subtitleList.canUndo()).toEqual(true);
+            expect(subtitleList.canRedo()).toEqual(false);
+            expect(subtitleList.undoText().data.command).toEqual('change 1');
+
+            subtitleList._insertSubtitle(0, {});
+            subtitleList._changesDone('change 2');
+            expect(subtitleList.canUndo()).toEqual(true);
+            expect(subtitleList.canRedo()).toEqual(false);
+            expect(subtitleList.undoText().data.command).toEqual('change 2');
+
+            subtitleList.undo();
+            expect(subtitleList.canUndo()).toEqual(true);
+            expect(subtitleList.canRedo()).toEqual(true);
+            expect(subtitleList.undoText().data.command).toEqual('change 1');
+            expect(subtitleList.redoText().data.command).toEqual('change 2');
+
+            subtitleList.undo();
+            expect(subtitleList.canUndo()).toEqual(false);
+            expect(subtitleList.canRedo()).toEqual(true);
+            expect(subtitleList.redoText().data.command).toEqual('change 1');
+
+        });
+
+        it('can handle complex undo/redo stacks', function() {
+            var sub = subtitleList._insertSubtitle(0, {
+                startTime: 0, endTime: 100, content: 'test-content'
+            });
+            subtitleList._resetUndo();
+
+            subtitleList.splitSubtitle(sub, 'test', 'content');
+            subtitleList.insertSubtitleBefore(null);
+
+            subtitleList.undo();
+            subtitleList.undo();
+            subtitleList.redo();
+            subtitleList.undo();
+
+            subtitleList.updateSubtitleContent(sub, 'test-content2');
+
+            expect(subtitleList.subtitles.length).toEqual(1);
+            expect(subtitleList.subtitles[0]).toHaveTimes([0, 100]);
+            expect(subtitleList.subtitles[0].markdown).toEqual('test-content2');
+
+            subtitleList.undo();
+            expect(subtitleList.subtitles.length).toEqual(1);
+            expect(subtitleList.subtitles[0]).toHaveTimes([0, 100]);
+            expect(subtitleList.subtitles[0].markdown).toEqual('test-content');
+        });
     });
 });
-
