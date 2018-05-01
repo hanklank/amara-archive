@@ -1662,6 +1662,17 @@ class TeamMember(models.Model):
         """Test if the user is a manager or above."""
         return self.role in (ROLE_OWNER, ROLE_ADMIN, ROLE_MANAGER)
 
+    def is_any_type_of_manager(self):
+        """
+        This method checks if this team member is one of the floowing:
+          - a manager for team
+          - a language manager for at least one language
+          - a project manager for at least one project
+        """
+        return (self.is_manager() or
+                self.is_a_project_manager() or
+                self.is_a_language_manager())
+
     def is_admin(self):
         """Test if the user is an admin or owner."""
         return self.role in (ROLE_OWNER, ROLE_ADMIN)
@@ -1683,9 +1694,17 @@ class TeamMember(models.Model):
             project_id = project
         return project_id in (p.id for p in self.get_projects_managed())
 
+    def is_a_project_manager(self):
+        """Test if the user is a project manager of any project"""
+        return bool(self.get_projects_managed())
+
     def is_language_manager(self, language_code):
         return (language_code in
                 (l.code for l in self.get_languages_managed()))
+
+    def is_a_language_manager(self):
+        """Test if the user is a language manager of any language"""
+        return bool(self.get_languages_managed())
 
     def make_project_manager(self, project):
         self.projects_managed.add(project)
