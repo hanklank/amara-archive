@@ -78,10 +78,10 @@ var angular = angular || null;
     }
 
     VisibleTimespan.prototype.fitsInBuffer = function(bufferTimespan) {
-        if(this.startTime < bufferTimespan.startTime) {
+        if(this.startTime < bufferTimespan.startTime && bufferTimespan > 0) {
             return false;
         }
-        if(this.endTime > bufferTimespan.endTime) {
+        if(this.endTime > bufferTimespan.endTime && bufferTimespan.endTime < scope.duration) {
             return false;
         }
         return true;
@@ -360,7 +360,7 @@ var angular = angular || null;
 
             function makeDivForSubtitle(subtitle) {
                 var div = $('<div/>', {class: 'subtitle'});
-                var span = $('<span/>');
+                var span = $('<span/>', {class: 'timeline-subtitle-text'});
                 span.html(subtitle.content());
                 var left = $('<a href="#" class="handle left"></a>');
                 var right = $('<a href="#" class="handle right"></a>');
