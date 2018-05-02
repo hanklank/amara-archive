@@ -41,6 +41,7 @@ from teams.permissions import (
     can_view_stats_tab as _can_view_stats_tab,
     can_view_approve_tab as _can_view_approve_tab,
     can_view_management_tab as _can_view_management_tab,
+    can_view_project_or_language_management_tab as _can_view_project_or_language_management_tab,
     can_edit_video as _can_edit_video,
     can_rename_team as _can_rename_team,
     can_perform_task as _can_perform_task,
@@ -342,6 +343,10 @@ def can_view_approve_tab(team, user):
 @register.filter
 def can_view_management_tab(team, user):
    return _can_view_management_tab(team, user)
+
+@register.filter
+def can_view_project_or_language_management_tab(team, user):
+    return _can_view_project_or_language_management_tab(team, user)
 
 @register.filter
 def can_rename_team(team, user):

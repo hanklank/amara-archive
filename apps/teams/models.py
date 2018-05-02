@@ -1706,6 +1706,9 @@ class TeamMember(models.Model):
         """Test if the user is a language manager of any language"""
         return bool(self.get_languages_managed())
 
+    def is_a_project_or_language_manager(self):
+        return self.is_a_project_manager() or self.is_a_language_manager()
+
     def make_project_manager(self, project):
         self.projects_managed.add(project)
 
