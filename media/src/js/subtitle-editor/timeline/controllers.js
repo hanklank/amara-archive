@@ -179,12 +179,12 @@
             else $scope.showUpcomingUnsyncedSubtitle = false;
         }
 
-        function updateTimeline() {
+        function updateTimeline(redrawSubtitleOptions) {
             updateTime();
             updateWillSync();
             updateUpcomingSubtitleSticker();
             $scope.redrawCanvas();
-            $scope.redrawSubtitles();
+            $scope.redrawSubtitles(redrawSubtitleOptions);
         }
 
         function scrollToSubtitle(subtitle) {
@@ -201,7 +201,9 @@
                 cancelTimer();
             }
         });
-        $scope.$root.$on("work-done", updateTimeline);
+        $scope.$root.$on("work-done", function() {
+            updateTimeline({forcePlace: true});
+        });
 
         $scope.$root.$on('dialog-opened', function() {
             $scope.hideContextMenu();
