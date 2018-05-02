@@ -21,6 +21,8 @@
                     {% trans "Warnings" %}
                 </a></li>
                 <li><a href="#" class="show-tutorial" ng-click="showTutorial($event)" title="Show Tutorial">{% trans "Show Tutorial" %}</a></li>
+                <li ng-show="canUndo()"><a href="#" ng-click="onUndoClicked($event)">[[ undoText() ]]</a></li>
+                <li ng-show="canRedo()"><a href="#" ng-click="onRedoClicked($event)">[[ redoText() ]]</a></li>
             </ul>
             <ul class="toolbox-menu-timing hidden">
                 <li ng-show="copyTimingEnabled()"><a href="#" class="copyover" ng-click="showCopyTimingModal($event)" title="Copy timing and paragraphs from reference language">{% trans "Copy Timing" %}</a></li>
