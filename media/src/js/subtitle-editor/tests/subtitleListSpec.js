@@ -99,6 +99,15 @@ describe('Test the SubtitleList class', function() {
         expect(subtitleList.nextSubtitle(sub3)).toBe(null);
     });
 
+    it('can split unsynced subtitles', function() {
+        var sub = subtitleList.insertSubtitleBefore(null);
+        var sub2 = subtitleList.splitSubtitle(sub, 'one', 'two');
+
+        expect(sub).toHaveTimes([-1, -1]);
+        expect(sub2).toHaveTimes([-1, -1]);
+        expect(subtitleList.syncedCount).toEqual(0);
+    });
+
     it('preserves region when splitting subtitles', function() {
         var sub1 = subtitleList.insertSubtitleBefore(null);
         subtitleList.updateSubtitleTime(sub1, 0, 8000);
