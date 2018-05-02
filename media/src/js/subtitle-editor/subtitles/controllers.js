@@ -176,12 +176,6 @@ var angular = angular || null;
             }
 
         });
-        $scope.$root.$on("video-playback-changes", function() {
-            if(VideoPlayer.isPlaying() && $scope.currentEdit.inProgress()) {
-                $scope.currentEdit.finish(true, subtitleList);
-            }
-        });
-
 
         $scope.splitCurrentSubtitle = function() {
             var currentSubtitle = $scope.currentEdit.storedSubtitle();
