@@ -170,7 +170,8 @@ def get_values(video_id, user=None, team=None):
             break
     if video_data is None:
         response = requests.get(VIMEO_API_BASE_URL + video_url, auth=HTTPBasicAuth(VIMEO_API_KEY, VIMEO_API_SECRET))
-        video_data = response.json()
+        if response.ok:
+            video_data = response.json()
     if video_data is not None:
         thumbnail = sorted(video_data['pictures']['sizes'], key=lambda x: -x["width"])[0]['link']
         return (video_data["name"],
