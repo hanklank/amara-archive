@@ -588,10 +588,24 @@ var angular = angular || null;
     // A new subtitle will be created to take up the second half of the time and get secondSubtitleMarkdown as its content
     SubtitleList.prototype.splitSubtitle = function(subtitle, firstSubtitleMarkdown, secondSubtitleMarkdown) {
         var pos = this.getIndex(subtitle);
+        var nextSubtitle = this.nextSubtitle(subtitle);
+
+        if(!subtitle.isSynced()) {
+            this._updateSubtitleContent(subtitle, firstSubtitleMarkdown);
+            var newNode = this.parser.addSubtitle(subtitle.node, {
+                region: subtitle.region
+            }, secondSubtitleMarkdown);
+            var newSubtitle = this.makeItem(newNode);
+            this.subtitles.splice(pos+1, 0, newSubtitle);
+
+            this.emitChange('update', subtitle);
+            this.emitChange('insert', newSubtitle, { 'before': nextSubtitle});
+            return newSubtitle;
+        }
+
         var startTime = subtitle.startTime;
         var endTime = subtitle.endTime;
         var midpointTime = (startTime + endTime) / 2;
-        var nextSubtitle = this.nextSubtitle(subtitle);
 
         this._updateSubtitleTime(subtitle, startTime, midpointTime);
         this._updateSubtitleContent(subtitle, firstSubtitleMarkdown);
