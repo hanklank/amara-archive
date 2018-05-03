@@ -536,6 +536,18 @@ var angular = angular || null;
             } else if (evt.keyCode === 190 && evt.shiftKey && evt.ctrlKey) {
                 // Control+Shift+Period, go forward 4 seconds
                 VideoPlayer.seek(VideoPlayer.currentTime() + 4000);
+            } else if (evt.keyCode === 90 && evt.ctrlKey) {
+                // Ctrl-Z -- undo
+                if($scope.workingSubtitles.subtitleList.canUndo()) {
+                    $scope.workingSubtitles.subtitleList.undo();
+                   $scope.$root.$emit('work-done');
+                }
+            } else if (evt.keyCode === 89 && evt.ctrlKey) {
+                // Ctrl-Y -- undo
+                if($scope.workingSubtitles.subtitleList.canRedo()) {
+                    $scope.workingSubtitles.subtitleList.redo();
+                    $scope.$root.$emit('work-done');
+                }
             } else if (evt.keyCode === 73 && isAltPressed(evt) && evt.shiftKey) {
                 // Alt+Shift+i, insert subtitle below
 		if($scope.currentEdit.storedSubtitle())
