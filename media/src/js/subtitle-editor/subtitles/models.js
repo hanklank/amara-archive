@@ -565,6 +565,46 @@ var angular = angular || null;
             this._changesDone(gettext('Time change'));
         }
 
+        SubtitleList.prototype.clearAllTimings = function() {
+            for(var i=0; i < this.subtitles.length; i++) {
+                this._updateSubtitle(i, {
+                    startTime: -1, endTime: -1
+                });
+            }
+            this._changesDone(gettext('Clear timings'));
+        }
+
+        SubtitleList.prototype.clearAllText = function() {
+            for(var i=0; i < this.subtitles.length; i++) {
+                this._updateSubtitle(i, {content: ''});
+            }
+            this._changesDone(gettext('Clear text'));
+        }
+
+        // Copy the subtitle times from another subtitle list
+        SubtitleList.prototype.copyTimingsFrom = function(otherSubtitleList) {
+            var minLength = Math.min(this.subtitles.length, otherSubtitleList.subtitles.length);
+
+            for(var i=0; i < minLength; i++) {
+                var otherSubtitle = otherSubtitleList.subtitles[i];
+                this._updateSubtitle(i, {
+                    startTime: otherSubtitle.startTime,
+                    endTime: otherSubtitle.endTime,
+                    startOfParagraph: otherSubtitle.startOfParagraph
+                });
+            }
+
+            for(var i=minLength; i < this.subtitles.length; i++) {
+                this._updateSubtitle(i, {
+                    startTime: -1,
+                    endTime: -1
+                });
+            }
+
+            this._changesDone(gettext('Copy timings'));
+
+        }
+
         SubtitleList.prototype.updateSubtitleContent = function(subtitle, content) {
             this._updateSubtitle(this.getIndex(subtitle), {content: content});
             this._changesDone(gettext('Subtitle edit'));

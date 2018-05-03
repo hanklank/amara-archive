@@ -171,7 +171,7 @@ describe('Test the SubtitleList class', function() {
 
     });
 
-    it('should update timing', function() {
+    it('updates timings', function() {
         var sub1 = subtitleList.insertSubtitleBefore(null);
         var sub2 = subtitleList.insertSubtitleBefore(null);
         expect(subtitleList.syncedCount).toEqual(0);
@@ -184,6 +184,57 @@ describe('Test the SubtitleList class', function() {
         subtitleList.updateSubtitleTime(sub2, 2000, 2500);
         expect(sub2).toHaveTimes([2000, 2500]);
         expect(subtitleList.syncedCount).toEqual(2);
+    });
+
+    it('updates multiple timings at once', function() {
+        var sub1 = subtitleList.insertSubtitleBefore(null);
+        var sub2 = subtitleList.insertSubtitleBefore(null);
+        subtitleList.updateSubtitleTimes([
+            {
+                subtitle: sub1,
+                startTime: 100,
+                endTime: 200
+            },
+            {
+                subtitle: sub2,
+                startTime: 200,
+                endTime: 300
+            },
+        ]);
+        expect(sub1).toHaveTimes([100, 200]);
+        expect(sub2).toHaveTimes([200, 300]);
+        expect(subtitleList.syncedCount).toEqual(2);
+    });
+
+    it('clears all timings', function() {
+        var sub1 = subtitleList.insertSubtitleBefore(null);
+        var sub2 = subtitleList.insertSubtitleBefore(null);
+        subtitleList.updateSubtitleTimes([
+            {
+                subtitle: sub1,
+                startTime: 100,
+                endTime: 200
+            },
+            {
+                subtitle: sub2,
+                startTime: 200,
+                endTime: 300
+            },
+        ]);
+        subtitleList.clearAllTimings();
+        expect(sub1).toHaveTimes([-1, -1]);
+        expect(sub2).toHaveTimes([-1, -1]);
+        expect(subtitleList.syncedCount).toEqual(0);
+    });
+
+    it('clears all text', function() {
+        var sub1 = subtitleList.insertSubtitleBefore(null);
+        var sub2 = subtitleList.insertSubtitleBefore(null);
+        subtitleList.updateSubtitleContent(sub1, 'test');
+        subtitleList.updateSubtitleContent(sub2, 'test2');
+        subtitleList.clearAllText();
+        expect(sub1.markdown).toEqual('');
+        expect(sub2.markdown).toEqual('');
     });
 
     it('should get and update regions', function() {
@@ -329,6 +380,49 @@ describe('Test the SubtitleList class', function() {
 
             var sub2 = subtitleList.splitSubtitle(sub1, 'foo', 'bar');
             expect(sub2.region).toBe('top');
+        });
+    });
+
+    describe('copyTiming', function() {
+        var referenceSubs;
+        beforeEach(inject(function(SubtitleList) {
+            referenceSubs = new SubtitleList();
+            referenceSubs.loadEmptySubs('en');
+            referenceSubs._insertSubtitle(0, {
+                startTime: 100,
+                endTime: 200,
+                startOfParagraph: true
+
+            });
+            referenceSubs._insertSubtitle(1, {
+                startTime: 200,
+                endTime: 300,
+                startOfParagraph: true
+            });
+            referenceSubs._changesDone('insert');
+
+            subtitleList.insertSubtitleBefore(null);
+            subtitleList.insertSubtitleBefore(null);
+        }));
+        it('copies timings from another subtitleList', function() {
+            subtitleList.copyTimingsFrom(referenceSubs);
+            expect(subtitleList.subtitles[0]).toHaveTimes([100, 200]);
+            expect(subtitleList.subtitles[1]).toHaveTimes([200, 300]);
+        });
+
+        it('copies paragraph starts too', function() {
+            subtitleList.copyTimingsFrom(referenceSubs);
+            expect(subtitleList.subtitles[0].startOfParagraph).toEqual(true);
+            expect(subtitleList.subtitles[1].startOfParagraph).toEqual(true);
+        });
+
+        it('unsets timings past the last subtitle of the reference subs', function() {
+            subtitleList.insertSubtitleBefore(null);
+            _.each(subtitleList.subtitles, function(sub, i) {
+                subtitleList.updateSubtitleTime(sub, i * 100, i * 100 + 50);
+            });
+            subtitleList.copyTimingsFrom(referenceSubs);
+            expect(subtitleList.subtitles[2]).toHaveTimes([-1, -1]);
         });
     });
 
