@@ -24,7 +24,7 @@ var angular = angular || null;
     // var SUBTITLE_MIME_TYPE = 'application/vnd.pculture.amara.subtitle';
     // Can't use the mime type we want because of an Edge bug (https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/8007622/).
     // So, (ab)use a known mime type.
-    var SUBTITLE_MIME_TYPE = 'text/html';
+    var SUBTITLE_MIME_TYPE = 'text/plain';
 
     module.directive('volumeBar', ["VideoPlayer", function(VideoPlayer) {
         return function link($scope, elem, attrs) {
