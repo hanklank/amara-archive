@@ -235,6 +235,7 @@ var angular = angular || null;
      */
 
     module.service('SubtitleList', ['gettext', 'interpolate', function(gettext, interpolate) {
+        var MAX_UNDO_ITEMS = 1000;
 
         var SubtitleList = function() {
             this.parser = new AmaraDFXPParser();
@@ -382,6 +383,7 @@ var angular = angular || null;
         SubtitleList.prototype._changesDone = function(changeDescription) {
             this.rollbackStack.reverse();
             this.undoStack.push([changeDescription, this.rollbackStack]);
+            this.undoStack = _.last(this.undoStack, MAX_UNDO_ITEMS);
             this.redoStack = [];
             this.rollbackStack = [];
             this._invokeChangeCallbacks();
