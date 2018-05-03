@@ -170,7 +170,6 @@ def get_values(video_id, user=None, team=None):
             break
     if video_data is None:
         response = requests.get(VIMEO_API_BASE_URL + video_url, auth=HTTPBasicAuth(VIMEO_API_KEY, VIMEO_API_SECRET))
-
         if response.ok:
             video_data = response.json()
     if video_data is not None:
