@@ -603,7 +603,7 @@ var angular = angular || null;
                 $scope.$root.$emit("sync-next-start-time");
             } else if ((evt.keyCode == 38) && ($scope.timelineShown)) {
                 $scope.$root.$emit("sync-next-end-time");
-            } else if ((evt.keyCode == 13) && (!$scope.timelineShown)) {
+            } else if ((evt.keyCode == 13) && (!$scope.timelineShown) && (!$scope.dialogManager.current())) {
                 insertAndEditSubtitle();
             } else {
                 return;

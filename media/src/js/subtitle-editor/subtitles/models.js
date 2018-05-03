@@ -602,7 +602,81 @@ var angular = angular || null;
             }
 
             this._changesDone(gettext('Copy timings'));
+        }
 
+        // Implements the shift-forward algorithm:
+        // - Any subtitle after startTime is shifted forward by duration
+        // - Any subtitle that overlays startTime is extended by duration
+        //
+        SubtitleList.prototype.shiftForward = function(startTime, duration) {
+            var self = this;
+
+            _.each(this.subtitles, function(sub, i) {
+                if(!sub.isSynced()) {
+                    return;
+                }
+                if(sub.startTime >= startTime) {
+                    self._updateSubtitle(i, {
+                        startTime: sub.startTime + duration,
+                        endTime: sub.endTime + duration
+                    });
+                } else if(sub.isAt(startTime)) {
+                    self._updateSubtitle(i, {
+                        endTime: sub.endTime + duration
+                    });
+                }
+            });
+
+            this._changesDone(gettext('Shift forward'));
+        }
+
+        // Implements the shift-backward algorithm:
+        // - Any subtitle after endTime is shifted backward by duration
+        // - Any subtitle inside the time range is removed
+        // - Any subtitle partially inside the time range is truncated
+        //
+        SubtitleList.prototype.shiftBackward = function(startTime, duration) {
+            var endTime = startTime + duration;
+            var self = this;
+
+            // adjust a time on the time line based on cutting out the period [startTime, endTime].
+            function adjustTime(time) {
+                if(time > endTime) {
+                    return time-duration;
+                } else if(time > startTime) {
+                    return startTime;
+                } else {
+                    return time;
+                }
+            }
+
+            for(var i=0; i < this.subtitles.length; i++) {
+                var sub = this.subtitles[i];
+                if(!sub.isSynced()) {
+                    continue;
+                }
+                var newStartTime = adjustTime(sub.startTime);
+                var newEndTime = adjustTime(sub.endTime);
+                if(newStartTime == newEndTime) {
+                    self._removeSubtitle(i, {});
+                    i--; // Reverse the i++, since we're removing a subtitle_
+                    continue
+                }
+
+                var changes = {};
+
+                if(newStartTime != sub.startTime) {
+                    changes.startTime = newStartTime;
+                }
+                if(newEndTime != sub.endTime) {
+                    changes.endTime = newEndTime;
+                }
+                if(!_.isEmpty(changes)) {
+                    self._updateSubtitle(i, changes);
+                }
+            }
+
+            this._changesDone(gettext('Shift backward'));
         }
 
         SubtitleList.prototype.updateSubtitleContent = function(subtitle, content) {

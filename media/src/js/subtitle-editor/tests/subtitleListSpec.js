@@ -21,6 +21,32 @@ describe('Test the SubtitleList class', function() {
         });
     }));
 
+    // This is the best way to track changes to the list.  It intercepts all
+    // calls to the low-level mutator functions and updates a list of changes
+    // based on them
+    function trackChanges(subtitleList) {
+        var origInsertSubtitles = subtitleList._insertSubtitle;
+        var origRemoveSubtitles = subtitleList._removeSubtitle;
+        var origUpdateSubtitles = subtitleList._updateSubtitle;
+
+        var changes = [];
+
+        spyOn(subtitleList, '_insertSubtitle').and.callFake(function(index, attrs) {
+            changes.push(['insert', index, attrs]);
+            return origInsertSubtitles.call(subtitleList, index, attrs);
+        });
+        spyOn(subtitleList, '_removeSubtitle').and.callFake(function(index, attrs) {
+            changes.push(['remove', index, attrs]);
+            return origRemoveSubtitles.call(subtitleList, index, attrs);
+        });
+        spyOn(subtitleList, '_updateSubtitle').and.callFake(function(index, attrs) {
+            changes.push(['update', index, attrs]);
+            return origUpdateSubtitles.call(subtitleList, index, attrs);
+        });
+
+        return changes;
+    }
+
     describe('low level change functions', function() {
         it('inserts subtitles', function() {
             var sub1 = subtitleList._insertSubtitle(0);
@@ -404,6 +430,7 @@ describe('Test the SubtitleList class', function() {
             subtitleList.insertSubtitleBefore(null);
             subtitleList.insertSubtitleBefore(null);
         }));
+
         it('copies timings from another subtitleList', function() {
             subtitleList.copyTimingsFrom(referenceSubs);
             expect(subtitleList.subtitles[0]).toHaveTimes([100, 200]);
@@ -424,6 +451,76 @@ describe('Test the SubtitleList class', function() {
             subtitleList.copyTimingsFrom(referenceSubs);
             expect(subtitleList.subtitles[2]).toHaveTimes([-1, -1]);
         });
+    });
+
+    it('shift subtitles forward', function() {
+        subtitleList._insertSubtitle(0, {
+            startTime: 100,
+            endTime: 200
+        });
+        subtitleList._insertSubtitle(1, {
+            startTime: 300,
+            endTime: 400
+        });
+        subtitleList._insertSubtitle(2, {
+            startTime: 500,
+            endTime: 600
+        });
+        subtitleList._insertSubtitle(3, {});
+        subtitleList._changesDone('init');
+
+        var changes = trackChanges(subtitleList);
+
+        subtitleList.shiftForward(350, 1000);
+        // Subtitle 0 should be unchanged, since it's before start time
+        // Subtitle 1 should be lengthed, since it overlaps start time
+        // Subtitle 2 should be shifted forward in time, since it's after start time
+        // Subtitle 3 should be unchanged, since it's unsynced
+        expect(changes).toEqual([
+                ['update', 1, {endTime: 1400}],
+                ['update', 2, {startTime: 1500, endTime: 1600}],
+        ]);
+    });
+
+    it('shift subtitles backward', function() {
+        subtitleList._insertSubtitle(0, {
+            startTime: 100,
+            endTime: 200
+        });
+        subtitleList._insertSubtitle(1, {
+            startTime: 300,
+            endTime: 400
+        });
+        subtitleList._insertSubtitle(2, {
+            startTime: 500,
+            endTime: 600
+        });
+        subtitleList._insertSubtitle(3, {
+            startTime: 700,
+            endTime: 800
+        });
+        subtitleList._insertSubtitle(4, {
+            startTime: 900,
+            endTime: 1000
+        });
+        subtitleList._insertSubtitle(5, {});
+        subtitleList._changesDone('init');
+
+        var changes = trackChanges(subtitleList);
+
+        subtitleList.shiftBackward(350, 400);
+        // Subtitle 0 should be unchanged, since it's before the removed time
+        // Subtitle 1 should be shortened, since it's end time is inside the removed time
+        // Subtitle 2 should be removed, since all of it is contained in the removed time
+        // Subtitle 3 should be shortened and moved back, since it's start time is inside the removed time
+        // Subtitle 4 should be moved back, since it's after the removed time
+        // Subtitle 5 should be unchanged, since it's unsynced
+        expect(changes).toEqual([
+                ['update', 1, {endTime: 350}],
+                ['remove', 2, {}], // Note, this decriments all indexs after 2
+                ['update', 2, {startTime: 350, endTime: 400}],
+                ['update', 3, {startTime: 500, endTime: 600}],
+        ]);
     });
 
     describe('undo', function() {
