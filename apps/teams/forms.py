@@ -1011,7 +1011,7 @@ class InviteForm(forms.Form):
         },
         help_text="Amara username of the user you want to invite")
     email = forms.EmailField(required=False, max_length=254,
-                            widget=forms.TextInput(attrs={'width':'100%'}),
+                            widget=forms.TextInput(),
                             help_text=_("You can also invite a team member via email--both a username and an email works too!") )
     message = forms.CharField(required=False,
                               widget=forms.Textarea(attrs={'rows': 4}),
