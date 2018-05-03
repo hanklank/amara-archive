@@ -3012,6 +3012,7 @@ class Setting(models.Model):
         (310, 'block_new_video_message'),
         (311, 'block_new_collab_assignments_message'),
         (312, 'block_collab_auto_unassignments_message'),
+        (313, 'block_collab_deadlines_passed_message'),
         # 400 is for text displayed on web pages
         (401, 'pagetext_welcome_heading'),
         (402, 'pagetext_warning_tasks'),
