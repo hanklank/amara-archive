@@ -552,6 +552,19 @@ var angular = angular || null;
             this._changesDone(gettext('Time change'));
         }
 
+        // Update multiple subtitle times at once
+        // Pass a list of objects with the attributes: subtitle, startTime, and endtime
+        SubtitleList.prototype.updateSubtitleTimes = function(changes) {
+            var self = this;
+            _.each(changes, function(change) {
+                self._updateSubtitle(self.getIndex(change.subtitle), {
+                    startTime: change.startTime,
+                    endTime: change.endTime
+                });
+            })
+            this._changesDone(gettext('Time change'));
+        }
+
         SubtitleList.prototype.updateSubtitleContent = function(subtitle, content) {
             this._updateSubtitle(this.getIndex(subtitle), {content: content});
             this._changesDone(gettext('Subtitle edit'));
