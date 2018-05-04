@@ -1993,16 +1993,15 @@ class EditVideosForm(VideoManagementForm):
     def setup_multiple_selection(self):
         del self.fields['title']
         self.fields['language'].required = False
-        self.fields['language'].set_options("popular all unset")
+        self.fields['language'].set_options("null popular all")
         self.fields['language'].set_placeholder(_('No change'))
 
     def perform_submit(self, qs):
         project = self.cleaned_data.get('project')
         language = self.cleaned_data['language']
         thumbnail = self.cleaned_data['thumbnail']
-        if language is None and self.single_selection():
-            language = ''
-
+        if language == '' and not self.single_selection():
+            language = None
 
         for video in qs:
             team_video = video.teamvideo

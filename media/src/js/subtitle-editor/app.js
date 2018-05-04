@@ -569,7 +569,7 @@ var angular = angular || null;
             $scope.minutesIdle = 0;
             $scope.$root.$emit("user-action");
             if (evt.keyCode == 9 && !evt.shiftKey) {
-                // Shift, Toggle playback
+                // Tab, Toggle playback
                 if($scope.dialogManager.current()) {
                     // If a dialog is open, then don't mess with playback.  The user probably wants to navigate the form
                     return;
