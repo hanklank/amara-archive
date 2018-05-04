@@ -100,7 +100,7 @@ class TestEditVideosForm(TeamVideoManagementFormBase):
             'language': '',
         })
         for v in videos:
-            assert_equal(reload_obj(v).primary_audio_language_code, '')
+            assert_equal(reload_obj(v).primary_audio_language_code, 'en')
 
     def test_single_selection_mode(self):
         video = self.videos[0]

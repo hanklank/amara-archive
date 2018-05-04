@@ -63,6 +63,7 @@ var angular = angular || null;
          * timeline.
          */
 
+        this.scope = scope;
         this.scale = scope.scale;
         this.duration = pixelsToDuration(width, this.scale);
         if(scope.currentTime !== null) {
@@ -78,10 +79,10 @@ var angular = angular || null;
     }
 
     VisibleTimespan.prototype.fitsInBuffer = function(bufferTimespan) {
-        if(this.startTime < bufferTimespan.startTime && bufferTimespan > 0) {
+        if(this.startTime < bufferTimespan.startTime && bufferTimespan.startTime > 0) {
             return false;
         }
-        if(this.endTime > bufferTimespan.endTime && bufferTimespan.endTime < scope.duration) {
+        if(this.endTime > bufferTimespan.endTime && bufferTimespan.endTime < this.scope.duration) {
             return false;
         }
         return true;
