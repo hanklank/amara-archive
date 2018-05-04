@@ -90,6 +90,8 @@ def fetch_subs_vimeo(video_url, user, team):
         video_url.video.newsubtitlelanguage_set.having_versions()
     )
     for vimeo_account in possible_accounts:
+        if vimeo_account.username != video_url.owner_username:
+            continue
         tracks = vimeo.get_text_tracks(vimeo_account, video_id)
         versions = []
         if tracks is not None and \
