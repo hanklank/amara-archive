@@ -528,7 +528,10 @@ def can_view_management_tab(team, user):
     return team.user_is_manager(user)
 
 def can_view_project_or_language_management_tab(team, user):
-    return (team.get_member(user).is_a_project_or_language_manager() and
+    member = team.get_member(user)
+    if not member:
+        return False
+    return (member.is_a_project_or_language_manager() and
             not team.user_is_manager(user))
 
 
