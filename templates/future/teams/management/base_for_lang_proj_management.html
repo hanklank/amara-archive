@@ -1,0 +1,27 @@
+{% extends "future/teams/videos/base.html" %}
+{% load i18n teams_tags %}
+{% load url from future %}
+{% block tabs %}
+{% with extra_tabs=team|management_page_extra_tabs:request %}
+{% if extra_tabs %}
+<ul class="nav nav-tabs">
+  {% for tab in extra_tabs %}
+  <li{% if current_tab == tab.name %} class="active"{% endif %}><a href="{{ tab.url }}">{{ tab.label }}</a></li>
+  {% endfor %}
+
+  {% comment %}
+  <!-- 
+    to be used for gh-enterprise-1879 which will allow
+    project managers to view requests management/video collaborations page for their projects
+  -->
+  {% if project_management %}
+  <li{% if current_tab == "videos" %} class="active"{% endif %}><a href="{% url "teams:manage_videos" team.slug %}">{% trans "Videos" %}</a></li>
+  {% endif %}
+  {% endcomment %}
+  
+</ul>
+{% else %}
+<h1>{% trans "Videos" %}</h1>
+{% endif %}
+{% endwith %}
+{% endblock %}
