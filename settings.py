@@ -83,6 +83,7 @@ ALARM_EMAIL = None
 MANAGERS = ADMINS
 
 P3P_COMPACT = 'CP="CURa ADMa DEVa OUR IND DSP CAO COR"'
+SECRET_KEY = 'replace-me-with-an-actual-secret'
 
 DEFAULT_FROM_EMAIL = '"Amara" <feedback@universalsubtitles.org>'
 WIDGET_LOG_EMAIL = 'widget-logs@universalsubtitles.org'
@@ -202,7 +203,6 @@ INSTALLED_APPS = (
     # third party apps forked on our repo
     'localeurl',
     'openid_consumer',
-    'socialauth',
     # our apps
     'accountlinker',
     'activity',
@@ -304,10 +304,6 @@ LOCALE_INDEPENDENT_PATHS = [
     re.compile('^/embedder-widget-iframe/'),
 ]
 
-# socialauth-related
-OPENID_REDIRECT_NEXT = '/socialauth/openid/done/'
-OPENID_REDIRECT_CONFIRM_NEXT = '/socialauth/openid/done/confirm/'
-
 OPENID_SREG = {"required": "nickname, email", "optional":"postcode, country", "policy_url": ""}
 OPENID_AX = [{"type_uri": "http://axschema.org/contact/email", "count": 1, "required": True, "alias": "email"},
              {"type_uri": "fullname", "count": 1 , "required": False, "alias": "fullname"}]
@@ -329,7 +325,6 @@ AUTHENTICATION_BACKENDS = (
    'externalsites.auth_backends.OpenIDConnectBackend',
    'thirdpartyaccounts.auth_backends.TwitterAuthBackend',
    'thirdpartyaccounts.auth_backends.FacebookAuthBackend',
-   'auth.backends.OpenIdBackend',
    'django.contrib.auth.backends.ModelBackend',
 )
 

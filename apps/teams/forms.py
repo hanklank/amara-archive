@@ -49,7 +49,7 @@ from subtitles.pipeline import add_subtitles
 from teams.models import (
     Team, TeamMember, TeamVideo, Task, Project, Workflow, Invite,
     BillingReport, MembershipNarrowing, Application, TeamVisibility,
-    VideoVisibility,
+    VideoVisibility, EmailInvite, Setting
 )
 from teams import behaviors, permissions, tasks
 from teams.exceptions import ApplicationInvalidException
@@ -774,12 +774,26 @@ class GuidelinesMessagesForm(forms.Form):
     messages_admin = MessageTextField(
         label=_('When a member is given the Admin role'))
 
+    resources_page_content = MessageTextField(
+        label=_('Team resource page text'))
+
     guidelines_subtitle = MessageTextField(
         label=('When transcribing'))
     guidelines_translate = MessageTextField(
         label=('When translating'))
     guidelines_review = MessageTextField(
         label=('When reviewing'))
+
+    def save(self, team):
+        with transaction.atomic():
+            for key, val in self.cleaned_data.items():
+                if key in Setting.KEY_IDS:
+                    setting, _ = Setting.objects.get_or_create(
+                        team=team, key=Setting.KEY_IDS[key])
+                    setting.data = val
+                    setting.save()
+            team.resources_page_content = self.cleaned_data['resources_page_content']
+            team.save()
 
 class GuidelinesLangMessagesForm(forms.Form):
   def __init__(self, *args, **kwargs):
@@ -992,9 +1006,13 @@ class AddMembersForm(forms.Form):
         return summary
 
 class InviteForm(forms.Form):
-    username = UserAutocompleteField(error_messages={
-        'invalid': _(u'User has a pending invite or is already a member of this team'),
-    })
+    username = UserAutocompleteField(required=False, error_messages={
+        'invalid': _(u'User has a pending invite or is already a member of this team')
+        },
+        help_text="Amara username of the user you want to invite")
+    email = forms.EmailField(required=False, max_length=254,
+                            widget=forms.TextInput(),
+                            help_text=_("You can also invite a team member via email--both a username and an email works too!") )
     message = forms.CharField(required=False,
                               widget=forms.Textarea(attrs={'rows': 4}),
                               label=_("Message to user"))
@@ -1013,15 +1031,60 @@ class InviteForm(forms.Form):
             reverse('teams:autocomplete-invite-user', args=(team.slug,))
         )
 
+    def clean(self):
+        cleaned_data = super(InviteForm, self).clean()
+        email = cleaned_data.get('email')
+        username = cleaned_data.get('username')
+
+        if not (email or username):
+            raise forms.ValidationError(_(u"A valid username or email address must be provided"))            
+
+        return cleaned_data
+
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        
+        if self.team.users.filter(email=email).exists():
+            invitee = User.objects.get(email=email)
+            raise forms.ValidationError(_(u"This email address belongs to {} who is already a part of the team!".format(invitee)))
+
+        return email
+        
+
     def save(self):
-        from messages import tasks as notifier
+        if self.cleaned_data['email']:
+            self.process_emails()
+        if self.cleaned_data['username']:
+            return self.create_invite(self.cleaned_data['username'])
+
+    def create_invite(self, user):
         invite = Invite.objects.create(
-            team=self.team, user=self.cleaned_data['username'], 
+            team=self.team, user=user, 
             author=self.user, role=self.cleaned_data['role'],
             note=self.cleaned_data['message'])
         invite.save()
-        notifier.team_invitation_sent.delay(invite.pk)
+        self.send_notif_for_invite(invite.pk)
+
         return invite
+
+    def send_notif_for_invite(self, invite_pk):
+        from messages import tasks as notifier        
+        notifier.team_invitation_sent.delay(invite_pk)
+
+    def process_emails(self):
+        invitees = User.objects.filter(email=self.cleaned_data['email'])
+        for invitee in invitees:
+            self.create_invite(invitee)
+            '''
+            If email notifs for the existing user is turned off, should we still send an email message?
+            Taking into account that possibly the intention of the team owner/admin is to communicate
+            the email invite via email.
+            '''
+
+        if invitees.count() == 0:
+            email_invite = EmailInvite.create_invite(email=self.cleaned_data['email'], 
+                author=self.user, team=self.team, role=self.cleaned_data['role'])
+            email_invite.send_mail(self.cleaned_data['message'])
 
 class ProjectForm(forms.ModelForm):
     class Meta:
@@ -1948,41 +2011,46 @@ class EditVideosForm(VideoManagementForm):
     label = _('Edit')
     permissions_check = staticmethod(permissions.can_edit_videos)
 
-    title = forms.CharField(max_length=2048, label=_('Edit video title'),
-                            required=False)
-    language = NewLanguageField(label=_("Video Language"), required=False,
-                                options="null popular all",
-                                placeholder=_('No change'))
+    title = forms.CharField(max_length=2048, label=_('Title'))
+    language = NewLanguageField(label=_("Language"), options="null popular all")
     project = ProjectField(label=_('Project'), required=False,
                            null_label=_('No change'))
     thumbnail = forms.ImageField(widget=AmaraClearableFileInput,
-                                 label=_('Change thumbnail'), required=False)
+                                 label=_('Thumbnail'), required=False)
 
     def setup_fields(self):
         self.fields['project'].setup(self.team)
-        if not self.single_selection():
-            del self.fields['title']
 
     def setup_single_selection(self, video):
         team_video = video.teamvideo
+        self.fields['title'].required = True
         self.fields['project'].required = True
         self.fields['project'].initial = team_video.project.id
         self.fields['project'].choices = self.fields['project'].choices[1:]
-        self.fields['language'].set_placeholder(_('No language set'))
+        if video.primary_audio_language_code:
+            self.fields['language'].set_options("popular all unset")
+        else:
+            self.fields['language'].set_options("null popular all dont-set")
         self.fields['language'].initial = video.primary_audio_language_code
+        self.fields['language'].required = True
 
         if can_change_video_titles(self.user, team_video):
             self.fields['title'].widget.attrs['value'] = team_video.video.title
         else:
             del self.fields['title']
 
+    def setup_multiple_selection(self):
+        del self.fields['title']
+        self.fields['language'].required = False
+        self.fields['language'].set_options("null popular all")
+        self.fields['language'].set_placeholder(_('No change'))
+
     def perform_submit(self, qs):
         project = self.cleaned_data.get('project')
         language = self.cleaned_data['language']
         thumbnail = self.cleaned_data['thumbnail']
-        if language is None and self.single_selection():
-            language = ''
-
+        if language == '' and not self.single_selection():
+            language = None
 
         for video in qs:
             team_video = video.teamvideo
