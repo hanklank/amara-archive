@@ -574,4 +574,6 @@ def management_page_default(team, request):
 
 @register.filter
 def management_page_extra_tabs(team, request):
+    print("$$$$$$$$$$$$$$$$$$$")
     return team.new_workflow.management_page_extra_tabs(request)
+  
