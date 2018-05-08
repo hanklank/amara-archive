@@ -828,13 +828,23 @@ def welcome(request, team):
     })
 
 @team_view
-def manage_videos(request, team):
-    if not permissions.can_view_management_tab(team, request.user):
+def manage_videos(request, team, project_id=None):
+    member = team.get_member(request.user)
+    if (not permissions.can_view_management_tab(team, request.user) and
+       (not member.is_a_project_or_language_manager() or not project_id)):
         raise PermissionDenied()
+
     filters_form = forms.ManagementVideoFiltersForm(team, request.GET,
                                                     auto_id="id_filters_%s")
     videos = filters_form.get_queryset().select_related('teamvideo',
                                                         'teamvideo__video')
+    if (project_id):
+        exclude_video_ids = []
+        for video in videos:
+            if video.get_team_video().project.id != int(project_id):
+                exclude_video_ids.append(video.id)
+        videos = videos.exclude(id__in=exclude_video_ids)
+
     enabled_forms = all_video_management_forms(team, request.user)
     paginator = AmaraPaginatorFuture(videos, VIDEOS_PER_PAGE_MANAGEMENT)
     page = paginator.get_page(request)
