@@ -875,6 +875,7 @@ def manage_videos(request, team, project_id=None):
             (form.name, form.css_class, form.label)
             for form in enabled_forms
         ],
+        'project_id': project_id,
     }
     if request.is_ajax():
         response_renderer = AJAXResponseRenderer(request)
@@ -889,7 +890,13 @@ def manage_videos(request, team, project_id=None):
             {})
         return response_renderer.render()
 
-    return render(request, 'future/teams/management/videos.html', context)
+    template='future/teams/management/videos.html'
+    if(project_id):
+        template='future/teams/management/videos_for_project_managers.html'
+        tabs = team.new_workflow.management_page_extra_tabs(request, project_id=project_id)
+        context['extra_tabs_'] = tabs
+
+    return render(request, template, context)
 
 def manage_videos_context_menu(team, video, enabled_forms):
     menu = ContextMenu([
