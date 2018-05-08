@@ -2,7 +2,8 @@
 {% load i18n teams_tags %}
 {% load url from future %}
 {% block tabs %}
-{% with extra_tabs=team|management_page_extra_tabs:request %}
+<!-- Overriding extra_tabs with extra_tabs_ from context since custom tags can't take multiple arguments -->
+{% with extra_tabs=extra_tabs_ %}
 {% if extra_tabs %}
 <ul class="nav nav-tabs">
   {% for tab in extra_tabs %}
