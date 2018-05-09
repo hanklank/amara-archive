@@ -264,8 +264,15 @@ var angular = angular || null;
         }
 
         $scope.onCopyTimingClicked = function($event) {
-            $scope.workingSubtitles.subtitleList.copyTimingsFrom($scope.referenceSubtitles.subtitleList);
-            $scope.$root.$emit('work-done');
+            console.log('copy timing');
+            $scope.dialogManager.openDialog('confirmCopyTiming', {
+                continueButton: function() {
+                    $scope.workingSubtitles.subtitleList.copyTimingsFrom($scope.referenceSubtitles.subtitleList);
+                    $scope.$root.$emit('work-done');
+                }
+            });
+            $event.stopPropagation();
+            $event.preventDefault();
         };
 
         $scope.onClearTimingsClicked = function($event) {

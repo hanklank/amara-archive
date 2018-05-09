@@ -98,6 +98,12 @@
             buttons: [ 'discardChangesAndOpenLegacyEditor', 'continueEditing'],
             allowClose: true
         },
+        confirmCopyTiming: {
+            title: 'Confirm Copy Timing',
+            text: 'This will copy all subtitle timing from reference to working subtitles. Do you want to continue?',
+            buttons: [ 'continueButton', 'cancel' ],
+            allowClose: true
+        },
         confirmChangesReset: {
             title: 'Confirm Changes Reset',
             text: 'This will revert all changes made since the last saved revision. Do you want to continue?',

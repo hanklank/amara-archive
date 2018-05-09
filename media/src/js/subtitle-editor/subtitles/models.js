@@ -925,7 +925,7 @@ var angular = angular || null;
                 var fmtString = gettext('Undo: %(command)s')
                 return interpolate(fmtString, {command: _.last(this.undoStack)[0]}, true);
             } else {
-                return '';
+                return gettext('Undo');
             }
         }
 
@@ -934,7 +934,7 @@ var angular = angular || null;
                 var fmtString = gettext('Redo: %(command)s')
                 return interpolate(fmtString, {command: _.last(this.redoStack)[0]}, true);
             } else {
-                return '';
+                return gettext('Redo');
             }
         }
 
