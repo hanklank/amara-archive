@@ -35,7 +35,7 @@ from django.db.models import query, Q, Count, Sum
 from django.db.models.signals import post_save, post_delete, pre_delete
 from django.http import Http404
 from django.template.loader import render_to_string
-from django.utils.translation import ugettext_lazy as _, ugettext
+from django.utils.translation import ugettext_lazy as _, ugettext 
 
 import teams.moderation_const as MODERATION
 from caching import ModelCacheManager
@@ -63,6 +63,7 @@ from utils import translation, send_templated_email
 from utils.amazon import S3EnabledImageField, S3EnabledFileField
 from utils.panslugify import pan_slugify
 from utils.text import fmt
+from utils.translation import get_language_label
 from videos.models import Video, VideoUrl, SubtitleVersion, SubtitleLanguage
 from videos.tasks import video_changed_tasks
 from subtitles.models import (
@@ -1718,6 +1719,10 @@ class LanguageManager(models.Model):
     member = models.ForeignKey(TeamMember, related_name='languages_managed')
     code = models.CharField(max_length=16,
                             choices=translation.ALL_LANGUAGE_CHOICES)
+
+    @property
+    def readable_name(self):
+        return get_language_label(self.code)
 
 # MembershipNarrowing
 class MembershipNarrowing(models.Model):
