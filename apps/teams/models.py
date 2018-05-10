@@ -721,6 +721,12 @@ class Team(models.Model):
         member = self.get_member(user)
         return bool(member and member.is_a_project_manager())
 
+    def user_is_a_language_or_project_manager(self, user):
+        member = self.get_member(user)
+        return bool(member and 
+                    (member.is_a_project_manager() or
+                     member.is_a_language_manager()))
+
     def user_is_any_type_of_manager(self, user):
         member = self.get_member(user)
         return member.is_any_type_of_manager()
