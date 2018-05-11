@@ -1523,6 +1523,7 @@ class MemberFiltersForm(forms.Form):
         (TeamMember.ROLE_ADMIN, _('Admins')),
         (TeamMember.ROLE_MANAGER, _('Managers')),
         (TeamMember.ROLE_CONTRIBUTOR, _('Contributors')),
+        (TeamMember.ROLE_CONTRIBUTOR, _('Proj/Lang Managers')),
     ], initial='any', required=False, filter=True)
     language = AmaraChoiceField(choices=LANGUAGE_CHOICES,
                                  label=_('Language spoken'),
@@ -1714,6 +1715,7 @@ class ChangeMemberRoleForm(ManagementForm):
                 (TeamMember.ROLE_CONTRIBUTOR, _('Contributor')),
                 (TeamMember.ROLE_MANAGER, _('Manager')),
                 (TeamMember.ROLE_ADMIN, _('Admin')),
+                (TeamMember.ROLE_CONTRIBUTOR, _('Project/Language Manager'))
            ], initial='', label=_('Member Role'))
 
     def __init__(self, user, queryset, selection, all_selected,

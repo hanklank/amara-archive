@@ -47,6 +47,7 @@
       <h3>({{member.user.username}})</h3>
       <h4>
         {{ member.role }} <br/>
+        
         {% with languages=member.languages_managed.all %}
           {% if languages %}
             {% trans 'Language manager for: ' %}
@@ -71,6 +72,7 @@
             {% endif %}
           {% endif %}
         {% endwith %}
+
       </h4>
       <p>{{ member.user.get_languages|to_localized_display_list }}<p>
     </div>
