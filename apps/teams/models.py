@@ -48,7 +48,7 @@ from subtitles.signals import subtitles_deleted
 from teams.moderation_const import WAITING_MODERATION, UNMODERATED, APPROVED
 from teams.permissions_const import (
     TEAM_PERMISSIONS, PROJECT_PERMISSIONS, ROLE_OWNER, ROLE_ADMIN, ROLE_MANAGER,
-    ROLE_CONTRIBUTOR
+    ROLE_CONTRIBUTOR, ROLE_PROJ_LANG_MANAGER
 )
 from teams import tasks
 from teams import workflows
@@ -1562,6 +1562,7 @@ class TeamMember(models.Model):
     ROLE_ADMIN = ROLE_ADMIN
     ROLE_MANAGER = ROLE_MANAGER
     ROLE_CONTRIBUTOR = ROLE_CONTRIBUTOR
+    ROLE_PROJ_LANG_MANAGER = ROLE_PROJ_LANG_MANAGER
 
     ROLES = (
         (ROLE_OWNER, _("Owner")),

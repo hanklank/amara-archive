@@ -1523,7 +1523,7 @@ class MemberFiltersForm(forms.Form):
         (TeamMember.ROLE_ADMIN, _('Admins')),
         (TeamMember.ROLE_MANAGER, _('Managers')),
         (TeamMember.ROLE_CONTRIBUTOR, _('Contributors')),
-        (TeamMember.ROLE_CONTRIBUTOR, _('Proj/Lang Managers')),
+        (TeamMember.ROLE_PROJ_LANG_MANAGER, _('Proj/Lang Managers')),
     ], initial='any', required=False, filter=True)
     language = AmaraChoiceField(choices=LANGUAGE_CHOICES,
                                  label=_('Language spoken'),
@@ -1564,7 +1564,13 @@ class MemberFiltersForm(forms.Form):
                                | Q(user__username__icontains=term)
                                | Q(user__biography__icontains=term))
         if role and role != 'any':
-            if role != TeamMember.ROLE_ADMIN:
+            if role == TeamMember.ROLE_PROJ_LANG_MANAGER:
+                qs = qs.exclude(Q(projects_managed=None) & Q(languages_managed=None))
+            elif role == TeamMember.ROLE_CONTRIBUTOR:
+                qs = qs.filter(role=role,
+                               projects_managed=None,
+                               languages_managed=None)
+            elif role != TeamMember.ROLE_ADMIN:
                 qs = qs.filter(role=role)
             else:
                 qs = qs.filter(Q(role=TeamMember.ROLE_ADMIN)|
