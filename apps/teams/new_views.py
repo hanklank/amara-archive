@@ -265,6 +265,7 @@ def manage_members_form(request, team, form_name, members, page):
     # filter out the current user from the full queryset
     members = members.exclude(user=request.user)
 
+    modal_context = {}
     if request.method == 'POST':
         try:
             form = FormClass(request.user, members, selection, all_selected,
@@ -273,6 +274,10 @@ def manage_members_form(request, team, form_name, members, page):
             logger.error(e, exc_info=True)
         if form.is_valid():
             return render_management_form_submit(request, form)
+        elif (isinstance(form, forms.ChangeMemberRoleForm)
+              and request.POST.get('role') == TeamMember.ROLE_PROJ_LANG_MANAGER):
+            modal_context.update({'show_proj_lang_selectors': True})
+
     else:
         try:
             form = FormClass(request.user, members, selection, all_selected, team=team)
@@ -280,12 +285,12 @@ def manage_members_form(request, team, form_name, members, page):
             logger.error(e, exc_info=True)
 
     template_name = 'future/teams/members/forms/{}.html'.format(form_name)
-    modal_context = {
+    modal_context.update({
         'form': form,
         'team': team,
         'selection_count': len(selection),
         'single_selection': len(selection) == 1,
-    }
+    })
     if modal_context['single_selection']:
         modal_context['member'] = members.get(id=selection[0])
         modal_context['username'] = modal_context['member'].user.username

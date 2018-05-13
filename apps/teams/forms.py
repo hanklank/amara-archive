@@ -1734,6 +1734,16 @@ class ChangeMemberRoleForm(ManagementForm):
             queryset, selection, all_selected, data=data, files=files)
         self.fields['project'].setup(kwargs['team'])
 
+    def clean(self):
+        cleaned_data = super(ChangeMemberRoleForm, self).clean()
+        role = cleaned_data.get('role')
+
+        if (role == TeamMember.ROLE_PROJ_LANG_MANAGER and
+            not (cleaned_data['project'] or cleaned_data['languages'])):
+                raise forms.ValidationError(_(u"Please select a project or language"))
+
+        return cleaned_data
+
     def would_remove_last_owner(self, member, role):
         if role == TeamMember.ROLE_OWNER:
             return False
