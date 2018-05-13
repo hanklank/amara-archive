@@ -1702,6 +1702,18 @@ class TeamMember(models.Model):
     def remove_language_manager(self, language_code):
         self.languages_managed.filter(code=language_code).delete()
 
+    def remove_as_language_manager(self):
+        for language in self.get_languages_managed():
+            language.delete()
+
+    def remove_as_project_manager(self):
+        for project in self.get_projects_managed():
+            project.delete()
+
+    def remove_as_proj_lang_manager(self):
+        self.remove_as_language_manager()
+        self.remove_as_project_manager()
+
     class Meta:
         unique_together = (('team', 'user'),)
 
