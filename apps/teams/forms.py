@@ -64,7 +64,7 @@ from teams.signals import member_remove
 from teams.workflows import TeamWorkflow
 from ui.forms import (FiltersForm, ManagementForm, AmaraChoiceField,
                       AmaraRadioSelect, SearchField, AmaraClearableFileInput,
-                      AmaraFileInput, HelpTextList)
+                      AmaraFileInput, HelpTextList, MultipleLanguageField)
 from ui.forms import LanguageField as NewLanguageField
 from utils import send_templated_email
 from utils.forms import (ErrorableModelForm, get_label_for_value,
@@ -1724,11 +1724,15 @@ class ChangeMemberRoleForm(ManagementForm):
                 (TeamMember.ROLE_PROJ_LANG_MANAGER, _('Project/Language Manager'))
            ], initial='', label=_('Member Role'))
 
+    project = ProjectField(label=_('Project'), null_label=_('No change'), required=False)
+    languages = MultipleLanguageField(label=_('Subtitle language(s)'), options='null all', required=False)
+
     def __init__(self, user, queryset, selection, all_selected,
-                 data=None, files=None):
+                 data=None, files=None, **kwargs):
         self.user = user
         super(ChangeMemberRoleForm, self).__init__(
             queryset, selection, all_selected, data=data, files=files)
+        self.fields['project'].setup(kwargs['team'])
 
     def would_remove_last_owner(self, member, role):
         if role == TeamMember.ROLE_OWNER:
