@@ -224,6 +224,7 @@ def members(request, team):
         'show_invite_link': permissions.can_invite(team, request.user),
         'show_add_link': permissions.can_add_members(team, request.user),
         'show_application_link': show_application_link,
+        'team_nav': 'member_directory',
     }
 
     if form_name and is_team_admin:

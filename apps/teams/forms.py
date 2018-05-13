@@ -53,7 +53,7 @@ from teams.models import (
 )
 from teams import behaviors, permissions, tasks
 from teams.exceptions import ApplicationInvalidException
-from teams.fields import TeamMemberInput
+from teams.fields import TeamMemberInput, TeamMemberRoleSelect
 from teams.permissions import (
     roles_user_can_invite, can_delete_task, can_add_video, can_perform_task,
     can_assign_task, can_remove_video, can_change_video_titles,
@@ -1716,12 +1716,12 @@ class ChangeMemberRoleForm(ManagementForm):
     name = "change_role"
     label = _("Change Role")
 
-    role = AmaraChoiceField(choices=[
+    role = TeamMemberRoleSelect(choices=[
                 ('', _("Don't change")),
                 (TeamMember.ROLE_CONTRIBUTOR, _('Contributor')),
                 (TeamMember.ROLE_MANAGER, _('Manager')),
                 (TeamMember.ROLE_ADMIN, _('Admin')),
-                (TeamMember.ROLE_CONTRIBUTOR, _('Project/Language Manager'))
+                (TeamMember.ROLE_PROJ_LANG_MANAGER, _('Project/Language Manager'))
            ], initial='', label=_('Member Role'))
 
     def __init__(self, user, queryset, selection, all_selected,

@@ -20,6 +20,14 @@ from django import forms
 
 from utils.text import fmt
 
+from ui.forms import AmaraChoiceField
+
+class TeamMemberRoleSelect(AmaraChoiceField):
+    def __init__(self, *args, **kwargs):
+        super(TeamMemberRoleSelect, self).__init__(*args, **kwargs)
+        widget_classes = self.widget.attrs['class']
+        self.widget.attrs['class'] = widget_classes + " teamMemberRoleSelect"
+
 class TeamMemberInput(forms.CharField):
     """Input to select team members.  """
 
