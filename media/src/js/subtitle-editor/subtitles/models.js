@@ -722,8 +722,11 @@ var angular = angular || null;
                         attrs.endTime = attrs.startTime + defaultDuration;
                     } else {
                         // The gap is not enough to fit new subtitle inside, move the previousSubtitle.endTime back to fit it.
-                        // But... don't move it so far back that previousSubtitle is now shorter than the new subtitle
-                        attrs.startTime = Math.max(otherSubtitle.startTime - defaultDuration, (previousSubtitle.startTime + otherSubtitle.startTime) / 2);
+                        attrs.startTime = otherSubtitle.startTime - defaultDuration
+                        // but don't move it so far back that previousSubtitle is now shorter than the new subtitle
+                        attrs.startTime = Math.max(attrs.startTime, (previousSubtitle.startTime + otherSubtitle.startTime) / 2);
+                        // also, don't move it so far forward that we're now extending previousSubtitle
+                        attrs.startTime = Math.min(attrs.startTime, previousSubtitle.endTime);
                         this._updateSubtitle(index-1, {endTime: attrs.startTime});
                         attrs.endTime = otherSubtitle.startTime;
                     }
@@ -734,10 +737,13 @@ var angular = angular || null;
                         attrs.startTime = (otherSubtitle.startTime - defaultDuration) / 2;
                         attrs.endTime = attrs.startTime + defaultDuration;
                     } else {
-                        // The gap is not large enough for the new subtitle to fit inside, move otherSubtitle.startTime forward to fit it in
-                        // But don't move it so far forward that otherSubtitle is now shorter than the new subtitle
                         attrs.startTime = 0;
-                        attrs.endTime = Math.min(defaultDuration, otherSubtitle.endTime / 2);
+                        // The gap is not large enough for the new subtitle to fit inside, move otherSubtitle.startTime forward to fit it in
+                        attrs.endTime = defaultDuration;
+                        // but don't move it so far forward that otherSubtitle is now shorter than the new subtitle
+                        attrs.endTime = Math.min(attrs.endTime, otherSubtitle.endTime / 2);
+                        // also, don't move it so far forward that we're now extending previousSubtitle
+                        attrs.endTime = Math.max(attrs.endTime, otherSubtitle.startTime);
                         this._updateSubtitle(0, {startTime: attrs.endTime});
                     }
                 }

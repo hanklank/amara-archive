@@ -326,6 +326,19 @@ describe('Test the SubtitleList class', function() {
             expect(sub1).toHaveTimes([0, 1500]);
             expect(newSub).toHaveTimes([1500, 3000]);
         });
+
+        it('never lengthens the previous subtitle', function() {
+            subtitleList.updateSubtitleTime(sub1, 0, 1000);
+            subtitleList.updateSubtitleTime(sub2, 3000, 7000);
+            var newSub = subtitleList.insertSubtitleBefore(sub2);
+            // when we insert the subtitle, don't split the time since that
+            // would cause sub1 to be longer than before.  Instead just newSub
+            // should just take up the entire 2 second gap.
+
+            expect(subtitleList.subtitles).toEqual([sub1, newSub, sub2]);
+            expect(sub1).toHaveTimes([0, 1000]);
+            expect(newSub).toHaveTimes([1000, 3000]);
+        });
     });
 
     describe('insertBefore with first synced subtitle', function() {
@@ -352,12 +365,24 @@ describe('Test the SubtitleList class', function() {
         });
 
         it('splits the time between the next subtitle and the new subtitle if there is less than 6 seconds for them both', function() {
-            subtitleList.updateSubtitleTime(sub1, 2000, 3000);
+            subtitleList.updateSubtitleTime(sub1, 1000, 3000);
             var newSub = subtitleList.insertSubtitleBefore(sub1);
 
             expect(subtitleList.subtitles).toEqual([newSub, sub1]);
             expect(newSub).toHaveTimes([0, 1500]);
             expect(sub1).toHaveTimes([1500, 3000]);
+        });
+
+        it('never lengthens the next subtitle', function() {
+            subtitleList.updateSubtitleTime(sub1, 2000, 3000);
+            var newSub = subtitleList.insertSubtitleBefore(sub1);
+            // when we insert the subtitle, don't split the time since that
+            // would cause sub1 to be longer than before.  Instead just newSub
+            // should just take up the entire 2 second gap.
+
+            expect(subtitleList.subtitles).toEqual([newSub, sub1]);
+            expect(newSub).toHaveTimes([0, 2000]);
+            expect(sub1).toHaveTimes([2000, 3000]);
         });
     });
 
