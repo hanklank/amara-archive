@@ -153,6 +153,7 @@ from rest_framework.reverse import reverse
 
 from api import extra
 from api import userlookup
+from auth import permissions
 from auth.models import CustomUser as User, LoginToken
 
 def can_modify_user(request_user, object_user):
@@ -197,6 +198,10 @@ class UserSerializer(serializers.ModelSerializer):
     def to_representation(self, user):
         data = super(UserSerializer, self).to_representation(user)
         extra.user.add_data(self.context['request'], data, user=user)
+        viewing_user = self.context['request'].user
+        if not permissions.can_view_activity(user, viewing_user):
+            del data['activity_uri']
+
         if hasattr(self, 'login_token'):
             data['auto_login_url'] = reverse(
                 "auth:token-login", args=(self.login_token.token,),
