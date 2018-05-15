@@ -488,6 +488,7 @@ var angular = angular || null;
     }]);
 
     module.controller("AppControllerEvents", ["$scope", "VideoPlayer", function($scope, VideoPlayer) {
+        $scope.isMac = navigator.platform.toUpperCase().indexOf('MAC') > -1;
         function insertAndEditSubtitle() {
             var sub = $scope.workingSubtitles.subtitleList.insertSubtitleBefore(null);
             $scope.currentEdit.start(sub);
@@ -512,6 +513,15 @@ var angular = angular || null;
                     evt.shiftKey = true;
             }
             $scope.handleAppKeyDown(evt);
+        }
+        if($scope.isMac) {
+            function ctrlOrCmd(evt) {
+                return evt.metaKey;
+            }
+        } else {
+            function ctrlOrCmd(evt) {
+                return evt.ctrlKey;
+            }
         }
         $scope.handleAppKeyDown = function(evt) {
             // Reset the lock timer.
@@ -543,14 +553,15 @@ var angular = angular || null;
             } else if (evt.keyCode === 190 && evt.shiftKey && evt.ctrlKey) {
                 // Control+Shift+Period, go forward 4 seconds
                 VideoPlayer.seek(VideoPlayer.currentTime() + 4000);
-            } else if (evt.keyCode === 90 && evt.ctrlKey) {
+            } else if (evt.keyCode === 90 && ctrlOrCmd(evt)) {
                 // Ctrl-Z -- undo
                 if($scope.workingSubtitles.subtitleList.canUndo()) {
                     $scope.workingSubtitles.subtitleList.undo();
                    $scope.$root.$emit('work-done');
                 }
-            } else if (evt.keyCode === 89 && evt.ctrlKey) {
-                // Ctrl-Y -- undo
+            } else if ( (!$scope.isMac && evt.keyCode === 89 && evt.ctrlKey) ||
+                        ($scope.isMac && evt.keyCode === 90 && evt.metaKey && evt.shiftKey)) {
+                // Ctrl-Y -- redo
                 if($scope.workingSubtitles.subtitleList.canRedo()) {
                     $scope.workingSubtitles.subtitleList.redo();
                     $scope.$root.$emit('work-done');
