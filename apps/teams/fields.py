@@ -58,7 +58,6 @@ class ProjectFieldMixin(object):
                 choices.append(('', self.null_label))     
             if not isinstance(self, MultipleProjectField):
                 choices.append(('none', _('No project')))
-            choices.append(('none', _('No project')))
             if source_teams and len(source_teams) > 1:
                 choices.extend((p.id, p.team.name + ' - ' + p.name) for p in projects)
             else:
