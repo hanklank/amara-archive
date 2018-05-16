@@ -16,6 +16,7 @@
 # along with this program.  If not, see
 # http://www.gnu.org/licenses/agpl-3.0.html.
 
+import bleach
 import datetime
 import json
 import logging
@@ -66,6 +67,7 @@ from ui.forms import (FiltersForm, ManagementForm, AmaraChoiceField,
                       AmaraRadioSelect, SearchField, AmaraClearableFileInput,
                       AmaraFileInput, HelpTextList)
 from ui.forms import LanguageField as NewLanguageField
+from utils.html import clean_html
 from utils import send_templated_email
 from utils.forms import (ErrorableModelForm, get_label_for_value,
                          UserAutocompleteField, LanguageField,
@@ -758,6 +760,11 @@ class MessageTextField(forms.CharField):
         super(MessageTextField, self).__init__(
             required=False, widget=forms.Textarea,
             *args, **kwargs)
+
+    def clean(self, value):
+        value = super(MessageTextField, self).clean(value)
+        value = clean_html(value)
+        return value
 
 class GuidelinesMessagesForm(forms.Form):
     pagetext_welcome_heading = MessageTextField(
