@@ -573,10 +573,10 @@ def invite(request, team):
     else:
         form = forms.InviteForm(team, request.user)
 
-    if team.is_old_style():
-        template_name = 'teams/invite_members.html'
-    else:
-        template_name = 'new-teams/invite.html'
+    # if team.is_old_style():
+    #     template_name = 'teams/invite_members.html'
+    # else:
+    #     template_name = 'new-teams/invite.html'
         # template_name = 'future/teams/members/invite.html'
         '''
         The future UI invite member page still need works
@@ -584,16 +584,21 @@ def invite(request, team):
         2. The text-box does not render properly
         '''
 
-    return render(request, template_name,  {
-        'team': team,
-        'form': form,
-        'breadcrumbs': [
-            BreadCrumb(team, 'teams:dashboard', team.slug),
-            BreadCrumb(_('Members'), 'teams:members', team.slug),
-            BreadCrumb(_('Invite')),
-        ],
-        'team_nav': 'member_directory',
-    })
+    # return render(request, template_name,  {
+    #     'team': team,
+    #     'form': form,
+    #     'breadcrumbs': [
+    #         BreadCrumb(team, 'teams:dashboard', team.slug),
+    #         BreadCrumb(_('Members'), 'teams:members', team.slug),
+    #         BreadCrumb(_('Invite')),
+    #     ],
+    #     'team_nav': 'member_directory',
+    # })
+
+    template_name = 'future/teams/members/forms/invite.html'
+    response_renderer = AJAXResponseRenderer(request)
+    response_renderer.show_modal(template_name, { 'team': team, 'form': form, 'team_nav': 'member_directory'})
+    return response_renderer.render()
 
 def email_invite(request, signed_pk):
     try:

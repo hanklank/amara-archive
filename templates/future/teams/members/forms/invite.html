@@ -1,0 +1,20 @@
+{% load i18n forms %}
+<div class="modal-dialog" role="document">
+  <div class="modal-content">
+    <header>
+      <h1>{% trans "Invite members" %}</h1>
+    </header>
+    <form method="post" action="{% url 'teams:invite' team.slug %}" class="team-invite">
+      {% csrf_token %}
+      {% include "future/forms/non-field-errors.html" with errors=form.non_field_errors %}
+      {% include "future/forms/field.html" with field=form.username %}
+      {% include "future/forms/field.html" with field=form.email %}
+      {% include "future/forms/field.html" with field=form.message %}
+      {% include "future/forms/field.html" with field=form.role %}
+
+      <div class="form-group">
+        <button type="submit" class="button cta">{% trans "Invite" %}</button>
+      </div>
+    </form>
+  </div>
+</div>

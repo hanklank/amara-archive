@@ -2,6 +2,7 @@
 {% load url from future %}
 <nav class="selectList-actions">
   <span class="pull-right">
+    {% comment %}
     {% if show_invite_link %}
     <a href="{% url 'teams:invite' slug=team.slug %}" title="Invite member">Invite member</a>
     {% endif %}
@@ -11,6 +12,10 @@
     {% if show_application_link %}
     <a href="{% url 'teams:applications' slug=team.slug %}" title="Review applications">Review applications</a>
     {% endif %}
+    {% endcomment %}
+    <form style="display:inline" class="ajaxForm copyQuery" method="GET" action="{% url 'teams:invite' slug=team.slug %}">
+      <button class="cta" type="submit" name="form">{% trans 'Invite members' %}</button>
+    </form>
   </span>
   {% if is_team_admin %}
   <div class="checkbox">
