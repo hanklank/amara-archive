@@ -21,7 +21,7 @@ import bleach
 
 CLEAN_DEFAULTS = {
         'tags': ['a', 'b', 'strong', 'i', 'em', 'u', 'li', 'ol', 'ul'],
-        'attributes'={'a': 'href'},
+        'attributes': {'a': 'href'},
         'protocols': ['http', 'https']}
 
 def unescape(s):
