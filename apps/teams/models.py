@@ -1703,12 +1703,10 @@ class TeamMember(models.Model):
         self.languages_managed.filter(code=language_code).delete()
 
     def remove_as_language_manager(self):
-        for language in self.get_languages_managed():
-            language.delete()
+        self.languages_managed.all().delete()
 
     def remove_as_project_manager(self):
-        for project in self.get_projects_managed():
-            project.delete()
+        self.projects_managed.clear()
 
     def remove_as_proj_lang_manager(self):
         self.remove_as_language_manager()

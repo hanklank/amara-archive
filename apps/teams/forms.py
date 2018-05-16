@@ -53,7 +53,7 @@ from teams.models import (
 )
 from teams import behaviors, permissions, tasks
 from teams.exceptions import ApplicationInvalidException
-from teams.fields import TeamMemberInput, TeamMemberRoleSelect
+from teams.fields import TeamMemberInput, TeamMemberRoleSelect, MultipleProjectField
 from teams.permissions import (
     roles_user_can_invite, can_delete_task, can_add_video, can_perform_task,
     can_assign_task, can_remove_video, can_change_video_titles,
@@ -1724,7 +1724,7 @@ class ChangeMemberRoleForm(ManagementForm):
                 (TeamMember.ROLE_PROJ_LANG_MANAGER, _('Project/Language Manager'))
            ], initial='', label=_('Member Role'))
 
-    project = ProjectField(label=_('Project'), null_label=_('No change'), required=False)
+    projects = MultipleProjectField(label=_('Project'), null_label=_('No change'), required=False)
     languages = MultipleLanguageField(label=_('Subtitle language(s)'), options='null all', required=False)
 
     def __init__(self, user, queryset, selection, all_selected,
@@ -1732,14 +1732,14 @@ class ChangeMemberRoleForm(ManagementForm):
         self.user = user
         super(ChangeMemberRoleForm, self).__init__(
             queryset, selection, all_selected, data=data, files=files)
-        self.fields['project'].setup(kwargs['team'])
+        self.fields['projects'].setup(kwargs['team'])
 
     def clean(self):
         cleaned_data = super(ChangeMemberRoleForm, self).clean()
         role = cleaned_data.get('role')
 
         if (role == TeamMember.ROLE_PROJ_LANG_MANAGER and
-            not (cleaned_data['project'] or cleaned_data['languages'])):
+            not (cleaned_data['projects'] or cleaned_data['languages'])):
                 raise forms.ValidationError(_(u"Please select a project or language"))
 
         return cleaned_data
@@ -1758,20 +1758,19 @@ class ChangeMemberRoleForm(ManagementForm):
         # different set of projects/languages
 
         # crude implementation is to delete all pm/lm permissions and then 
-        # create the permissions specified in the modal, for optimization
-        self.remove_proj_lang_management(member)
+        # create the permissions specified in the modal
+        # for optimization
+        member.remove_as_proj_lang_manager()
 
-        project = self.cleaned_data['project']
+        projects = self.cleaned_data['projects']
         languages = self.cleaned_data['languages']
 
-        if project:
-            member.make_project_manager(project)
+        if projects:
+            for project in projects:
+                member.make_project_manager(project)
         if languages:
             for language in languages:
-                member.make_language_manager(language)
-
-    def remove_proj_lang_management(self, member):
-        member.remove_as_proj_lang_manager()
+                member.make_language_manager(language)       
 
     def perform_submit(self, members):
         self.error_count = 0
@@ -1789,7 +1788,7 @@ class ChangeMemberRoleForm(ManagementForm):
                             self.cleaned_data['role'] = TeamMember.ROLE_CONTRIBUTOR
                             self.update_proj_lang_management(member)
                         else:
-                            self.remove_proj_lang_management(member)
+                            member.remove_as_proj_lang_manager()
                         member.change_role(self.cleaned_data['role'])
                         self.changed_count += 1
                     except Exception as e:

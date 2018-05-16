@@ -26,7 +26,7 @@
         {% endif %}
         {{ form.role|render_field }}
         <div class="projectsAndLanguagesSelectors" {% if not show_proj_lang_selectors %}hidden{% endif %}>
-          {{ form.project|render_field_reverse_required }}
+          {{ form.projects|render_field_reverse_required }}
           {{ form.languages|render_field_reverse_required }}
         </div>
       </div>
