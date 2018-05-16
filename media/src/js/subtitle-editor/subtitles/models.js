@@ -706,7 +706,7 @@ var angular = angular || null;
             var attrs = {
                 region: region
             }
-            var defaultDuration = 3000;
+            var defaultDuration = 1000;
 
             var index = (otherSubtitle === null) ? this.subtitles.length : this.getIndex(otherSubtitle);
 

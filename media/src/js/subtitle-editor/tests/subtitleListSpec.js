@@ -298,46 +298,46 @@ describe('Test the SubtitleList class', function() {
             sub2 = subtitleList._insertSubtitle(1);
         });
 
-        it('inserts a 3 second subtitle in the between otherSubtitle and the previous subtitle, if there is a 3 second gap', function() {
+        it('inserts a 1 second subtitle in the between otherSubtitle and the previous subtitle, if there is at least a 1 second gap', function() {
             subtitleList.updateSubtitleTime(sub1, 0, 1000);
             subtitleList.updateSubtitleTime(sub2, 5000, 6000);
             var newSub = subtitleList.insertSubtitleBefore(sub2);
 
             expect(subtitleList.subtitles).toEqual([sub1, newSub, sub2]);
-            expect(newSub).toHaveTimes([1500, 4500]);
+            expect(newSub).toHaveTimes([2500, 3500]);
         });
 
-        it('adjusts the end time of the previous subtitle to make room for the new subtitle, if there is less than a 3 second gap', function() {
-            subtitleList.updateSubtitleTime(sub1, 0, 4000);
+        it('adjusts the end time of the previous subtitle to make room for the new subtitle, if there is less than a 1 second gap', function() {
+            subtitleList.updateSubtitleTime(sub1, 0, 5500);
             subtitleList.updateSubtitleTime(sub2, 6000, 7000);
             var newSub = subtitleList.insertSubtitleBefore(sub2);
 
             expect(subtitleList.subtitles).toEqual([sub1, newSub, sub2]);
-            expect(sub1).toHaveTimes([0, 3000]);
-            expect(newSub).toHaveTimes([3000, 6000]);
+            expect(sub1).toHaveTimes([0, 5000]);
+            expect(newSub).toHaveTimes([5000, 6000]);
         });
 
-        it('splits the time between the previous subtitle and the new subtitle if there is less than 6 seconds for them both', function() {
-            subtitleList.updateSubtitleTime(sub1, 0, 2000);
-            subtitleList.updateSubtitleTime(sub2, 3000, 7000);
+        it('splits the time between the previous subtitle and the new subtitle if there is less than 2 seconds for them both', function() {
+            subtitleList.updateSubtitleTime(sub1, 0, 1000);
+            subtitleList.updateSubtitleTime(sub2, 1500, 2500);
             var newSub = subtitleList.insertSubtitleBefore(sub2);
 
             expect(subtitleList.subtitles).toEqual([sub1, newSub, sub2]);
-            expect(sub1).toHaveTimes([0, 1500]);
-            expect(newSub).toHaveTimes([1500, 3000]);
+            expect(sub1).toHaveTimes([0, 750]);
+            expect(newSub).toHaveTimes([750, 1500]);
         });
 
         it('never lengthens the previous subtitle', function() {
-            subtitleList.updateSubtitleTime(sub1, 0, 1000);
-            subtitleList.updateSubtitleTime(sub2, 3000, 7000);
+            subtitleList.updateSubtitleTime(sub1, 0, 400);
+            subtitleList.updateSubtitleTime(sub2, 1000, 7000);
             var newSub = subtitleList.insertSubtitleBefore(sub2);
             // when we insert the subtitle, don't split the time since that
             // would cause sub1 to be longer than before.  Instead just newSub
             // should just take up the entire 2 second gap.
 
             expect(subtitleList.subtitles).toEqual([sub1, newSub, sub2]);
-            expect(sub1).toHaveTimes([0, 1000]);
-            expect(newSub).toHaveTimes([1000, 3000]);
+            expect(sub1).toHaveTimes([0, 400]);
+            expect(newSub).toHaveTimes([400, 1000]);
         });
     });
 
@@ -347,42 +347,42 @@ describe('Test the SubtitleList class', function() {
             sub1 = subtitleList.insertSubtitleBefore(null);
         });
 
-        it('inserts a 3 second subtitle in the middle of the initial empty time, if there is a 3 second gap', function() {
-            subtitleList.updateSubtitleTime(sub1, 4000, 5000);
+        it('inserts a 1 second subtitle in the middle of the initial empty time, if there is at least a 1 second gap', function() {
+            subtitleList.updateSubtitleTime(sub1, 2000, 5000);
             var newSub = subtitleList.insertSubtitleBefore(sub1);
 
             expect(subtitleList.subtitles).toEqual([newSub, sub1]);
-            expect(newSub).toHaveTimes([500, 3500]);
+            expect(newSub).toHaveTimes([500, 1500]);
         });
 
-        it('adjusts the start time of the next subtitle to make room for the new subtitle, if there is less than a 3 second gap', function() {
-            subtitleList.updateSubtitleTime(sub1, 2000, 7000);
+        it('adjusts the start time of the next subtitle to make room for the new subtitle, if there is less than a 1 second gap', function() {
+            subtitleList.updateSubtitleTime(sub1, 700, 7000);
             var newSub = subtitleList.insertSubtitleBefore(sub1);
 
             expect(subtitleList.subtitles).toEqual([newSub, sub1]);
-            expect(newSub).toHaveTimes([0, 3000]);
-            expect(sub1).toHaveTimes([3000, 7000]);
+            expect(newSub).toHaveTimes([0, 1000]);
+            expect(sub1).toHaveTimes([1000, 7000]);
         });
 
-        it('splits the time between the next subtitle and the new subtitle if there is less than 6 seconds for them both', function() {
-            subtitleList.updateSubtitleTime(sub1, 1000, 3000);
+        it('splits the time between the next subtitle and the new subtitle if there is less than 2 seconds for them both', function() {
+            subtitleList.updateSubtitleTime(sub1, 0, 800);
             var newSub = subtitleList.insertSubtitleBefore(sub1);
 
             expect(subtitleList.subtitles).toEqual([newSub, sub1]);
-            expect(newSub).toHaveTimes([0, 1500]);
-            expect(sub1).toHaveTimes([1500, 3000]);
+            expect(newSub).toHaveTimes([0, 400]);
+            expect(sub1).toHaveTimes([400, 800]);
         });
 
         it('never lengthens the next subtitle', function() {
-            subtitleList.updateSubtitleTime(sub1, 2000, 3000);
+            subtitleList.updateSubtitleTime(sub1, 800, 1000);
             var newSub = subtitleList.insertSubtitleBefore(sub1);
             // when we insert the subtitle, don't split the time since that
             // would cause sub1 to be longer than before.  Instead just newSub
             // should just take up the entire 2 second gap.
 
             expect(subtitleList.subtitles).toEqual([newSub, sub1]);
-            expect(newSub).toHaveTimes([0, 2000]);
-            expect(sub1).toHaveTimes([2000, 3000]);
+            expect(newSub).toHaveTimes([0, 800]);
+            expect(sub1).toHaveTimes([800, 1000]);
         });
     });
 
