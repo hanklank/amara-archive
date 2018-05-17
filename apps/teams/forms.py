@@ -23,10 +23,10 @@ import re
 
 from django import forms
 from django.conf import settings
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError as django_core_ValidationError
 from django.core.files.base import ContentFile
 from django.core.urlresolvers import reverse
-from django.core.validators import EMPTY_VALUES
+from django.core.validators import EMPTY_VALUES, validate_email
 from django.db.models import Q
 from django.db import transaction, IntegrityError
 from django.forms.formsets import formset_factory
@@ -1005,14 +1005,26 @@ class AddMembersForm(forms.Form):
                     summary["already"].append(username)
         return summary
 
+
+# The form is kinda in a weird state since it tries to work both for old style
+# and new style teams
 class InviteForm(forms.Form):
+    # For old style team invite page, the auto-complete actually works 
     username = UserAutocompleteField(required=False, error_messages={
         'invalid': _(u'User has a pending invite or is already a member of this team')
         },
         help_text="Amara username of the user you want to invite")
-    email = forms.EmailField(required=False, max_length=254,
-                            widget=forms.TextInput(),
-                            help_text=_("You can also invite a team member via email--both a username and an email works too!") )
+
+    # For new style teams that allow sending invites to multiple users at a time
+    usernames = forms.CharField(
+        label=_('Username'), required=False,
+        widget=forms.Textarea(attrs={'rows': 3}), 
+        help_text=_('Amara username of the existing user you want to invite. ' 
+                    'You can invite multiple users by entering one username per line. '))
+    email = forms.CharField(required=False,
+                            widget=forms.Textarea(attrs={'rows': 3}),
+                            help_text=_('Email address of the new member you want to invite.'
+                                        'You can invite multiple users by entering one email address per line.') )
     message = forms.CharField(required=False,
                               widget=forms.Textarea(attrs={'rows': 4}),
                               label=_("Message to user"))
@@ -1024,6 +1036,8 @@ class InviteForm(forms.Form):
         super(InviteForm, self).__init__(*args, **kwargs)
         self.team = team
         self.user = user
+        self.emails = None
+        self.usernames = None
         self.fields['role'].choices = [(r, ROLE_NAMES[r])
                                        for r in roles_user_can_invite(team, user)]
         self.fields['username'].queryset = team.invitable_users()
@@ -1031,33 +1045,51 @@ class InviteForm(forms.Form):
             reverse('teams:autocomplete-invite-user', args=(team.slug,))
         )
 
+    def validate_emails(self):
+        for email in self.emails:
+            try:
+                validate_email(email)
+            except django_core_ValidationError:
+                raise forms.ValidationError(_(u"{} is an invalid email address.".format(email)))
+
+            if self.team.users.filter(email=email).exists():
+                invitee = User.objects.get(email=email)
+                raise forms.ValidationError(_(u"The email address {} belongs to {} who is already a part of the team!".format(email, invitee)))
+
+    def validate_usernames(self):
+        for username in self.usernames:
+            try:
+                User.objects.get(username=username)
+            except User.DoesNotExist:
+                raise forms.ValidationError(_(u'The user {} does not exist.').format(username))
+
     def clean(self):
         cleaned_data = super(InviteForm, self).clean()
-        email = cleaned_data.get('email')
-        username = cleaned_data.get('username')
+        emails = cleaned_data.get('email')
+        usernames = cleaned_data.get('usernames')
 
-        if not (email or username):
-            raise forms.ValidationError(_(u"A valid username or email address must be provided"))            
+        if emails:
+            self.emails = emails.split()
+            self.validate_emails()
+            
+        if usernames:
+            self.usernames = username.split()
+            self.validate_usernames()
 
-        return cleaned_data
-
-    def clean_email(self):
-        email = self.cleaned_data['email']
-        
-        if self.team.users.filter(email=email).exists():
-            invitee = User.objects.get(email=email)
-            raise forms.ValidationError(_(u"This email address belongs to {} who is already a part of the team!".format(invitee)))
-
-        return email
-        
+        return cleaned_data        
 
     def save(self):
-        if self.cleaned_data['email']:
-            self.process_emails()
-        if self.cleaned_data['username']:
+        if self.emails:
+            for email in self.emails:
+                self.process_email_invite(email)
+        if self.usernames:
+            for user in self.usernames:
+                self.create_invite(user)
+        elif self.cleaned_data['username']:
             return self.create_invite(self.cleaned_data['username'])
 
-    def create_invite(self, user):
+    def create_invite(self, username):
+        user = User.objects.get(username=username)
         invite = Invite.objects.create(
             team=self.team, user=user, 
             author=self.user, role=self.cleaned_data['role'],
@@ -1071,8 +1103,8 @@ class InviteForm(forms.Form):
         from messages import tasks as notifier        
         notifier.team_invitation_sent.delay(invite_pk)
 
-    def process_emails(self):
-        invitees = User.objects.filter(email=self.cleaned_data['email'])
+    def process_email_invite(self, email):
+        invitees = User.objects.filter(email=email)
         for invitee in invitees:
             self.create_invite(invitee)
             '''
@@ -1082,9 +1114,17 @@ class InviteForm(forms.Form):
             '''
 
         if invitees.count() == 0:
-            email_invite = EmailInvite.create_invite(email=self.cleaned_data['email'], 
+            email_invite = EmailInvite.create_invite(email=email, 
                 author=self.user, team=self.team, role=self.cleaned_data['role'])
             email_invite.send_mail(self.cleaned_data['message'])
+
+# class InviteFormUsername(InviteForm):
+#     class Meta:
+#         fields = ('username', 'role', 'message')
+
+# class InviteFormEmail(InviteForm):
+#     class Meta
+#         fields = ('email', 'role', 'message')
 
 class ProjectForm(forms.ModelForm):
     class Meta:

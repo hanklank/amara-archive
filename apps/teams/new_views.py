@@ -562,43 +562,49 @@ def invite(request, team):
             # sending invites twice for the same user, and that borks
             # the naive signal for only created invitations
             form.save()
-            success_msg = []
+
+            if form.emails:
+                emails =  "".join(["{}<br>".format(e) for e in form.emails])
+                messages.success(request, _(u'An invite has been sent to the following:<br>{}').format(emails))
+            if form.usernames:
+                usernames =  "".join(["{}<br>".format(e) for e in form.usernames])
+                messages.success(request, _(u'An invite has been sent to the following{}').format(usernames))
             if form.cleaned_data['username']:
-                success_msg.append(u'{} has been invited to the team.'.format(form.cleaned_data['username']))
-            if form.cleaned_data['email']:
-                success_msg.append(u'{} has been sent an email invite.'.format(form.cleaned_data['email']))
-            messages.success(request, _("<br/>".join(success_msg)))
-            return HttpResponseRedirect(reverse('teams:members',
-                                                args=[team.slug]))
+                messages.success(request, _(u'An invite has been sent to {}').format(form.cleaned_data['username']))
+
+            if team.is_old_style():
+                return HttpResponseRedirect(reverse('teams:members',
+                                                    args=[team.slug]))
+            else:
+                response_renderer = AJAXResponseRenderer(request)
+                response_renderer.reload_page()
+                return response_renderer.render()
     else:
         form = forms.InviteForm(team, request.user)
 
-    # if team.is_old_style():
-    #     template_name = 'teams/invite_members.html'
-    # else:
-    #     template_name = 'new-teams/invite.html'
-        # template_name = 'future/teams/members/invite.html'
-        '''
-        The future UI invite member page still need works
-        1. Make autocomplete work with the new field
-        2. The text-box does not render properly
-        '''
+    if team.is_old_style():
+        template_name = 'teams/invite_members.html'
 
-    # return render(request, template_name,  {
-    #     'team': team,
-    #     'form': form,
-    #     'breadcrumbs': [
-    #         BreadCrumb(team, 'teams:dashboard', team.slug),
-    #         BreadCrumb(_('Members'), 'teams:members', team.slug),
-    #         BreadCrumb(_('Invite')),
-    #     ],
-    #     'team_nav': 'member_directory',
-    # })
+        return render(request, template_name,  {
+            'team': team,
+            'form': form,
+            'breadcrumbs': [
+                BreadCrumb(team, 'teams:dashboard', team.slug),
+                BreadCrumb(_('Members'), 'teams:members', team.slug),
+                BreadCrumb(_('Invite')),
+            ],
+            'team_nav': 'member_directory',
+        })
+    else:
+        template_name = 'future/teams/members/forms/invite_modal.html'
 
-    template_name = 'future/teams/members/forms/invite.html'
-    response_renderer = AJAXResponseRenderer(request)
-    response_renderer.show_modal(template_name, { 'team': team, 'form': form, 'team_nav': 'member_directory'})
-    return response_renderer.render()
+        response_renderer = AJAXResponseRenderer(request)
+        response_renderer.show_modal(template_name, 
+            { 'team': team, 
+              'form': form, 
+              'team_nav': 'member_directory',
+            })
+        return response_renderer.render()
 
 def email_invite(request, signed_pk):
     try:
