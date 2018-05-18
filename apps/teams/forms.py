@@ -16,6 +16,7 @@
 # along with this program.  If not, see
 # http://www.gnu.org/licenses/agpl-3.0.html.
 
+import bleach
 import datetime
 import json
 import logging
@@ -66,6 +67,7 @@ from ui.forms import (FiltersForm, ManagementForm, AmaraChoiceField,
                       AmaraRadioSelect, SearchField, AmaraClearableFileInput,
                       AmaraFileInput, HelpTextList)
 from ui.forms import LanguageField as NewLanguageField
+from utils.html import clean_html
 from utils import send_templated_email
 from utils.forms import (ErrorableModelForm, get_label_for_value,
                          UserAutocompleteField, LanguageField,
@@ -759,6 +761,11 @@ class MessageTextField(forms.CharField):
             required=False, widget=forms.Textarea,
             *args, **kwargs)
 
+    def clean(self, value):
+        value = super(MessageTextField, self).clean(value)
+        value = clean_html(value)
+        return value
+
 class GuidelinesMessagesForm(forms.Form):
     pagetext_welcome_heading = MessageTextField(
         label=_('Welcome heading on your landing page for non-members'))
@@ -1035,9 +1042,9 @@ class InviteForm(forms.Form):
     def __init__(self, team, user, *args, **kwargs):
         super(InviteForm, self).__init__(*args, **kwargs)
         self.team = team
-        self.user = user
-        self.emails = None
-        self.usernames = None
+        self.user = user # the invite author
+        self.users = [] # the users to be invited
+        self.emails = []
         self.fields['role'].choices = [(r, ROLE_NAMES[r])
                                        for r in roles_user_can_invite(team, user)]
         self.fields['username'].queryset = team.invitable_users()
@@ -1052,8 +1059,8 @@ class InviteForm(forms.Form):
             except django_core_ValidationError:
                 raise forms.ValidationError(_(u"{} is an invalid email address.".format(email)))
 
-            if self.team.users.filter(email=email).exists():
-                invitee = User.objects.get(email=email)
+            invitee = self.team.users.filter(email=email).first()
+            if invitee:
                 raise forms.ValidationError(_(u"The email address {} belongs to {} who is already a part of the team!".format(email, invitee)))
 
     def validate_usernames(self):
@@ -1062,6 +1069,7 @@ class InviteForm(forms.Form):
                 user = User.objects.get(username=username)
                 if Invite.objects.filter(user=user, team=self.team).exists():
                     raise forms.ValidationError(_(u'The user {} already has an invite for this team!').format(username))
+                self.users.append(user)
             except User.DoesNotExist:
                 raise forms.ValidationError(_(u'The user {} does not exist.').format(username))
 
@@ -1077,22 +1085,20 @@ class InviteForm(forms.Form):
             
         if usernames:
             self.usernames = usernames.split()
+            self.usernames = set(self.usernames)
             self.validate_usernames()
 
         return cleaned_data        
 
     def save(self):
-        if self.emails:
-            for email in self.emails:
-                self.process_email_invite(email)
-        if self.usernames:
-            for user in self.usernames:
-                self.create_invite(user)
-        elif self.cleaned_data['username']:
-            return self.create_invite(self.cleaned_data['username'])
+        for email in self.emails:
+            self.process_email_invite(email)
+        for user in self.users:
+            self.create_invite(user)
+        if self.cleaned_data['username']:
+            return self.create_invite(User.objects.get(username=self.cleaned_data['username']))
 
-    def create_invite(self, username):
-        user = User.objects.get(username=username)
+    def create_invite(self, user):        
         invite = Invite.objects.create(
             team=self.team, user=user, 
             author=self.user, role=self.cleaned_data['role'],
@@ -1120,14 +1126,6 @@ class InviteForm(forms.Form):
             email_invite = EmailInvite.create_invite(email=email, 
                 author=self.user, team=self.team, role=self.cleaned_data['role'])
             email_invite.send_mail(self.cleaned_data['message'])
-
-# class InviteFormUsername(InviteForm):
-#     class Meta:
-#         fields = ('username', 'role', 'message')
-
-# class InviteFormEmail(InviteForm):
-#     class Meta
-#         fields = ('email', 'role', 'message')
 
 class ProjectForm(forms.ModelForm):
     class Meta:
