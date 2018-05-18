@@ -532,6 +532,22 @@ def add_members(request, team):
         if form.is_valid():
             summary = form.save()
 
+            if not team.is_old_style():
+                if summary['added']:
+                    messages.success(request, _('{} member(s) added').format(summary['added']))
+                if summary['unknown']:
+                    messages.error(request, 
+                        _('The following user(s) does not exist: {}')
+                            .format(", ".join(summary['unknown'])))
+                if summary['already']:
+                    messages.error(request, 
+                        _('The following is already a member: {}')
+                            .format(", ".join(summary['already'])))
+
+                response_renderer = AJAXResponseRenderer(request)
+                response_renderer.reload_page()
+                return response_renderer.render()
+
     form = forms.AddMembersForm(team, request.user)
 
     if team.is_old_style():
@@ -554,6 +570,11 @@ def add_members(request, team):
 def invite(request, team):
     if not permissions.can_invite(team, request.user):
         return HttpResponseForbidden(_(u'You cannot invite people to this team.'))
+
+    form_add_member = None
+    if permissions.can_add_members(team, request.user):
+        form_add_member = forms.AddMembersForm(team, request.user)
+
     if request.POST:
         form = forms.InviteForm(team, request.user, request.POST)
         if form.is_valid():
@@ -614,6 +635,7 @@ def invite(request, team):
         response_renderer.show_modal(template_name, 
             { 'team': team, 
               'form': form, 
+              'form_add_member': form_add_member,
               'username_tab_non_field_errors': username_tab_non_field_errors,
               'email_tab_non_field_errors': email_tab_non_field_errors,
               'team_nav': 'member_directory',

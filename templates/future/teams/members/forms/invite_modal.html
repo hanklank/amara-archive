@@ -41,8 +41,15 @@
         </form>
       </div>
 
-      <div id="add" class="tab-pane">
-        Add members
+      <div id="add" class="tab-pane
+        {% if modal_tab == 'add' %}active{%endif%}">
+        <form class="ajaxForm" method="post" action="{% url 'teams:add-members' team.slug %}" class="team-invite">
+          {% csrf_token %}
+          {{ form_add_member.members|render_field }}
+          {{ form_add_member.role|render_field }}                    
+          <input type="hidden" value="add" name="modalTab"/>
+          <button type="submit" class="button cta"> {% trans 'Add members' %}</button>
+        </form>
       </div>
 
     </div>
