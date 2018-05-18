@@ -5,9 +5,11 @@
     {% if show_application_link %}
     <a href="{% url 'teams:applications' slug=team.slug %}" title="Review applications">Review applications</a>
     {% endif %}
+    {% if show_invite_link %}
     <form style="display:inline" class="ajaxForm copyQuery" method="GET" action="{% url 'teams:invite' slug=team.slug %}">
       <button class="cta" type="submit" value="username" name="form">{% trans 'Invite members' %}</button>
     </form>
+    {% endif %}
 
   </span>
   {% if is_team_admin %}

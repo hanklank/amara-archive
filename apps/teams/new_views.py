@@ -639,6 +639,8 @@ def invite(request, team):
               'username_tab_non_field_errors': username_tab_non_field_errors,
               'email_tab_non_field_errors': email_tab_non_field_errors,
               'team_nav': 'member_directory',
+              'show_add_link': permissions.can_add_members(team, request.user),
+              'show_email_invite_link': permissions.can_send_email_invite(team, request.user),
               'modal_tab': request.POST.get('modalTab', 'username'),
             })
         return response_renderer.render()

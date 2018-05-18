@@ -5,12 +5,16 @@
       <li {% if modal_tab == 'username' %}class="active"{%endif%}>
         <a href="#username" data-toggle="tab">Invite by username</a>
       </li>
+      {% if show_email_invite_link %}
       <li {% if modal_tab == 'email' %}class="active"{%endif%}>
         <a href="#email" data-toggle="tab">Invite by email</a>
       </li>
+      {% endif %}
+      {% if show_add_link %}
       <li>
         <a href="#add" data-toggle="tab">Add members</a>
       </li>
+      {% endif %}
     </ul>
 
     <div class="tab-content">
@@ -28,6 +32,7 @@
         </form>
       </div>
 
+      {% if show_email_invite_link %}
       <div id="email" class="tab-pane
         {% if modal_tab == 'email' %}active{%endif%}">
         <form class="ajaxForm" method="post" action="{% url 'teams:invite' team.slug %}" class="team-invite">
@@ -40,7 +45,9 @@
           <button type="submit" class="button cta"> {% trans 'Invite' %}</button>
         </form>
       </div>
+      {% endif %}
 
+      {% if show_add_link %}
       <div id="add" class="tab-pane
         {% if modal_tab == 'add' %}active{%endif%}">
         <form class="ajaxForm" method="post" action="{% url 'teams:add-members' team.slug %}" class="team-invite">
@@ -51,7 +58,7 @@
           <button type="submit" class="button cta"> {% trans 'Add members' %}</button>
         </form>
       </div>
-
+      {% endif %}
     </div>
   </div>
 </div>
