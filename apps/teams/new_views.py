@@ -568,7 +568,7 @@ def invite(request, team):
                 messages.success(request, _(u'An invite has been sent to the following:<br>{}').format(emails))
             if form.usernames:
                 usernames =  "".join(["{}<br>".format(e) for e in form.usernames])
-                messages.success(request, _(u'An invite has been sent to the following{}').format(usernames))
+                messages.success(request, _(u'An invite has been sent to the following:<br>{}').format(usernames))
             if form.cleaned_data['username']:
                 messages.success(request, _(u'An invite has been sent to {}').format(form.cleaned_data['username']))
 
@@ -598,11 +598,26 @@ def invite(request, team):
     else:
         template_name = 'future/teams/members/forms/invite_modal.html'
 
+        modal_tab = request.POST.get('modalTab', 'username')
+
+        # for separating the errors being rendered in the modal tabs
+        username_tab_non_field_errors = None
+        email_tab_non_field_errors = None
+        if form.non_field_errors:
+            if modal_tab == 'username':
+                username_tab_non_field_errors = form.non_field_errors
+            elif modal_tab == 'email':
+                email_tab_non_field_errors = form.non_field_errors
+
+
         response_renderer = AJAXResponseRenderer(request)
         response_renderer.show_modal(template_name, 
             { 'team': team, 
               'form': form, 
+              'username_tab_non_field_errors': username_tab_non_field_errors,
+              'email_tab_non_field_errors': email_tab_non_field_errors,
               'team_nav': 'member_directory',
+              'modal_tab': request.POST.get('modalTab', 'username'),
             })
         return response_renderer.render()
 

@@ -1059,7 +1059,9 @@ class InviteForm(forms.Form):
     def validate_usernames(self):
         for username in self.usernames:
             try:
-                User.objects.get(username=username)
+                user = User.objects.get(username=username)
+                if Invite.objects.filter(user=user, team=self.team).exists():
+                    raise forms.ValidationError(_(u'The user {} already has an invite for this team!').format(username))
             except User.DoesNotExist:
                 raise forms.ValidationError(_(u'The user {} does not exist.').format(username))
 
@@ -1070,10 +1072,11 @@ class InviteForm(forms.Form):
 
         if emails:
             self.emails = emails.split()
+            self.emails = set(self.emails)
             self.validate_emails()
             
         if usernames:
-            self.usernames = username.split()
+            self.usernames = usernames.split()
             self.validate_usernames()
 
         return cleaned_data        
