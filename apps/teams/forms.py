@@ -1051,9 +1051,16 @@ class InviteForm(forms.Form):
     def clean_email(self):
         email = self.cleaned_data['email']
         
-        if self.team.users.filter(email=email).exists():
-            invitee = User.objects.get(email=email)
-            raise forms.ValidationError(_(u"This email address belongs to {} who is already a part of the team!".format(invitee)))
+        invitees = self.team.users.filter(email=email)
+        if invitees.exists():
+            if invitees.count() == 1:
+                raise forms.ValidationError(
+                    _(u"This email address belongs to {} "
+                       "who is already a part of the team!".format(invitees.first())))
+            else:
+                raise forms.ValidationError(
+                    _(u"This email address belongs to multiple user accounts, "
+                       "one of which is {} who is already a part of the team!".format(invitees.first())))           
 
         return email
         
