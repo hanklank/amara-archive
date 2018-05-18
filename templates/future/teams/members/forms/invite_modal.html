@@ -1,6 +1,9 @@
 {% load i18n forms %}
 <div class="modal-dialog" role="document">
   <div class="modal-content">
+    <header class="dialogHeader">
+      <h4 class="dialogTitle">{% trans 'Invite members to ' %}{{ team.name }}</h4>
+    </header>
     <ul class="nav nav-tabs">
       <li {% if modal_tab == 'username' %}class="active"{%endif%}>
         <a href="#username" data-toggle="tab">Invite by username</a>
@@ -19,7 +22,7 @@
 
     <div class="tab-content">
 
-      <div id="username" class="tab-pane 
+      <div id="username" class="tab-pane
         {% if modal_tab == 'username' %}active{%endif%}">
         <form class="ajaxForm" method="post" action="{% url 'teams:invite' team.slug %}" class="team-invite">
           {% csrf_token %}
@@ -28,7 +31,10 @@
           {{ form.role|render_field }}
           {{ form.message|render_field }}
           <input type="hidden" value="username" name="modalTab"/>
-          <button type="submit" class="button cta"> {% trans 'Invite' %}</button>
+          <div class="text-right">
+            <button class="button borderless" data-dismiss="modal">{% trans "Cancel" %}</button>
+            <button type="submit" class="button cta"> {% trans 'Invite' %}</button>
+          </div>
         </form>
       </div>
 
@@ -42,7 +48,10 @@
           {{ form.role|render_field }}
           {{ form.message|render_field }}
           <input type="hidden" value="email" name="modalTab"/>
-          <button type="submit" class="button cta"> {% trans 'Invite' %}</button>
+          <div class="text-right">
+            <button class="button borderless" data-dismiss="modal">{% trans "Cancel" %}</button>
+            <button type="submit" class="button cta"> {% trans 'Invite' %}</button>
+          </div>
         </form>
       </div>
       {% endif %}
@@ -55,10 +64,14 @@
           {{ form_add_member.members|render_field }}
           {{ form_add_member.role|render_field }}                    
           <input type="hidden" value="add" name="modalTab"/>
-          <button type="submit" class="button cta"> {% trans 'Add members' %}</button>
+          <div class="text-right">
+            <button class="button borderless" data-dismiss="modal">{% trans "Cancel" %}</button>
+            <button type="submit" class="button cta"> {% trans 'Add members' %}</button>
+          </div>
         </form>
       </div>
       {% endif %}
+
     </div>
   </div>
 </div>
