@@ -43,6 +43,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _, ugettext
 
 from auth import signals
+from auth.validators import PasswordStrengthValidator
 from caching import CacheGroup, ModelCacheManager
 from utils.amazon import S3EnabledImageField
 from utils import dates
@@ -588,6 +589,12 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
         return False
 
     def has_valid_password(self):
+        # remove this post-1.9 when setting is used
+        validator = PasswordStrengthValidator()
+        try:
+            validator.validate(self.password)
+        except ValidationError as e:
+            raise e
         return len(self.password) > 0 and self.has_usable_password()
 
     def unlink_external(self):
@@ -622,6 +629,7 @@ def create_custom_user(sender, instance, created, **kwargs):
         user.save()
 
 post_save.connect(create_custom_user, BaseUser)
+
 
 class Awards(models.Model):
     COMMENT = 1

@@ -27,7 +27,8 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 
-from models import CustomUser as User
+from auth.models import CustomUser as User
+from auth.validators import PasswordStrengthValidator
 
 class UserField(forms.Field):
     default_error_messages = {
@@ -59,6 +60,34 @@ class CustomUserCreationForm(UserCreationForm):
         super(CustomUserCreationForm, self).__init__(*args, **kwargs)
         self.fields['email'].required = True
 
+    def validate_password(self, password):
+        # remove this post-1.9 when setting is used
+        validator = PasswordStrengthValidator()
+	validator.validate(password)
+
+    def clean_password2(self):
+        # Check that the two password entries match
+        password1 = self.cleaned_data.get("password1")
+        password2 = self.cleaned_data.get("password2")
+        if password1 and password2 and password1 != password2:
+            raise forms.ValidationError("Passwords don't match")
+        return password2
+
+    def clean_password1(self):
+        self.validate_password(self.cleaned_data.get("password1"))
+
+    def save(self, commit=True):
+	try:
+            self.validate_password(self.cleaned_data.get("password1"))
+        except ValidationError as e:
+            self.add_error("password1", e)
+            raise e
+        # Save the provided password in hashed format
+        user = super(UserCreationForm, self).save(commit=False)
+        user.set_password(self.cleaned_data["password1"])
+        if commit:
+            user.save()
+        return user
 
 class ChooseUserForm(forms.Form):
     """
