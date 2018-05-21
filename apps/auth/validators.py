@@ -26,7 +26,7 @@ class PasswordStrengthValidator(object):
         warning = results['feedback'].get('warning', None)
         suggestions = results['feedback'].get('suggestions', None)
         # enforce password strength
-        if not score > settings.MINIMUM_PASSWORD_SCORE:
+        if not score >= settings.MINIMUM_PASSWORD_SCORE:
             error_message = "Password not strong enough."
             if warning:
                 error_message += "\n{}".format(warning)
