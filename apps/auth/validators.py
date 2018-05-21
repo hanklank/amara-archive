@@ -30,6 +30,6 @@ class PasswordStrengthValidator(object):
             error_message = "Password not strong enough."
             if warning:
                 error_message += "\n{}".format(warning)
-            if suggestions: 
+            if suggestions:
                 error_message += "\n{}".format(suggestions[0])
             raise ValidationError(_(error_message), code='weak-password')
