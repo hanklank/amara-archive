@@ -294,13 +294,7 @@ var angular = angular || null;
         };
 
         $scope.deleteEmptySubtitles = function() {
-            var nextWorkingSubtitle = $scope.workingSubtitles.subtitleList.firstSubtitle();
-            while (nextWorkingSubtitle) {
-                if(nextWorkingSubtitle.isWhiteSpaceOnly()) {
-                    $scope.workingSubtitles.subtitleList.removeSubtitle(nextWorkingSubtitle);
-                }
-                nextWorkingSubtitle = $scope.workingSubtitles.subtitleList.nextSubtitle(nextWorkingSubtitle);
-            }
+            $scope.workingSubtitles.subtitleList.deleteEmptySubtitles();
             $scope.$root.$emit('work-done');
         };
 

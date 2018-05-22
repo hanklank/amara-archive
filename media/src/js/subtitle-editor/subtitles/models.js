@@ -585,6 +585,15 @@ var angular = angular || null;
             this._changesDone(gettext('Clear text'));
         }
 
+        SubtitleList.prototype.deleteEmptySubtitles = function () {
+            for(var i=this.subtitles.length -1; i >= 0; i--) {
+                if (this.subtitles[i].isWhiteSpaceOnly()) {
+                    this._removeSubtitle(i, {})
+                }
+            }
+            this._changesDone(gettext('Delete empty subtitles'));
+        }
+
         // Copy the subtitle times from another subtitle list
         SubtitleList.prototype.copyTimingsFrom = function(otherSubtitleList) {
             var minLength = Math.min(this.subtitles.length, otherSubtitleList.subtitles.length);
