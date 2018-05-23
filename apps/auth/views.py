@@ -30,6 +30,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import password_reset as contrib_password_reset
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
+from django.forms import ValidationError
 from django.forms.util import ErrorList
 from django.http import (HttpResponseRedirect, HttpResponseForbidden,
                          HttpResponse, HttpResponseBadRequest)
