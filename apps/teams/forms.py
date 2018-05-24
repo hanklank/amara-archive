@@ -16,6 +16,7 @@
 # along with this program.  If not, see
 # http://www.gnu.org/licenses/agpl-3.0.html.
 
+import bleach
 import datetime
 import json
 import logging
@@ -66,6 +67,7 @@ from ui.forms import (FiltersForm, ManagementForm, AmaraChoiceField,
                       AmaraRadioSelect, SearchField, AmaraClearableFileInput,
                       AmaraFileInput, HelpTextList)
 from ui.forms import LanguageField as NewLanguageField
+from utils.html import clean_html
 from utils import send_templated_email
 from utils.forms import (ErrorableModelForm, get_label_for_value,
                          UserAutocompleteField, LanguageField,
@@ -759,6 +761,11 @@ class MessageTextField(forms.CharField):
             required=False, widget=forms.Textarea,
             *args, **kwargs)
 
+    def clean(self, value):
+        value = super(MessageTextField, self).clean(value)
+        value = clean_html(value)
+        return value
+
 class GuidelinesMessagesForm(forms.Form):
     pagetext_welcome_heading = MessageTextField(
         label=_('Welcome heading on your landing page for non-members'))
@@ -1044,9 +1051,16 @@ class InviteForm(forms.Form):
     def clean_email(self):
         email = self.cleaned_data['email']
         
-        if self.team.users.filter(email=email).exists():
-            invitee = User.objects.get(email=email)
-            raise forms.ValidationError(_(u"This email address belongs to {} who is already a part of the team!".format(invitee)))
+        invitees = self.team.users.filter(email=email)
+        if invitees.exists():
+            if invitees.count() == 1:
+                raise forms.ValidationError(
+                    _(u"This email address belongs to {} "
+                       "who is already a part of the team!".format(invitees.first())))
+            else:
+                raise forms.ValidationError(
+                    _(u"This email address belongs to multiple user accounts, "
+                       "one of which is {} who is already a part of the team!".format(invitees.first())))           
 
         return email
         
