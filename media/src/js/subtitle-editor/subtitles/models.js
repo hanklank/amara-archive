@@ -773,7 +773,7 @@ var angular = angular || null;
                     content: firstSubtitleMarkdown
                 });
             } else {
-                var newSubAttrs = { region: subtitle.region }
+                var newSubAttrs = { region: subtitle.region, content: secondSubtitleMarkdown }
                 this._updateSubtitle(index, {content: firstSubtitleMarkdown});
             }
             var newSubtitle = this._insertSubtitle(index + 1, newSubAttrs);
