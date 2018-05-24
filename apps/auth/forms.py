@@ -79,7 +79,7 @@ class CustomUserCreationForm(UserCreationForm):
     def save(self, commit=True):
 	try:
             self.validate_password(self.cleaned_data.get("password1"))
-        except ValidationError as e:
+        except forms.ValidationError as e:
             self.add_error("password1", e)
             raise e
         # Save the provided password in hashed format
