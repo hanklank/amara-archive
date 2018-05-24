@@ -11,11 +11,7 @@
           {% endblocktrans %}
         </h4>
         <h5 class="dialogSubtitle">
-            {% blocktrans count count=selection_count %}
-            Change member role from {{ role }}
-            {% plural %}
-            Change member roles
-            {% endblocktrans %}
+            {% blocktrans count count=selection_count %}Change member role{% plural %}Change member roles{% endblocktrans %}
         </h5>
       </header>
       <div class="modal-body">
