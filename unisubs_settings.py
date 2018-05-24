@@ -41,6 +41,8 @@ elif INSTALLATION == PRODUCTION:
     COMPRESS_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
     # only send actual email on the production server
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    GOOGLE_ANALYTICS_NUMBER = 'UA-163840-22'
+    EXPERIMENTS_CODE = "QL2-1BUpSyeABVHp9b6G8w"
 elif INSTALLATION == BETA:
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 elif INSTALLATION == DEMO:

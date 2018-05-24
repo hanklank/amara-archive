@@ -33,7 +33,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 FEEDWORKER_PASS_DURATION=300
 
 JS_USE_COMPILED = True
-RUN_LOCALLY = True
 
 debug = True
 
