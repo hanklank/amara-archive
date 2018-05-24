@@ -127,12 +127,6 @@ class CustomPasswordResetForm(forms.Form):
     can describe better what will happen to the account if password is
     reset
     """
-    error_messages = {
-        'unknown': _("That e-mail address doesn't have an associated "
-                     "user account. Are you sure you've registered?"),
-        'unusable': _("The user account associated with this e-mail "
-                      "address cannot reset the password."),
-    }
     email = forms.EmailField(label=_("E-mail"), max_length=75)
 
     def clean_email(self):
@@ -142,8 +136,6 @@ class CustomPasswordResetForm(forms.Form):
         email = self.cleaned_data["email"]
         self.users_cache = User.objects.filter(email__iexact=email,
                                                is_active=True)
-        if not len(self.users_cache):
-            raise forms.ValidationError(self.error_messages['unknown'])
         return email
 
     def save(self,
