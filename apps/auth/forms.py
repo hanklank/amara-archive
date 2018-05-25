@@ -135,6 +135,19 @@ class CustomSetPasswordForm(forms.Form):
         self.user = user
         super(CustomSetPasswordForm, self).__init__(*args, **kwargs)
 
+    def validate_password(self, password):
+        # remove this post-1.9 when setting is used
+        validator = PasswordStrengthValidator()
+	validator.validate(password)
+
+    def clean_new_password1(self):
+        password = self.cleaned_data.get("new_password1")
+	try:
+            self.validate_password(password)
+        except forms.ValidationError as e:
+            raise e
+        return password
+
     def clean_new_password2(self):
         password1 = self.cleaned_data.get('new_password1')
         password2 = self.cleaned_data.get('new_password2')
