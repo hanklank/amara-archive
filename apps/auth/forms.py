@@ -116,6 +116,50 @@ class EmailForm(forms.Form):
     last_name = forms.CharField(max_length=100, required=False, widget=forms.HiddenInput())
     avatar = forms.URLField(required=False, widget=forms.HiddenInput())
 
+class CustomSetPasswordForm(forms.Form):
+    """
+    A form that lets a user change set their password without entering the old
+    password
+    """
+    error_messages = {
+        'invalid_email': _("The email address given doesn't match the user."),
+        'password_mismatch': _("The two password fields didn't match."),
+    }
+    email_address = forms.EmailField(label=_("Verify email address"))
+    new_password1 = forms.CharField(label=_("New password"),
+                                    widget=forms.PasswordInput)
+    new_password2 = forms.CharField(label=_("New password confirmation"),
+                                    widget=forms.PasswordInput)
+
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super(CustomSetPasswordForm, self).__init__(*args, **kwargs)
+
+    def clean_new_password2(self):
+        password1 = self.cleaned_data.get('new_password1')
+        password2 = self.cleaned_data.get('new_password2')
+        if password1 and password2:
+            if password1 != password2:
+                raise forms.ValidationError(
+                    self.error_messages['password_mismatch'],
+                    code='password_mismatch',
+                )
+        return password2
+
+    def clean_email_address(self):
+        email = self.cleaned_data.get('email_address')
+        if email != self.user.email:
+            raise forms.ValidationError(
+                self.error_messages['invalid_email'],
+                code='invalid_email',
+            )
+
+    def save(self, commit=True):
+        self.user.set_password(self.cleaned_data['new_password1'])
+        if commit:
+            self.user.save()
+        return self.user
+
 class CustomPasswordResetForm(forms.Form):
     """
     This custom version of the password reset form has two differences with
