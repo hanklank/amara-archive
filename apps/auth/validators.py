@@ -14,7 +14,7 @@ class PasswordStrengthValidator(object):
 
     def validate(self, password, user=None):
         # enforce minimum length
-        if len(password) < self.min_length:
+        if not password or len(password) < self.min_length:
             raise ValidationError(
                 _("Password must contain at least %(min_length)d characters."),
                 code='password-too-short',
