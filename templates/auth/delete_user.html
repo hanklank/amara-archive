@@ -5,18 +5,12 @@
 {% block content %}
 <div class="container">
   <div class="col-md-8 col-md-offset-2 text-justify">
-  <div class="section">
-    <div class="content">
-      <h1>{% trans 'Account Deactivation' %}</h1>
-      <p> {% trans 'When your account is deactivated, your username will be displayed as a "Retired user" and your profile page will become unviewable. You can reactivate your account anytime by logging into it again. Please note that your current team memberships will be lost and you would need to rejoin your teams should you reactivate your account.' %}</p>
+    <div class="section content">
+      <h1 class="content">{% trans 'Account Deactivation' %}</h1>
+      <p class="content"> {% trans 'When your account is deactivated, your username will be displayed as a "Retired user" and your profile page will become inaccessible.' %}</p>
 
-      <p>{% trans 'You can opt to delete your account data as well by checking the options below. Deleting your account data is irreversible and you will not be able to recover your account after deletion!' %}</p>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="content">
-      <form method="POST">
+      <p class="content">{% trans 'You can opt to delete your account data as well by checking the options below.' %}</p>
+      <form class="content" method="POST">
         {% csrf_token %}
         {{ form.delete_account_data|render_field }}
         {{ form.delete_videos_and_subtitles|render_field }}
@@ -27,7 +21,6 @@
         </div>
       </form>
     </div>
-  </div>
 </div>
 </div>
 
