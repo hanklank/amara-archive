@@ -150,5 +150,10 @@ class SecureCustomPasswordResetForm(CustomPasswordResetForm):
     captcha = CaptchaField()
 
 class DeleteUserForm(forms.Form):
-    password = forms.CharField(widget=forms.PasswordInput())
+    password = forms.CharField(widget=forms.PasswordInput(), 
+        label="Please enter your login password to confirm.")
+    delete_account_data = forms.BooleanField(required=False,
+        help_text="This will erase your personal data, including your personal name, photo, and any other data on your user profile.")
+    delete_videos_and_subtitles = forms.BooleanField(required=False,
+        help_text="This will delete videos that you have added to Amara that no other user has added subtitles to. It will also delete the related subtitles. If you want to delete other videos/subtitles that you've worked on, please email support@amara.org.")
 
