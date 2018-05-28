@@ -225,6 +225,13 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
         else:
             return self.username
 
+    @property
+    def display_username(self):
+        if self.is_active:
+            return self.username
+        else:
+            return ugettext('Retired user')
+
     def sent_message(self):
         """
         Should be called each time a user sends a message.

@@ -44,7 +44,7 @@
         <a href="{% url 'teams:member-profile' slug=team.slug username=member.user.username %}">
             {{member.user}}</a>
       </h3>
-      <h3>({{member.user.username}})</h3>
+      <h3>({{member.user.display_username}})</h3>
       <h4>{{ member.role }}</h4>
       <p>{{ member.user.get_languages|to_localized_display_list }}<p>
     </div>

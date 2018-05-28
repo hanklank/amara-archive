@@ -287,7 +287,7 @@ def manage_members_form(request, team, form_name, members, page):
     }
     if modal_context['single_selection']:
         modal_context['member'] = members.get(id=selection[0])
-        modal_context['username'] = modal_context['member'].user.username
+        modal_context['username'] = modal_context['member'].user.display_username
         modal_context['role'] = modal_context['member'].role
 
     response_renderer = AJAXResponseRenderer(request)
