@@ -225,6 +225,15 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
         else:
             return self.username
 
+    @staticmethod
+    def generate_random_username():
+        username = str(uuid.uuid4())[0:30]
+        try:
+            CustomUser.objects.get(username=username)
+            return generate_random_username()
+        except CustomUser.DoesNotExist:
+            return username;
+
     @property
     def display_username(self):
         if self.is_active:
@@ -254,6 +263,33 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
             self.save()
             import tasks
             tasks.notify_blocked_user.delay(self)
+
+    def delete_account_data(self):
+        # Alternate implementation is to blank all the fields except for some fields
+        # indicated in skip_fields
+        #
+        # for field in self._meta.fields:
+        #     if field.name in skip_fields:
+        #         continue
+        #     if field.default != NOT_PROVIDED:
+        #         setattr(self, field.name, field.default)
+        #     else:
+        #         setattr(self, field.name, None)
+
+        self.username = CustomUser.generate_random_username()
+        self.first_name = None
+        self.last_name = None
+        self.picture = None
+        self.email= ""
+        self.homepage = ""
+        self.biography = ""
+        self.full_name = ""
+        self.save()
+
+    # Deletes videos this user has uploaded and no one else has added subtitles to
+    # Also deletes uploaded videos without subtitles
+    def delete_self_subtitled_videos(self):
+        pass
 
     def has_fullname_set(self):
         return any([self.first_name, self.last_name, self.full_name])
