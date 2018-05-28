@@ -1277,10 +1277,7 @@ class Video(models.Model):
         """
         Returns whether subtitles for this video has been worked upon only by the uploader 
         """
-        for sv in self.newsubtitleversion_set.extant():
-            if sv.author != self.user:
-                return False
-        return True
+        return not self.newsubtitleversion_set.exclude(author=self.user).exists()
 
     @property
     def is_complete(self):
