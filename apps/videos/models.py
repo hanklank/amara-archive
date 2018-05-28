@@ -1273,6 +1273,15 @@ class Video(models.Model):
                 langs[sl.language_code] = [sl]
         return langs
 
+    def is_solo_subtitled_by_uploader(self):
+        """
+        Returns whether subtitles for this video has been worked upon only by the uploader 
+        """
+        for sv in self.newsubtitleversion_set.extant():
+            if sv.author != self.user:
+                return False
+        return True
+
     @property
     def is_complete(self):
         """Return whether at least one of this video's languages is marked complete."""

@@ -289,7 +289,9 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
     # Deletes videos this user has uploaded and no one else has added subtitles to
     # Also deletes uploaded videos without subtitles
     def delete_self_subtitled_videos(self):
-        pass
+        for video in self.videos.all():
+            if video.is_solo_subtitled_by_uploader():
+                video.delete()
 
     def has_fullname_set(self):
         return any([self.first_name, self.last_name, self.full_name])

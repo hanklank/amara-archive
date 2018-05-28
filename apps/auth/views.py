@@ -158,7 +158,6 @@ def delete_user(request):
              if user:
                  user.unlink_external()
                  user.team_members.all().delete()
-
                  if form.cleaned_data['delete_account_data']:
                     user.delete_account_data()
                  if form.cleaned_data['delete_videos_and_subtitles']:
