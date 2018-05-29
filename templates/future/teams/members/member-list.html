@@ -46,7 +46,10 @@
       </h3>
       <h3>({{member.user.username}})</h3>
       <h4>
+        {% if member.is_a_project_or_language_manager %}
+        {% else %}
         {{ member.role }} <br/>
+        {% endif %}
         
         {% with languages=member.languages_managed.all %}
           {% if languages %}
