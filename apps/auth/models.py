@@ -191,6 +191,8 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
         choices=PLAYBACK_MODE_CHOICES, default=PLAYBACK_MODE_STANDARD)
     created_by = models.ForeignKey('self', null=True, blank=True,
                                    related_name='created_users')
+    # For storing usernames of deactivated accounts, deleted accounts should not store the old username
+    username_old = models.CharField(max_length=30, blank=True, null=True, default='')
 
     SECURE_ID_KEY = 'User'
 
@@ -264,6 +266,12 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
             import tasks
             tasks.notify_blocked_user.delay(self)
 
+    def deactivate_account(self):
+        self.unlink_external()
+        self.team_members.all().delete()
+        self.username_old = self.username
+        self.username = CustomUser.generate_random_username()
+
     def delete_account_data(self):
         # Alternate implementation is to blank all the fields except for some fields
         # indicated in skip_fields
@@ -277,6 +285,7 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
         #         setattr(self, field.name, None)
 
         self.username = CustomUser.generate_random_username()
+        self.username_old = None
         self.first_name = None
         self.last_name = None
         self.picture = None
