@@ -840,6 +840,7 @@ def manage_videos(request, team, project_id=None):
     videos = filters_form.get_queryset().select_related('teamvideo',
                                                         'teamvideo__video')
     if (project_id):
+        header = Project.objects.get(id=int(project_id)).name
         exclude_video_ids = []
         for video in videos:
             if video.get_team_video().project.id != int(project_id):
@@ -895,6 +896,7 @@ def manage_videos(request, team, project_id=None):
     if(project_id):
         template='future/teams/management/videos_for_project_managers.html'
         tabs = team.new_workflow.management_page_extra_tabs(request, project_id=project_id)
+        context['header'] = header
         context['extra_tabs_'] = tabs
 
     return render(request, template, context)

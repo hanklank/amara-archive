@@ -2,6 +2,19 @@
 {% load i18n forms %}
 {% load url from future %}
 
+{% block content %}
+  {% if header %}
+  <div class="container">
+    <div class="content" style="margin-top:1em;margin-bottom:-2.5em">
+    <h2>
+      {{header}} Subtitles
+    </h2>
+    </div>
+  </div>
+  {% endif %}
+  {{ block.super }}
+{% endblock %}
+
 {% block filters %}
 <form method="GET" action="" class="ajaxForm updateOnChange updateLocation">
   {{ filters_form.q.as_hidden }}
