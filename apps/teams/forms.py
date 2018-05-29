@@ -1733,9 +1733,9 @@ class ChangeMemberRoleForm(ManagementForm):
     role = TeamMemberRoleSelect(choices=[
                 ('', _("Don't change")),
                 (TeamMember.ROLE_CONTRIBUTOR, _('Contributor')),
+                (TeamMember.ROLE_PROJ_LANG_MANAGER, _('Project/Language Manager')),
                 (TeamMember.ROLE_MANAGER, _('Manager')),
                 (TeamMember.ROLE_ADMIN, _('Admin')),
-                (TeamMember.ROLE_PROJ_LANG_MANAGER, _('Project/Language Manager'))
            ], initial='', label=_('Member Role'))
 
     projects = MultipleProjectField(label=_('Project'), null_label=_('No change'), required=False)
