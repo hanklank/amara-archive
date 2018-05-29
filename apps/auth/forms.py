@@ -74,14 +74,13 @@ class CustomUserCreationForm(UserCreationForm):
         return password2
 
     def clean_password1(self):
-        self.validate_password(self.cleaned_data.get("password1"))
-
-    def save(self, commit=True):
 	try:
             self.validate_password(self.cleaned_data.get("password1"))
         except forms.ValidationError as e:
             self.add_error("password1", e)
             raise e
+
+    def save(self, commit=True):
         # Save the provided password in hashed format
         user = super(UserCreationForm, self).save(commit=False)
         user.set_password(self.cleaned_data["password1"])
