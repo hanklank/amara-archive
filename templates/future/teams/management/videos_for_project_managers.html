@@ -2,15 +2,6 @@
 {% load i18n forms %}
 {% load url from future %}
 
-{% block content %}
-  <div class="container">
-    <div class="content" style="margin-top:1em;margin-bottom:-2.5em">
-    <a class="button" href="{% url 'collab:manage-projects-and-languages' slug=team.slug %}">Back to languages and projects managed</a>
-  </div>
-  </div>
-  {{ block.super }}
-{% endblock %}
-
 {% block filters %}
 <form method="GET" action="" class="ajaxForm updateOnChange updateLocation">
   {{ filters_form.q.as_hidden }}
