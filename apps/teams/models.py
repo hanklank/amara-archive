@@ -717,6 +717,20 @@ class Team(models.Model):
         member = self.get_member(user)
         return bool(member and member.is_manager())
 
+    def user_is_a_project_manager(self, user):
+        member = self.get_member(user)
+        return bool(member and member.is_a_project_manager())
+
+    def user_is_any_type_of_manager(self, user):
+        member = self.get_member(user)
+        return bool(member and member.is_any_type_of_manager())
+
+    def user_is_a_project_or_language_manager(self, user):
+        member = self.get_member(user)
+        return bool(member and
+                   (member.is_a_project_manager() or
+                    member.is_a_language_manager()))
+
     def invitable_users(self):
         pending_invites = (Invite.objects
                            .pending_for(team=self)
