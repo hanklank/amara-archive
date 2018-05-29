@@ -311,7 +311,7 @@ var USER_IDLE_MINUTES = 15;
                 }
             });
 
-            subtitleList.addChangeCallback(onChange);
+            subtitleList.addChangeCallback(handleChanges);
             reloadSubtitles();
 
             function makeSubtitleMenu() {
@@ -411,7 +411,11 @@ var USER_IDLE_MINUTES = 15;
                 return null;
             }
 
-            function onChange(change) {
+            function handleChanges(changes) {
+                _.each(changes, handleChange);
+            }
+
+            function handleChange(change) {
                 var subtitle = change.subtitle;
                 switch(change.type) {
                     case 'remove':
@@ -449,6 +453,7 @@ var USER_IDLE_MINUTES = 15;
                     case 'reload':
                         reloadSubtitles();
                 }
+                $scope.$emit('subtitle-list-changed');
             }
 
             function startEditOn(draft) {
