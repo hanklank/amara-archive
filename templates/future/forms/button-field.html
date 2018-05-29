@@ -1,0 +1,13 @@
+<div class="buttonField">
+  {{ field }}
+  <button class="button buttonField-button {{ button_class }}">{{ button_label }}</button>
+</div>
+{% if field.errors %}
+{% for error in field.errors %}
+<div class="has-error"><p class="helpBlock">{{ error|escape }}</p></div>
+{% endfor %}
+{% elif no_help_block %}
+{{ field.help_text }}
+{% elif field.help_text %}
+<p class="helpBlock">{{ field.help_text }}</p>
+{% endif %}
