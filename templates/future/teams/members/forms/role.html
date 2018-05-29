@@ -4,19 +4,11 @@
     <form class="ajaxForm" method="POST" action="{{ request.get_full_path }}" enctype="multipart/form-data">
       <header class="dialogHeader">
         <h4 class="dialogTitle">
-          {% blocktrans count count=selection_count %}
-          Editing {{ member }} ({{ username }})
-          {% plural %}
-          Editing {{ count }} users
-          {% endblocktrans %}
+          {% blocktrans count count=selection_count %}Editing user{% plural %}Editing {{ count }} users{% endblocktrans %}
         </h4>
-        <h5 class="dialogSubtitle">
-            {% blocktrans count count=selection_count %}
-            Change member role from {{ role }}
-            {% plural %}
-            Change member roles
-            {% endblocktrans %}
-        </h5>
+        <h4 class="dialogSubtitle">
+          {% blocktrans count count=selection_count %}Change member role{% plural %}Change member roles{% endblocktrans %}
+        </h4>
       </header>
       <div class="modal-body">
         {% csrf_token %}
