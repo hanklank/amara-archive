@@ -1768,7 +1768,7 @@ class ChangeMemberRoleForm(ManagementForm):
             return (len(team_owners) <= 1)
 
     def update_proj_lang_management(self, member):
-        # TODODAN make this work for making previous pm/lm's to be a pm/lm of a
+        # TODO make this work for making previous pm/lm's to be a pm/lm of a
         # different set of projects/languages
 
         # crude implementation is to delete all pm/lm permissions and then 
