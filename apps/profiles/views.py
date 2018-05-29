@@ -81,6 +81,8 @@ def profile(request, user_id):
     except User.DoesNotExist:
         try:
             user = User.objects.get(id=user_id)
+            if not user.is_active:
+                raise Http404
         except (User.DoesNotExist, ValueError):
             raise Http404    
 
