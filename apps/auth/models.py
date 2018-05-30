@@ -593,8 +593,8 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
         validator = PasswordStrengthValidator()
         try:
             validator.validate(self.password)
-        except ValidationError as e:
-            raise e
+        except ValidationError:
+            return False
         return len(self.password) > 0 and self.has_usable_password()
 
     def unlink_external(self):

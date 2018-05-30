@@ -76,6 +76,7 @@ class CustomUserCreationForm(UserCreationForm):
     def clean_password1(self):
 	try:
             self.validate_password(self.cleaned_data.get("password1"))
+            return self.cleaned_data.get("password1")
         except forms.ValidationError as e:
             self.add_error("password1", e)
             raise e
