@@ -139,7 +139,7 @@ def create_user(request):
     form = CustomUserCreationForm(request.POST, label_suffix="")
     if form.is_valid():
         new_user = form.save()
-        user = authenticate(username=new_user.username,
+        user = authenticate(username=new_user,
                             password=form.cleaned_data['password1'])
         langs = get_user_languages_from_cookie(request)
         for l in langs:
