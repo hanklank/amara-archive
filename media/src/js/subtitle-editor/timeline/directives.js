@@ -55,6 +55,9 @@ var angular = angular || null;
             this.startTime = -500;
         }
         this.endTime = this.startTime + this.duration;
+        if(scope.duration !== null) {
+            this.endTime = Math.min(this.endTime, scope.duration)
+        }
         this.width = durationToPixels(this.duration, scope.scale);
     }
 
@@ -171,7 +174,8 @@ var angular = angular || null;
                 visibleTimespan = new VisibleTimespan(scope, containerWidth,
                         deltaMS);
                 if(bufferTimespan === null ||
-                    !visibleTimespan.fitsInBuffer(bufferTimespan)) {
+                    !visibleTimespan.fitsInBuffer(bufferTimespan) ||
+                    bufferTimespan.endTime > scope.duration) {
                     makeNewBuffer();
                 }
                 visibleTimespan.positionDiv(bufferTimespan, canvas);
