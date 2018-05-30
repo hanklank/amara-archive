@@ -45,38 +45,31 @@
             {{member.user}}</a>
       </h3>
       <h3>({{member.user.username}})</h3>
-      <h4>
+      <span class="small member-role">
         {% if member.is_a_project_or_language_manager %}
-        {% else %}
-        {{ member.role }} <br/>
-        {% endif %}
-        
-        {% with languages=member.languages_managed.all %}
-          {% if languages %}
-            {% trans 'Language manager for: ' %}
-            {% for language in languages %}
-              {{ language.readable_name}}{% if forloop.last %}{% else %},{% endif %}
-            {% endfor %}
-            <br/>
-          {% endif %}
-        {% endwith %}
-        {% with projects=member.projects_managed.all %}
-          {% if projects %}
-            {% trans 'Project manager for:' %}
-            {% if projects|length > 1 %}
+          {% with languages=member.languages_managed.all %}
+            {% if languages %}
+              {% trans 'Language manager for:' %}
+              {% for language in languages %}
+                {{ language.readable_name}}{% if forloop.last %}{% else %},{% endif %}
+              {% endfor %}
               <br/>
-              <ul>
-                {% for project in projects %}
-                  <li>&nbsp;&nbsp;&nbsp;{{project}}</li>
-                {% endfor %}
-              </ul>
-            {% else %}
-              {{ projects|first }}
             {% endif %}
-          {% endif %}
-        {% endwith %}
-
-      </h4>
+          {% endwith %}
+          
+          
+          {% with projects=member.projects_managed.all %}
+            {% if projects %}
+              {% trans 'Project manager for:' %}
+              {% for project in projects %}
+                {{ project }}{% if forloop.last %}{% else %},{% endif %}
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+        {% else %}
+          <span style="text-transform:capitalize">{{ member.role }}</span>
+        {% endif %}
+      </span>
       <p>{{ member.user.get_languages|to_localized_display_list }}<p>
     </div>
     <div class="selectList-itemActions">
