@@ -1799,11 +1799,11 @@ class ChangeMemberRoleForm(ManagementForm):
                 else:
                     try:
                         if self.cleaned_data['role'] == TeamMember.ROLE_PROJ_LANG_MANAGER:
-                            self.cleaned_data['role'] = TeamMember.ROLE_CONTRIBUTOR
+                            member.change_role(TeamMember.ROLE_CONTRIBUTOR)
                             self.update_proj_lang_management(member)
                         else:
                             member.remove_as_proj_lang_manager()
-                        member.change_role(self.cleaned_data['role'])
+                            member.change_role(self.cleaned_data['role'])
                         self.changed_count += 1
                     except Exception as e:
                         logger.error(e, exc_info=True)
