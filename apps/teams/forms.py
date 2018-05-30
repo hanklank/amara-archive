@@ -1536,8 +1536,8 @@ class MemberFiltersForm(forms.Form):
         ('any', _('All roles')),
         (TeamMember.ROLE_ADMIN, _('Admins')),
         (TeamMember.ROLE_MANAGER, _('Managers')),
-        (TeamMember.ROLE_CONTRIBUTOR, _('Contributors')),
-        (TeamMember.ROLE_PROJ_LANG_MANAGER, _('Proj/Lang Managers')),
+        (TeamMember.ROLE_PROJ_LANG_MANAGER, _('Project/Language Managers')),
+        (TeamMember.ROLE_CONTRIBUTOR, _('Contributors')),        
     ], initial='any', required=False, filter=True)
     language = AmaraChoiceField(choices=LANGUAGE_CHOICES,
                                  label=_('Language spoken'),
