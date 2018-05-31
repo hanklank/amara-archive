@@ -62,8 +62,9 @@ class CustomUserCreationForm(UserCreationForm):
 
     def validate_password(self, password):
         # remove this post-1.9 when setting is used
+        user_inputs = [self.cleaned_data.get("email"), self.cleaned_data.get("username")]
         validator = PasswordStrengthValidator()
-	validator.validate(password)
+	validator.validate(password, user_inputs=user_inputs)
 
     def clean_password2(self):
         # Check that the two password entries match
@@ -78,7 +79,6 @@ class CustomUserCreationForm(UserCreationForm):
             self.validate_password(self.cleaned_data.get("password1"))
             return self.cleaned_data.get("password1")
         except forms.ValidationError as e:
-            self.add_error("password1", e)
             raise e
 
     def save(self, commit=True):
@@ -137,8 +137,9 @@ class CustomSetPasswordForm(forms.Form):
 
     def validate_password(self, password):
         # remove this post-1.9 when setting is used
+        user_inputs = [self.user.email, self.user.username]
         validator = PasswordStrengthValidator()
-	validator.validate(password)
+	validator.validate(password, user_inputs)
 
     def clean_new_password1(self):
         password = self.cleaned_data.get("new_password1")

@@ -12,7 +12,7 @@ class PasswordStrengthValidator(object):
     def __init__(self, min_length=8):
         self.min_length = min_length
 
-    def validate(self, password, user=None):
+    def validate(self, password, user_inputs=None):
         # enforce minimum length
         if not password or len(password) < self.min_length:
             raise ValidationError(
@@ -21,7 +21,7 @@ class PasswordStrengthValidator(object):
                 params={'min_length': self.min_length},
             )
 
-        results = zxcvbn(password, user_inputs=[])  # TODO: get user inputs from form
+        results = zxcvbn(password, user_inputs=user_inputs)
         score = results['score']
         warning = results['feedback'].get('warning', None)
         suggestions = results['feedback'].get('suggestions', None)
@@ -31,5 +31,6 @@ class PasswordStrengthValidator(object):
             if warning:
                 error_message += "\n{}".format(warning)
             if suggestions:
-                error_message += "\n{}".format(suggestions[0])
+                for s in suggestions:
+                    error_message += "\n{}".format(s)
             raise ValidationError(_(error_message), code='weak-password')
