@@ -334,6 +334,10 @@ var angular = angular || null;
                     draftSubtitle.startTime = startTime;
                     draftSubtitle.endTime = endTime;
                     placeSubtitle(startTime, endTime,  div);
+                    if(scope.currentEdit.isForSubtitle(subtitle)) {
+                        scope.currentEdit.draft.startTime = startTime;
+                        scope.currentEdit.draft.endTime = endTime;
+                    }
                     scope.$root.$emit("timeline-subtitle-drag", { draftSubtitle: draftSubtitle });
                 }
 
