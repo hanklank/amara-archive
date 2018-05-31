@@ -556,10 +556,15 @@ var angular = angular || null;
             } else if (evt.keyCode === 90 && ctrlOrCmd(evt)) {
                 // Ctrl-Z -- undo
                 if($scope.currentEdit.inProgress()) {
-                    $scope.currentEdit.finish(false);
-                } else if($scope.workingSubtitles.subtitleList.canUndo()) {
+                    // If a user is currently making changes, then undo those before undoing from the subtitle list
+                    var hadChanges = $scope.currentEdit.finish(false);
+                    if(hadChanges) {
+                        return;
+                    }
+                }
+                if($scope.workingSubtitles.subtitleList.canUndo()) {
                     $scope.workingSubtitles.subtitleList.undo();
-                   $scope.$root.$emit('work-done');
+                    $scope.$root.$emit('work-done');
                 }
             } else if ( (!$scope.isMac && evt.keyCode === 89 && evt.ctrlKey) ||
                         ($scope.isMac && evt.keyCode === 90 && evt.metaKey && evt.shiftKey)) {

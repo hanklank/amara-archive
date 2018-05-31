@@ -163,7 +163,6 @@ var angular = angular || null;
         });
 
         $scope.$on('subtitle-list-changed', updateSyncHelpers);
-
         $scope.$watch('currentEdit.inProgress()', function(value) {
             if(value) {
                 trackMouseDown();

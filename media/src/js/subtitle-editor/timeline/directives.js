@@ -291,6 +291,10 @@ var angular = angular || null;
                 if(!div) {
                     return false;
                 }
+                if(scope.currentEdit.inProgress()) {
+                    scope.currentEdit.commit(subtitleList());
+                }
+
                 var previousDiv = null, nextDiv = null; 
                 var nextSubtitle = subtitleList().nextSubtitle(storedSubtitle);
                 context.nextSubtitleStartTimeOr = context.nextSubtitleStartTimeNew = null;

@@ -980,12 +980,16 @@ var angular = angular || null;
                 this.LI = LI;
             },
             finish: function(commitChanges, subtitleList) {
-                var updateNeeded = (commitChanges && this.changed());
+                var madeUpdate = (commitChanges && this.commit(subtitleList));
+                this.draft = this.LI = null;
+                return madeUpdate;
+            },
+            commit: function(subtitleList) {
+                var updateNeeded = this.changed();
                 if(updateNeeded) {
                     subtitleList.updateSubtitleContent(this.draft.storedSubtitle,
                             this.currentMarkdown());
                 }
-                this.draft = this.LI = null;
                 return updateNeeded;
             },
             storedSubtitle: function() {
