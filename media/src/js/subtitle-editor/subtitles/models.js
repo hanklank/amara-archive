@@ -1010,6 +1010,9 @@ var angular = angular || null;
                 }
              },
              isForSubtitle: function(subtitle) {
+                 if(subtitle.isDraft) {
+                     subtitle = subtitle.storedSubtitle;
+                 }
                 return (this.draft !== null && this.draft.storedSubtitle == subtitle);
              },
              inProgress: function() {
