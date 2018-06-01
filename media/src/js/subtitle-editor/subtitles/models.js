@@ -743,9 +743,14 @@ var angular = angular || null;
             this._changesDone(gettext('Shift backward'));
         }
 
-        SubtitleList.prototype.updateSubtitleContent = function(subtitle, content) {
+        // Update the text for a subtitle
+        //
+        // Pass changeGroup to group together multiple calls into a single undo
+        // entry.  For example when the user is typing keys in the text entry for a subtitle.
+        // This creates many changes, but they should be grouped into a single unto entry.
+        SubtitleList.prototype.updateSubtitleContent = function(subtitle, content, changeGroup) {
             this._updateSubtitle(this.getIndex(subtitle), {content: content});
-            this._changesDone(gettext('Subtitle edit'));
+            this._changesDone(gettext('Subtitle edit'), changeGroup);
         }
 
         SubtitleList.prototype.updateSubtitleParagraph = function(subtitle, startOfParagraph) {
@@ -1034,66 +1039,56 @@ var angular = angular || null;
      */
     module.service('CurrentEditManager', [function() {
         CurrentEditManager = function() {
-            this.draft = null;
-            this.LI = null;
+            this.subtitle = null;
+            this.initialContent = '';
+            this.counter = 0;
+            this.initialCaretPos = 0;
         }
 
         CurrentEditManager.prototype = {
-            start: function(subtitle, LI) {
-                this.draft = subtitle.draftSubtitle();
-                this.LI = LI;
-            },
-            finish: function(commitChanges, subtitleList) {
-                var madeUpdate = (commitChanges && this.commit(subtitleList));
-                this.draft = this.LI = null;
-                return madeUpdate;
-            },
-            commit: function(subtitleList) {
-                var updateNeeded = this.changed();
-                if(updateNeeded) {
-                    subtitleList.updateSubtitleContent(this.draft.storedSubtitle,
-                            this.currentMarkdown());
+            start: function(subtitle, initialCaretPos) {
+                if(initialCaretPos === undefined) {
+                    initialCaretPos = subtitle.markdown.length;
                 }
-                return updateNeeded;
+                this.subtitle = subtitle;
+                this.initialCaretPos = initialCaretPos;
+                this.initialContent = subtitle.markdown;
+                this.changeGroup = 'text-edit-' + this.counter++;
             },
-            storedSubtitle: function() {
-                if(this.draft !== null) {
-                    return this.draft.storedSubtitle;
-                } else {
+            update: function(subtitleList, content) {
+                if(this.hasChanges(content)) {
+                    subtitleList.updateSubtitleContent(this.subtitle, content, this.changeGroup);
+                }
+            },
+            hasChanges: function(content) {
+                return this.subtitle.markdown != content;
+            },
+            finish: function() {
+                this.subtitle = null;
+                this.initialContent = '';
+            },
+            cancel: function(subtitleList) {
+                // call updateSubtitleContent manually, because we don't want
+                // to use the same changeGroup to group this with other
+                // changes.  This way if the user hits undo afterwards, the
+                // content will be restored.
+                subtitleList.updateSubtitleContent(this.subtitle, this.initialContent);
+                this.finish();
+            },
+            isForSubtitle: function(subtitle) {
+                return this.subtitle === subtitle;
+            },
+            inProgress: function() {
+                return this.subtitle !== null;
+            },
+            lineCounts: function() {
+                if(this.subtitle === null || this.subtitle.lineCount() < 2) {
+                    // Only show the line counts if there are 2 or more lines
                     return null;
+                } else {
+                    return this.subtitle.characterCountPerLine();
                 }
             },
-            sourceMarkdown: function() {
-                return this.draft.storedSubtitle.markdown;
-            },
-            currentMarkdown: function() {
-                return this.draft.markdown;
-            },
-            changed: function() {
-                return this.sourceMarkdown() != this.currentMarkdown();
-            },
-             update: function(markdown) {
-                if(this.draft !== null) {
-                    this.draft.markdown = markdown;
-                }
-             },
-             isForSubtitle: function(subtitle) {
-                 if(subtitle.isDraft) {
-                     subtitle = subtitle.storedSubtitle;
-                 }
-                return (this.draft !== null && this.draft.storedSubtitle == subtitle);
-             },
-             inProgress: function() {
-                return this.draft !== null;
-             },
-             lineCounts: function() {
-                 if(this.draft === null || this.draft.lineCount() < 2) {
-                     // Only show the line counts if there are 2 or more lines
-                     return null;
-                 } else {
-                     return this.draft.characterCountPerLine();
-                 }
-             },
         };
 
         return CurrentEditManager;

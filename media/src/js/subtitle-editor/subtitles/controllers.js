@@ -173,12 +173,12 @@ var angular = angular || null;
         });
 
         $scope.splitCurrentSubtitle = function() {
-            var currentSubtitle = $scope.currentEdit.storedSubtitle();
+            var currentSubtitle = $scope.currentEdit.subtitle;
             if(!$scope.canSplitSubtitle(currentSubtitle)) {
                 return;
             }
             var splitInfo = $scope.calcSubtitleSplit(currentSubtitle);
-            $scope.currentEdit.finish(true, subtitleList);
+            $scope.currentEdit.finish();
             subtitleList.splitSubtitle(currentSubtitle, splitInfo.first, splitInfo.second);
             $scope.$root.$emit('work-done');
         }
@@ -187,7 +187,7 @@ var angular = angular || null;
             // Disconnect any previous handlers to keep sanity
             DomWindow.offDocumentEvent('mousedown.subtitle-edit');
             DomWindow.onDocumentEvent('mousedown.subtitle-edit', function(evt) {
-                var subtitle = $scope.currentEdit.draft.storedSubtitle;
+                var subtitle = $scope.currentEdit.subtitle;
                 var li = $scope.getSubtitleRepeatItem(subtitle);
                 var clicked = $(evt.target);
                 var textarea = $('textarea.subtitle-edit', li);
@@ -195,19 +195,10 @@ var angular = angular || null;
                     !clicked.hasClass('subtitle-overlay-text') &&
                     !clicked.hasClass('info-tray') &&
                     clicked.parents('.info-tray').length == 0) {
-                    $scope.$apply(function() {
-                        finishEdit(true);
-                    });
+                    $scope.currentEdit.finish();
                 }
             });
         }
-
-        function finishEdit(commitChanges) {
-            // Tell the root scope that we're no longer editing, now.
-            if($scope.currentEdit.finish(commitChanges, subtitleList)) {
-                $scope.$root.$emit('work-done');
-            }
-        };
 
         function insertAndStartEdit(before, region) {
             var newSub = subtitleList.insertSubtitleBefore(before, region);
@@ -254,7 +245,7 @@ var angular = angular || null;
 
                 case 'remove':
                     if($scope.currentEdit.isForSubtitle(subtitle)) {
-                        $scope.currentEdit.finish(false);
+                        $scope.currentEdit.finish();
                     }
                     subtitleList.removeSubtitle(subtitle);
                     madeChange = true;
@@ -263,8 +254,7 @@ var angular = angular || null;
                 case 'edit':
                     if(!$scope.currentEdit.isForSubtitle(subtitle)) {
                         var caret = DomWindow.caretPos();
-                        $scope.currentEdit.start(subtitle);
-                        $scope.currentEdit.draft.initialCaretPos = caret;
+                        $scope.currentEdit.start(subtitle, caret);
                         madeChange = true;
                     }
                     break;
@@ -283,7 +273,7 @@ var angular = angular || null;
         }
 
         $scope.onEditKeydown = function(evt) {
-            var subtitle = $scope.currentEdit.draft.storedSubtitle;
+            var subtitle = $scope.currentEdit.subtitle;
 
             var isAltPressed = function(evt) {
                 return (evt.altKey || evt.metaKey);
@@ -295,7 +285,7 @@ var angular = angular || null;
             } else if (evt.keyCode === 13 && !evt.shiftKey) {
                 // Enter without shift finishes editing
                 var nextSubtitle = subtitleList.nextSubtitle(subtitle);
-                finishEdit(true);
+                $scope.currentEdit.finish();
                 if(nextSubtitle === null) {
                     if(!$scope.timelineShown) {
                         insertAndStartEdit(null, subtitle.region);
@@ -308,7 +298,8 @@ var angular = angular || null;
                 evt.stopPropagation();
             } else if (evt.keyCode === 27) {
                 // Escape cancels editing
-                finishEdit(false);
+                $scope.currentEdit.cancel(subtitleList);
+                $scope.$root.$emit('work-done');
                 if ((subtitle.markdown == '') && (!subtitle.isSynced())) {
                     subtitleList.removeSubtitle(subtitle);
                 }

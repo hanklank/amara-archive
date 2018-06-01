@@ -282,18 +282,11 @@ var angular = angular || null;
                     initialStartTime: subtitle.startTime,
                     initialEndTime: subtitle.endTime
                 }
-                if(!subtitle.isDraft) {
-                    var storedSubtitle = subtitle;
-                    var div = timelineDivs[storedSubtitle.id];
-                } else {
-                    var storedSubtitle = subtitle.storedSubtitle;
-                    var div = unsyncedDiv;
-                }
+                var storedSubtitle = subtitle;
+                var div = timelineDivs[storedSubtitle.id];
+
                 if(!div) {
                     return false;
-                }
-                if(scope.currentEdit.inProgress()) {
-                    scope.currentEdit.commit(subtitleList());
                 }
 
                 var changeGroup = 'timeline-drag-' + dragCounter++;
@@ -351,12 +344,6 @@ var angular = angular || null;
                             endTime: nextSubtitle.endTime
                         });
                     }
-                    _.each(changes, function(change) {
-                        if(scope.currentEdit.isForSubtitle(change.subtitle)) {
-                            scope.currentEdit.draft.startTime = change.startTime;
-                            scope.currentEdit.draft.endTime = change.endTime;
-                        }
-                    });
 
                     subtitleList().updateSubtitleTimes(changes, changeGroup);
                     scope.$root.$emit("work-done");
@@ -528,7 +515,7 @@ var angular = angular || null;
 
                 var shownSubtitle = subtitleList().subtitleAt(
                     scope.currentTime);
-		scope.subtitle = shownSubtitle;
+                scope.subtitle = shownSubtitle;
                 if(shownSubtitle === null && unsyncedSubtitle !== null &&
                         unsyncedSubtitle.startTime <= scope.currentTime) {
                     shownSubtitle = unsyncedSubtitle.storedSubtitle;

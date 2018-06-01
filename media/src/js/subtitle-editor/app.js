@@ -556,11 +556,7 @@ var angular = angular || null;
             } else if (evt.keyCode === 90 && ctrlOrCmd(evt)) {
                 // Ctrl-Z -- undo
                 if($scope.currentEdit.inProgress()) {
-                    // If a user is currently making changes, then undo those before undoing from the subtitle list
-                    var hadChanges = $scope.currentEdit.finish(false);
-                    if(hadChanges) {
-                        return;
-                    }
+                    $scope.currentEdit.finish();
                 }
                 if($scope.workingSubtitles.subtitleList.canUndo()) {
                     $scope.workingSubtitles.subtitleList.undo();
@@ -575,19 +571,21 @@ var angular = angular || null;
                 }
             } else if (evt.keyCode === 73 && isAltPressed(evt) && evt.shiftKey) {
                 // Alt+Shift+i, insert subtitle below
-		if($scope.currentEdit.storedSubtitle())
+		if($scope.currentEdit.inProgress()) {
 		    $scope.workingSubtitles.subtitleList.insertSubtitleBefore(
-			$scope.workingSubtitles.subtitleList.nextSubtitle($scope.currentEdit.storedSubtitle()));
+			$scope.workingSubtitles.subtitleList.nextSubtitle($scope.currentEdit.subtitle));
+                }
             } else if (evt.keyCode === 73 && isAltPressed(evt)) {
                 // Alt+i, insert subtitle above
-		if($scope.currentEdit.storedSubtitle())
+		if($scope.currentEdit.inProgress()) {
 		    $scope.workingSubtitles.subtitleList.insertSubtitleBefore(
-			$scope.currentEdit.storedSubtitle());
+			$scope.currentEdit.subtitle);
+                }
             } else if (isDel(evt.keyCode) && isAltPressed(evt)) {
                 // Alt+del, remove current subtitle
-		if($scope.currentEdit.storedSubtitle()){
+		if($scope.currentEdit.inProgress()){
                     var subtitleList = $scope.workingSubtitles.subtitleList;
-                    var currentSubtitle = $scope.currentEdit.storedSubtitle();
+                    var currentSubtitle = $scope.currentEdit.subtitle;
                     var nextSubtitle = subtitleList.nextSubtitle(currentSubtitle);
                     var prevSubtitle = subtitleList.prevSubtitle(currentSubtitle);
                     var replacement = nextSubtitle || prevSubtitle;
@@ -597,9 +595,7 @@ var angular = angular || null;
                     // After removing current subtitle, move cursor and open text-area of adjacent subtitle
                     if (replacement){
                         // Tell the root scope that we're no longer editing, now.
-                        if($scope.currentEdit.inProgress()) {
-                            $scope.currentEdit.finish(true, subtitleList);
-                        }
+                        $scope.currentEdit.finish();
                         $scope.currentEdit.start(replacement);
                         $scope.$root.$emit('scroll-to-subtitle', replacement);
                         evt.preventDefault();
@@ -609,7 +605,7 @@ var angular = angular || null;
                 }
             } else if (isAltPressed(evt) && ((evt.keyCode === 38) || (evt.keyCode === 40))) {
 		var nextSubtitle;
-		var subtitle = $scope.currentEdit.storedSubtitle();
+		var subtitle = $scope.currentEdit.subtitle;
 		var subtitleList = $scope.workingSubtitles.subtitleList;
 		if(subtitle) {
 		    if (evt.keyCode === 38)
@@ -617,8 +613,7 @@ var angular = angular || null;
 		    else
 			nextSubtitle = subtitleList.nextSubtitle(subtitle);
 		    if (nextSubtitle) {
-			if($scope.currentEdit.finish(true, subtitleList))
-			    $scope.$root.$emit('work-done');
+			$scope.currentEdit.finish();
 			$scope.currentEdit.start(nextSubtitle);
 			$scope.$root.$emit('scroll-to-subtitle', nextSubtitle);
 			evt.preventDefault();
