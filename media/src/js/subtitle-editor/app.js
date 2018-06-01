@@ -555,9 +555,6 @@ var angular = angular || null;
                 VideoPlayer.seek(VideoPlayer.currentTime() + 4000);
             } else if (evt.keyCode === 90 && ctrlOrCmd(evt)) {
                 // Ctrl-Z -- undo
-                if($scope.currentEdit.inProgress()) {
-                    $scope.currentEdit.finish($scope.workingSubtitles.subtitleList);
-                }
                 if($scope.workingSubtitles.subtitleList.canUndo()) {
                     $scope.workingSubtitles.subtitleList.undo();
                     $scope.$root.$emit('work-done');
