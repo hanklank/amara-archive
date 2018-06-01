@@ -7,6 +7,8 @@
   <div class="col-md-8 col-md-offset-2 text-justify">
     <div class="section content">
       <h1 class="content">{% trans 'Account Deactivation' %}</h1>
+
+      {% if form %}
       <p class="content"> {% trans 'When your account is deactivated, your username will be displayed as a "Retired user" and your profile page will become inaccessible.' %}</p>
 
       <p class="content">{% trans 'You can opt to delete your account data as well by checking the options below.' %}</p>
@@ -20,6 +22,14 @@
           <button type="submit" class="button cta">{% trans "Deactivate" %}</button>
         </div>
       </form>
+      {% else %}
+        <p class="content">
+          {% trans 'You must have a valid password before deactivating your account. In order to set a valid password, you can reset it using the' %}
+          <a href="{% url "password_reset" %}">
+            {% trans 'Password Reset page' %}
+          </a>
+        </p>
+      {% endif %}
     </div>
 </div>
 </div>
