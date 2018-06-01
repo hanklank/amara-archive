@@ -156,10 +156,6 @@ var USER_IDLE_MINUTES = 15;
                 scope.positionSyncHelpers();
                 scope.positionInfoTray();
             });
-
-            scope.$root.$on('timeline-subtitle-drag', function(evt, args) {
-                scope.updateSubtitleFromDraft(args.draftSubtitle);
-            });
         };
     }]);
 

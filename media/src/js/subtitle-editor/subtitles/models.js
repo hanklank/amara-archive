@@ -380,13 +380,72 @@ var angular = angular || null;
             });
         }
 
-        SubtitleList.prototype._changesDone = function(changeDescription) {
+        // Call this after you're done doing a group of changes.  It will:
+        //   - Take the current rollback stack and append it to the undo stack
+        //      - If changeGroup is the same as the changeGroup passed last
+        //        time, then we will combine the current rollbackStack instead
+        //        of creating a new entry.
+        //   - Invoke registered change callbacks
+        //
+        SubtitleList.prototype._changesDone = function(changeDescription, changeGroup) {
             this.rollbackStack.reverse();
-            this.undoStack.push([changeDescription, this.rollbackStack]);
-            this.undoStack = _.last(this.undoStack, MAX_UNDO_ITEMS);
+
+            if(this._shouldCombineUndoItem(changeGroup)) {
+                this.mergeRollbackStackIntoUndoStack();
+            } else {
+                this.undoStack.push([changeDescription, this.rollbackStack, changeGroup]);
+                this.undoStack = _.last(this.undoStack, MAX_UNDO_ITEMS);
+            }
+
             this.redoStack = [];
             this.rollbackStack = [];
             this._invokeChangeCallbacks();
+        }
+
+        SubtitleList.prototype._shouldCombineUndoItem = function(changeGroup) {
+            return (changeGroup !== undefined &&
+                    this.undoStack.length > 0 &&
+                    _.last(this.undoStack)[2] == changeGroup);
+        }
+
+        // Take the current changes in the rollback stack and merge them into the changes in the last undo stack entry.
+        //
+        // We do some basic optimizations to reduce the number of changes: If
+        // there is a segment of the combined list that's all _updateSubtitle
+        // calls, then combine the calls for the same subtitles.
+        SubtitleList.prototype.mergeRollbackStackIntoUndoStack = function() {
+            var mergedChanges = [];
+            var updateMap = {}; // For _updateSubtitle changes, map the subtitle position to the index in mergedChanges
+            var lastUndoStackEntry = _.last(this.undoStack);
+            var self = this;
+
+            function processChange(change) {
+                if(change[0] === self._updateSubtitle) {
+                    var pos = change[1];
+                    if(pos in updateMap) {
+                        // There was already an update for this subtitle, merge
+                        // it with the last change.  Use _.defaults, because we
+                        // want the values from the older change to take
+                        // precedence.
+                        _.defaults(mergedChanges[updateMap[pos]][2], change[2]);
+                    } else {
+                        // This is the first update for this subtitle, add it
+                        // to mergedChanges and remember the position
+                        mergedChanges.push(change)
+                        updateMap[pos] = mergedChanges.length - 1;
+                    }
+                } else {
+                    // Insert or removal, clear out updateMap since the values are no longer valid
+                    updateMap = {};
+                }
+            }
+
+            // Process existing changes
+            _.each(lastUndoStackEntry[1], processChange);
+            // Process new changes
+            _.each(this.rollbackStack, processChange);
+            // Replace the old changes with the merged changes
+            lastUndoStackEntry[1] = mergedChanges;
         }
 
         SubtitleList.prototype._reloadDone = function() {
@@ -554,7 +613,12 @@ var angular = angular || null;
 
         // Update multiple subtitle times at once
         // Pass a list of objects with the attributes: subtitle, startTime, and endtime
-        SubtitleList.prototype.updateSubtitleTimes = function(changes) {
+        //
+        // Pass changeGroup to group together multiple calls into a single undo
+        // entry.  For example when the user is dragging a subtitle in the
+        // timeline, this causes many timing changes, but they should all be
+        // groupd into a single unto entry.
+        SubtitleList.prototype.updateSubtitleTimes = function(changes, changeGroup) {
             var self = this;
             _.each(changes, function(change) {
                 self._updateSubtitle(self.getIndex(change.subtitle), {
@@ -562,7 +626,7 @@ var angular = angular || null;
                     endTime: change.endTime
                 });
             })
-            this._changesDone(gettext('Time change'));
+            this._changesDone(gettext('Time change'), changeGroup);
         }
 
         SubtitleList.prototype.clearAllTimings = function() {

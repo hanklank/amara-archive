@@ -202,6 +202,7 @@ var angular = angular || null;
             var timelineDivWidth = 0;
             var bufferTimespan = null;
             var visibleTimespan = null;
+            var dragCounter = 0; // increments 1 for each drag we do.  Used to create unique changeGroups for updateSubtitleTimes
             // Map XML subtitle nodes to the div we created to show them
             var timelineDivs = {}
             // Store the DIV for the unsynced subtitle
@@ -295,6 +296,8 @@ var angular = angular || null;
                     scope.currentEdit.commit(subtitleList());
                 }
 
+                var changeGroup = 'timeline-drag-' + dragCounter++;
+
                 var previousDiv = null, nextDiv = null; 
                 var nextSubtitle = subtitleList().nextSubtitle(storedSubtitle);
                 context.nextSubtitleStartTimeOr = context.nextSubtitleStartTimeNew = null;
@@ -325,31 +328,7 @@ var angular = angular || null;
 
                 var initialPageX = evt.pageX;
 
-                function placeSubtitlesAfterDrag() {
-                    placeSubtitleAfterDrag(storedSubtitle, context.startTime, context.endTime, div);
-
-                    if (previousDiv && context.previousSubtitleEndTimeNew) {
-                        placeSubtitleAfterDrag(prevSubtitle, prevSubtitle.startTime, context.previousSubtitleEndTimeNew, previousDiv);
-                    }
-
-                    if (nextDiv && context.nextSubtitleStartTimeNew) {
-                        placeSubtitleAfterDrag(nextSubtitle, context.nextSubtitleStartTimeNew, nextSubtitle.endTime, nextDiv);
-                    }
-                }
-
-                function placeSubtitleAfterDrag(subtitle, startTime, endTime, div) {
-                    var draftSubtitle = subtitle.draftSubtitle();
-                    draftSubtitle.startTime = startTime;
-                    draftSubtitle.endTime = endTime;
-                    placeSubtitle(startTime, endTime,  div);
-                    if(scope.currentEdit.isForSubtitle(subtitle)) {
-                        scope.currentEdit.draft.startTime = startTime;
-                        scope.currentEdit.draft.endTime = endTime;
-                    }
-                    scope.$root.$emit("timeline-subtitle-drag", { draftSubtitle: draftSubtitle });
-                }
-
-                function saveChangesAfterDrag() {
+                function updateSubtitleTimes() {
                     var changes = [];
                     changes.push({
                         subtitle: storedSubtitle,
@@ -372,8 +351,14 @@ var angular = angular || null;
                             endTime: nextSubtitle.endTime
                         });
                     }
+                    _.each(changes, function(change) {
+                        if(scope.currentEdit.isForSubtitle(change.subtitle)) {
+                            scope.currentEdit.draft.startTime = change.startTime;
+                            scope.currentEdit.draft.endTime = change.endTime;
+                        }
+                    });
 
-                    subtitleList().updateSubtitleTimes(changes);
+                    subtitleList().updateSubtitleTimes(changes, changeGroup);
                     scope.$root.$emit("work-done");
                     scope.$root.$digest();
                 }
@@ -382,13 +367,13 @@ var angular = angular || null;
                     var deltaX = evt.pageX - initialPageX;
                     var deltaMS = pixelsToDuration(deltaX, scope.scale);
                     dragHandler(context, deltaMS);
-                    placeSubtitlesAfterDrag();
+                    updateSubtitleTimes();
                 }).on('mouseup.timelinedrag', function(evt) {
                     $(document).off('.timelinedrag');
-                    saveChangesAfterDrag();
+                    updateSubtitleTimes();
                 }).on('mouseleave.timelinedrag', function(evt) {
                     $(document).off('.timelinedrag');
-                    saveChangesAfterDrag();
+                    updateSubtitleTimes();
                 });
                 // need to prevent the default event from happening so that the
                 // browser's DnD code doesn't mess with us.
