@@ -20,6 +20,11 @@ class PasswordStrengthValidator(object):
                 code='password-too-short',
                 params={'min_length': self.min_length},
             )
+        # enforce password isn't username or email
+        elif password in user_inputs:
+            raise ValidationError(
+                _("Password cannot be the same as username or email address."),
+                code='password-matches-username')
 
         results = zxcvbn(password, user_inputs=user_inputs)
         score = results['score']
