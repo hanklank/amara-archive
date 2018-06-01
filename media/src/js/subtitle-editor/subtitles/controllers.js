@@ -178,7 +178,7 @@ var angular = angular || null;
                 return;
             }
             var splitInfo = $scope.calcSubtitleSplit(currentSubtitle);
-            $scope.currentEdit.finish();
+            $scope.currentEdit.finish(subtitleList);
             subtitleList.splitSubtitle(currentSubtitle, splitInfo.first, splitInfo.second);
             $scope.$root.$emit('work-done');
         }
@@ -195,14 +195,14 @@ var angular = angular || null;
                     !clicked.hasClass('subtitle-overlay-text') &&
                     !clicked.hasClass('info-tray') &&
                     clicked.parents('.info-tray').length == 0) {
-                    $scope.currentEdit.finish();
+                    $scope.currentEdit.finish(subtitleList);
                 }
             });
         }
 
-        function insertAndStartEdit(before, region) {
+        function insertAndStartEdit(before, region, options) {
             var newSub = subtitleList.insertSubtitleBefore(before, region);
-            $scope.currentEdit.start(newSub);
+            $scope.currentEdit.start(newSub, options);
         }
 
 	$scope.showWarning = function(subtitle, type, data) {
@@ -254,7 +254,7 @@ var angular = angular || null;
                 case 'edit':
                     if(!$scope.currentEdit.isForSubtitle(subtitle)) {
                         var caret = DomWindow.caretPos();
-                        $scope.currentEdit.start(subtitle, caret);
+                        $scope.currentEdit.start(subtitle, {initialCaretPos: caret});
                         madeChange = true;
                     }
                     break;
@@ -285,10 +285,10 @@ var angular = angular || null;
             } else if (evt.keyCode === 13 && !evt.shiftKey) {
                 // Enter without shift finishes editing
                 var nextSubtitle = subtitleList.nextSubtitle(subtitle);
-                $scope.currentEdit.finish();
+                $scope.currentEdit.finish(subtitleList);
                 if(nextSubtitle === null) {
                     if(!$scope.timelineShown) {
-                        insertAndStartEdit(null, subtitle.region);
+                        insertAndStartEdit(null, subtitle.region, {removeEmptySubs: true});
                     }
                 } else {
                     $scope.currentEdit.start(nextSubtitle);

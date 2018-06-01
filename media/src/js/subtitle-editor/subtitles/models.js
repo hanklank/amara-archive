@@ -1046,12 +1046,17 @@ var angular = angular || null;
         }
 
         CurrentEditManager.prototype = {
-            start: function(subtitle, initialCaretPos) {
-                if(initialCaretPos === undefined) {
-                    initialCaretPos = subtitle.markdown.length;
+            start: function(subtitle, options) {
+                if(options === undefined) {
+                    options = {};
                 }
+                options = _.defaults(options, {
+                    initialCaretPos: subtitle.markdown.length,
+                    removeEmptySubs: false
+                });
                 this.subtitle = subtitle;
-                this.initialCaretPos = initialCaretPos;
+                this.initialCaretPos = options.initialCaretPos;
+                this.removeEmptySubs = options.removeEmptySubs;
                 this.initialContent = subtitle.markdown;
                 this.changeGroup = 'text-edit-' + this.counter++;
             },
@@ -1063,7 +1068,10 @@ var angular = angular || null;
             hasChanges: function(content) {
                 return this.subtitle.markdown != content;
             },
-            finish: function() {
+            finish: function(subtitleList) {
+                if(this.subtitle.isEmpty() && this.removeEmptySubs) {
+                    subtitleList.removeSubtitle(this.subtitle);
+                }
                 this.subtitle = null;
                 this.initialContent = '';
             },
@@ -1073,7 +1081,7 @@ var angular = angular || null;
                 // changes.  This way if the user hits undo afterwards, the
                 // content will be restored.
                 subtitleList.updateSubtitleContent(this.subtitle, this.initialContent);
-                this.finish();
+                this.finish(subtitleList);
             },
             isForSubtitle: function(subtitle) {
                 return this.subtitle === subtitle;
