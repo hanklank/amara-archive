@@ -161,8 +161,6 @@ def delete_user(request):
                     user.delete_account_data()
                  if form.cleaned_data['delete_videos_and_subtitles']:
                     user.delete_self_subtitled_videos()
-                 user.is_active = False
-                 user.save()
                  logout(request)
                  messages.success(request, _(u'Your account was deleted.'))
                  return HttpResponseRedirect('/')

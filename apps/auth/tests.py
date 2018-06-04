@@ -268,3 +268,27 @@ class ApiKeysTest(TestCase):
 
     def test_get_api_key(self):
         self.assertEqual(len(self.user.get_api_key()), 40)
+
+
+class UserDeactivateTest(TestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.youtube_account = YouTubeAccountFactory(user=self.user)
+        self.vimeo_account = VimeoSyncAccountFactory(user=self.user)
+
+    def test_deactivate_user(self):
+        user_id = self.user.id
+        old_username = self.user.username
+
+        self.user.deactivate_account()
+
+        self.assertFalse(self.user.team_members.all().exists())
+        self.assertNotEqual(self.user.username, old_username)
+        self.assertFalse(self.user.is_active)
+        self.assertFalse(self.user.external_sync_accounts)
+
+    def test_delete_account_data(self):
+        pass
+
+    def test_delete_videos(self):
+        pass
