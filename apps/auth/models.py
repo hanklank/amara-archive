@@ -289,8 +289,8 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
 
         self.username = CustomUser.generate_random_username()
         self.username_old = None
-        self.first_name = None
-        self.last_name = None
+        self.first_name = ""
+        self.last_name = ""
         self.picture = None
         self.email= ""
         self.homepage = ""
