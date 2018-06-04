@@ -229,22 +229,26 @@ def search(request):
 
 @login_required
 def create(request):
-    video_form = VideoForm(request.user, request.POST or None)
-    context = {
-        'video_form': video_form,
-        'initial_url': request.GET.get('initial_url'),
+    initial = {
+        'video_url': request.GET.get('initial_url'),
     }
-    if video_form.is_valid():
-        video = video_form.video
-        messages.info(request, message=_(u'''Here is the subtitle workspace for your video.
-        You can share the video with friends, or get an embed code for your site. To start
-        new subtitles, click \"Add a new language!\" in the sidebar.'''))
+    if request.method == 'POST':
+        create_form = VideoForm(request.user, data=request.POST,
+                               initial=initial)
+        if create_form.is_valid():
+            video = create_form.video
+            messages.info(request, message=_(u'''Here is the subtitle workspace for your video.
+            You can share the video with friends, or get an embed code for your site. To start
+            new subtitles, click \"Add a new language!\" in the sidebar.'''))
 
-        if video_form.created:
-            messages.info(request, message=_(u'''Existing subtitles will be imported in a few minutes.'''))
-        return redirect(video.get_absolute_url())
-    return render_to_response('videos/create.html', context,
-                              context_instance=RequestContext(request))
+            if create_form.created:
+                messages.info(request, message=_(u'''Existing subtitles will be imported in a few minutes.'''))
+            return redirect(video.get_absolute_url())
+    else:
+        create_form = VideoForm(request.user, initial=initial)
+    return render(request, 'videos/create.html', {
+        'create_form': create_form,
+    })
 
 create.csrf_exempt = True
 
