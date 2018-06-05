@@ -591,6 +591,9 @@ class Video(models.Model):
 
         return "%simages/video-no-thumbnail-medium.png" % settings.STATIC_URL
 
+    def is_team_video(self):
+        return bool(self.get_team_video())
+
     def get_team_video(self):
         """Return the TeamVideo object for this video, or None if there isn't one."""
         from teams.models import TeamVideo

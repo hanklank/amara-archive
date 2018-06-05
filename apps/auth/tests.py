@@ -305,8 +305,11 @@ class UserDeactivateTest(TestCase):
 
     def test_delete_videos(self):
         self.user2 = UserFactory()
+        self.team = TeamFactory()
         self.video = VideoFactory(user=self.user)
         self.video2 = VideoFactory(user=self.user)
+        self.video3 = VideoFactory(user=self.user)
+        self.team.add_existing_video(self.video3, self.user)
         self.sl = make_sl(self.video, 'en')
         self.sl2 = make_sl(self.video2, 'en')
 
@@ -321,9 +324,11 @@ class UserDeactivateTest(TestCase):
 
         video_pk = self.video.pk
         video2_pk = self.video2.pk
+        video3_pk = self.video3.pk
 
         self.user.delete_self_subtitled_videos()
 
         self.assertFalse(Video.objects.filter(pk=video_pk).exists())
         self.assertTrue(Video.objects.filter(pk=video2_pk).exists())
+        self.assertTrue(Video.objects.filter(pk=video3_pk).exists())
 
