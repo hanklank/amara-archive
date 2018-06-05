@@ -478,6 +478,11 @@ class VideoWorkflow(object):
     def editor_video_urls(self, language_code):
         return self.get_language_workflow(language_code).editor_video_urls()
 
+    def action_requires_subtitle_language_tip(self, action):
+        if action == 'send-back':
+            return False
+        return True
+
 class LanguageWorkflow(object):
     def __init__(self, video, language_code):
         self.video = video
