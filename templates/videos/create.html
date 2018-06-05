@@ -15,7 +15,13 @@
         <li>{% trans "Open, so everyone can help with subtitles" %}</li>
       </ul>
       <div class="videosCreateSwitcher-spacer"></div>
-      <div class="videosCreateSwitcher-button"><a href="#create-form" data-toggle="tab" class="button plum persistentTab">{% trans "Begin" %}</a></div>
+      <div class="videosCreateSwitcher-button">
+        {% if request.user.is_authenticated %}
+        <a href="#create-form" data-toggle="tab" class="button plum persistentTab">{% trans "Begin" %}</a>
+        {% else  %}
+        <a href="{% url "auth:login" %}?next={% url "videos:create" %}" data-persistent-tab-value="#create-form" class="button plum persistentTab">{% trans "Begin" %}</a>
+        {% endif %}
+      </div>
     </div>
 
     <div class="videosCreateSwitcher-box bg-plum">
@@ -36,14 +42,18 @@
   <div class="tab-content videosCreateTabs">
     <div id="create-form" class="tab-pane">
       <div class="videosCreateTab">
-        <div class="videosCreateForm bg-sea-green">
+        <div class="videosCreateForm bg-sea-green{% if not request.user.is_authenticated %} text-center{% endif %}">
           <h1>{% trans "Subtitle a Video" %}</h1>
+          {% if request.user.is_authenticated %}
           <p>{% trans "Enter a video URL to use the Amara Editor. It will appear and remain on your public profile." %}</p>
           <form method="POST">
             {% csrf_token %}
             {% trans "Begin" as label %}
             {% button_field create_form.video_url label "plum" %}
           </form>
+          {% else %}
+          <a href="{% url "auth:login" %}?next={% url "videos:create" %}" data-persistent-tab-value="#create-form" class="button plum persistentTab">{% trans "Login to get started" %}</a>
+          {% endif %}
         </div>
       </div>
     </div>
@@ -64,7 +74,13 @@
             <li><span class="icon icon-x-circle"></span> {% trans "Advanced Workflows" %}</li>
             <li><span class="icon icon-x-circle"></span> {% trans "Enterprise add-ons" %}</li>
           </ul>
-          <div class="pricingTable-cta"><a href="#create-form" data-toggle="tab" class="button cta block persistentTab">{% trans "CREATE" %}</a></div>
+          <div class="pricingTable-cta">
+            {% if request.user.is_authenticated %}
+            <a href="#create-form" data-toggle="tab" class="button plum persistentTab">{% trans "CREATE" %}</a>
+            {% else  %}
+            <a href="{% url "auth:login" %}?next={% url "videos:create" %}" data-persistent-tab-value="#create-form" class="button plum persistentTab">{% trans "CREATE" %}</a>
+            {% endif %}
+          </div>
           <div class="pricingTable-footer">{% trans "<strong>Public</strong> is FREE and includes our award winning editor." %}</div>
 
           <div class="pricingTable-header"> {% trans "Plus" %}</div>
