@@ -9,7 +9,7 @@
       <h1 class="hidden-sm hidden-xs">{% trans "Subtitle in a Public Space" %}</h1>
       <h1 class="visible-sm visible-xs">{% trans "Public" %}</h1>
       <p>{% trans "Add videos publicly and allow Amara users to contribute subtitles in any language." %}</p>
-      <ul class="hidden-xs bullets">
+      <ul class="videosCreateSwitcher-features bullets">
         <li>{% trans "Award-winning onAmara Editor" %}</li>
         <li>{% trans "Videos publicly visible"  %}</li>
         <li>{% trans "Open, so everyone can help with subtitles" %}</li>
@@ -17,9 +17,9 @@
       <div class="videosCreateSwitcher-spacer"></div>
       <div class="videosCreateSwitcher-button">
         {% if request.user.is_authenticated %}
-        <a href="#create-form" data-toggle="tab" data-event-action="Show create form" class="button plum persistentTab trackClicks-item">{% trans "Begin" %}</a>
+        <a href="#create-form" data-toggle="tab" data-event-action="Show create form" class="button plum tall block persistentTab trackClicks-item">{% trans "Begin" %}</a>
         {% else  %}
-        <a href="{% url "auth:login" %}?next={% url "videos:create" %}" data-event-action="Show create form" data-persistent-tab-value="#create-form" class="button plum persistentTab trackClicks-item">{% trans "Begin" %}</a>
+        <a href="{% url "auth:login" %}?next={% url "videos:create" %}" data-event-action="Show create form" data-persistent-tab-value="#create-form" class="button tall block plum persistentTab trackClicks-item">{% trans "Begin" %}</a>
         {% endif %}
       </div>
     </div>
@@ -28,14 +28,14 @@
       <h1 class="hidden-xs hidden-sm">{% trans "Subtitle in a Private Space" %}</h1>
       <h1 class="visible-xs visible-sm">{% trans "Private" %}</h1>
       <p>{% trans "Add videos to your own private space and select who has access to create subtitles." %}</p>
-      <ul class="hidden-xs bullets">
+      <ul class="videosCreateSwitcher-features bullets">
         <li>{% trans "Award-winning Amara Editor" %}</li>
         <li>{% trans "Add videos to your own private space" %}</li>
         <li>{% trans "Full control over who can view and subtitle videos" %}</li>
         <li>{% trans "Management and workflow options" %}</li>
       </ul>
       <div class="videosCreateSwitcher-spacer"></div>
-      <div class="videosCreateSwitcher-button"><a href="#pricing-table" data-event-action="Show pricing table" data-toggle="tab" class="button sea-green persistentTab trackClicks-item">{% trans "Learn More" %}</a></div>
+      <div class="videosCreateSwitcher-button"><a href="#pricing-table" data-event-action="Show pricing table" data-toggle="tab" class="button tall block sea-green persistentTab trackClicks-item">{% trans "Learn More" %}</a></div>
     </div>
   </div>
 
@@ -67,12 +67,12 @@
           <div class="pricingTable-users">{% trans "Single User" %}</div>
           <ul class="pricingTable-features">
             <li><span class="icon icon-check-circle text-sea-green"></span> {% trans "Award-winning editor" %}</li>
-            <li><span class="icon icon-x-circle"></span> {% trans "Privacy" %}</li>
-            <li><span class="icon icon-x-circle"></span> {% trans "Standard Support" %}</li>
-            <li><span class="icon icon-x-circle"></span> {% trans "Customisable Roles" %}</li>
-            <li><span class="icon icon-x-circle"></span> {% trans "Team Workflows" %}</li>
-            <li><span class="icon icon-x-circle"></span> {% trans "Advanced Workflows" %}</li>
-            <li><span class="icon icon-x-circle"></span> {% trans "Enterprise add-ons" %}</li>
+            <li class="text-gray"><span class="icon icon-x-circle"></span> {% trans "Privacy" %}</li>
+            <li class="text-gray"><span class="icon icon-x-circle"></span> {% trans "Standard Support" %}</li>
+            <li class="text-gray"><span class="icon icon-x-circle"></span> {% trans "Customisable Roles" %}</li>
+            <li class="text-gray"><span class="icon icon-x-circle"></span> {% trans "Team Workflows" %}</li>
+            <li class="text-gray"><span class="icon icon-x-circle"></span> {% trans "Advanced Workflows" %}</li>
+            <li class="text-gray"><span class="icon icon-x-circle"></span> {% trans "Enterprise add-ons" %}</li>
           </ul>
           <div class="pricingTable-cta">
             {% if request.user.is_authenticated %}
@@ -90,10 +90,10 @@
             <li><span class="icon icon-check-circle text-sea-green"></span> {% trans "Award-winning editor" %}</li>
             <li><span class="icon icon-check-circle text-sea-green"></span> {% trans "Privacy" %}</li>
             <li><span class="icon icon-check-circle text-sea-green"></span> {% trans "Standard Support" %}</li>
-            <li><span class="icon icon-x-circle"></span> {% trans "Customisable Roles" %}</li>
-            <li><span class="icon icon-x-circle"></span> {% trans "Team Workflows" %}</li>
-            <li><span class="icon icon-x-circle"></span> {% trans "Advanced Workflows" %}</li>
-            <li><span class="icon icon-x-circle"></span> {% trans "Enterprise add-ons" %}</li>
+            <li class="text-gray"><span class="icon icon-x-circle"></span> {% trans "Customisable Roles" %}</li>
+            <li class="text-gray"><span class="icon icon-x-circle"></span> {% trans "Team Workflows" %}</li>
+            <li class="text-gray"><span class="icon icon-x-circle"></span> {% trans "Advanced Workflows" %}</li>
+            <li class="text-gray"><span class="icon icon-x-circle"></span> {% trans "Enterprise add-ons" %}</li>
           </ul>
           <div class="pricingTable-cta"><a href="{% url "marketing:subtitling-platform" %}#get-started" data-event-action="Plus signup" class="button plum block trackClicks-item">{% trans "SIGNUP" %}</a></div>
           <div class="pricingTable-footer">{% trans "<strong>Plus</strong> is ideal for those who want a private space to create subtitles." %}</div>
@@ -107,8 +107,8 @@
             <li><span class="icon icon-check-circle text-sea-green"></span> {% trans "Standard Support" %}</li>
             <li><span class="icon icon-check-circle text-sea-green"></span> {% trans "Customisable Roles" %}</li>
             <li><span class="icon icon-check-circle text-sea-green"></span> {% trans "Team Workflows" %}</li>
-            <li><span class="icon icon-x-circle"></span> {% trans "Advanced Workflows" %}</li>
-            <li><span class="icon icon-x-circle"></span> {% trans "Enterprise add-ons" %}</li>
+            <li class="text-gray"><span class="icon icon-x-circle"></span> {% trans "Advanced Workflows" %}</li>
+            <li class="text-gray"><span class="icon icon-x-circle"></span> {% trans "Enterprise add-ons" %}</li>
           </ul>
           <div class="pricingTable-cta"><a href="{% url "marketing:subtitling-platform" %}#get-started" data-event-action="Pro signup" class="button plum block trackClicks-item">{% trans "SIGNUP" %}</a></div>
           <div class="pricingTable-footer">{% trans "<strong>Pro</strong> is ideal for groups and organizations that desire greater control over workflow." %}</div>
