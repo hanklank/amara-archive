@@ -282,8 +282,13 @@ var angular = angular || null;
                     initialStartTime: subtitle.startTime,
                     initialEndTime: subtitle.endTime
                 }
-                var storedSubtitle = subtitle;
-                var div = timelineDivs[storedSubtitle.id];
+                if(!subtitle.isDraft) {
+                    var storedSubtitle = subtitle;
+                    var div = timelineDivs[storedSubtitle.id];
+                } else {
+                    var storedSubtitle = subtitle.storedSubtitle;
+                    var div = unsyncedDiv;
+                }
 
                 if(!div) {
                     return false;
