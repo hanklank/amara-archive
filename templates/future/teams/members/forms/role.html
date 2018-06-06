@@ -17,6 +17,10 @@
         {{ form.include_all|render_field }}
         {% endif %}
         {{ form.role|render_field }}
+        <div class="projectsAndLanguagesSelectors" {% if not show_proj_lang_selectors %}hidden{% endif %}>
+          {{ form.projects|render_field_reverse_required }}
+          {{ form.languages|render_field_reverse_required }}
+        </div>
       </div>
       <div class="modal-footer">
         <button class="button cta-reverse" data-dismiss="modal">Cancel</button>
