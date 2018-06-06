@@ -71,4 +71,4 @@ amqp==1.0.13
 billiard==2.7.3.34
 celery==3.0.25
 django-celery==3.0.23
-
+zxcvbn==4.4.26
