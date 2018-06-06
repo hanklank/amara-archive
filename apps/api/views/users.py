@@ -89,7 +89,7 @@ Updating user accounts
 
     :param username username: must match the username of the auth credentials sent
 
-    Inputs the same fields as POST, except `username` and
+    Inputs the same fields as POST, except `username`, `password`, and
     `find_unique_username`.
 
 .. _user_ids:
@@ -283,7 +283,6 @@ class UserCreateSerializer(UserSerializer):
 
 class UserUpdateSerializer(UserSerializer):
     username = serializers.CharField(read_only=True)
-    password = PasswordField(required=False, write_only=True)
     create_login_token = serializers.BooleanField(write_only=True,
                                                   required=False)
 
@@ -303,7 +302,7 @@ class UserUpdateSerializer(UserSerializer):
     class Meta:
         model = User
         fields = UserSerializer.Meta.fields + (
-            'email', 'password', 'create_login_token',
+            'email', 'create_login_token',
         )
 
 class UserViewSet(mixins.RetrieveModelMixin,
