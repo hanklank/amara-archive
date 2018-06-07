@@ -300,9 +300,6 @@ var angular = angular || null;
                 // Escape cancels editing
                 $scope.currentEdit.cancel(subtitleList);
                 $scope.$root.$emit('work-done');
-                if ((subtitle.markdown == '') && (!subtitle.isSynced())) {
-                    subtitleList.removeSubtitle(subtitle);
-                }
                 evt.preventDefault();
                 evt.stopPropagation();
             }
