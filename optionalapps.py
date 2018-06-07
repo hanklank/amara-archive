@@ -83,7 +83,8 @@ def get_apps():
     for directory in get_repository_paths():
         for potential_app in os.listdir(directory):
             appdir = os.path.join(directory, potential_app)
-            if os.path.exists(os.path.join(appdir, 'models.py')):
+            if (os.path.exists(os.path.join(appdir, 'apps.py')) or
+                    os.path.exists(os.path.join(appdir, 'models.py'))):
                 apps.append(potential_app)
     return tuple(apps)
 

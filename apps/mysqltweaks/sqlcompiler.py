@@ -7,5 +7,3 @@ class PatchedSQLCompiler(compiler.SQLCompiler):
             result[0] += ' FORCE INDEX({})'.format(
                 self.connection.ops.quote_name(self.query.force_index))
         return result, params
-
-compiler.SQLCompiler = PatchedSQLCompiler

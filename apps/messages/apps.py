@@ -1,6 +1,6 @@
 # Amara, universalsubtitles.org
 #
-# Copyright (C) 2016 Participatory Culture Foundation
+# Copyright (C) 2018 Participatory Culture Foundation
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -16,5 +16,11 @@
 # along with this program.  If not, see
 # http://www.gnu.org/licenses/agpl-3.0.html.
 
-# import some modules to make sure their code runs
-import activity.signalhandlers
+from django.apps import AppConfig
+
+class MessagesConfig(AppConfig):
+    name = 'messages'
+
+    def ready(self):
+        # import signalhandlers to register the receiver functions
+        import messages.signalhandlers

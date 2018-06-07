@@ -1,6 +1,6 @@
 # Amara, universalsubtitles.org
 #
-# Copyright (C) 2014 Participatory Culture Foundation
+# Copyright (C) 2018 Participatory Culture Foundation
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -16,6 +16,16 @@
 # along with this program.  If not, see
 # http://www.gnu.org/licenses/agpl-3.0.html.
 
-# make sure we load our modules
-import teams.signalhandlers
-import teams.workflows.startup
+from django.apps import AppConfig
+from django.utils.translation import ugettext_lazy as _
+
+import staff
+
+class VideosConfig(AppConfig):
+    name = 'videos'
+
+    def ready(self):
+        import videos.signalhandlers
+
+        staff.register(_('Amara On-Demand'), _('Video URL Search'),
+                       'videos:url-search')
