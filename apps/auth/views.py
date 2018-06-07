@@ -161,10 +161,11 @@ def delete_user(request):
              password = form.cleaned_data['password']
              user = authenticate(username=username, password=password)
              if user:
-                 user.unlink_external()
-                 user.team_members.all().delete()
-                 user.is_active = False
-                 user.save()
+                 user.deactivate_account()
+                 if form.cleaned_data['delete_account_data']:
+                    user.delete_account_data()
+                 if form.cleaned_data['delete_videos_and_subtitles']:
+                    user.delete_self_subtitled_videos()
                  logout(request)
                  messages.success(request, _(u'Your account was deleted.'))
                  return HttpResponseRedirect('/')

@@ -44,7 +44,7 @@
         <a href="{% url 'teams:member-profile' slug=team.slug username=member.user.username %}">
             {{member.user}}</a>
       </h3>
-      <h3>({{member.user.username}})</h3>
+      <h3>({{member.user.display_username}})</h3>
       <span class="small member-role">
         {% if member.is_a_project_or_language_manager %}
           {% with languages=member.languages_managed.all %}

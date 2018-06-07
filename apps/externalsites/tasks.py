@@ -25,7 +25,7 @@ from externalsites import credit
 from externalsites import google
 from externalsites import subfetch
 from externalsites.models import (get_account, get_sync_account, SyncHistory,
-                                  YouTubeAccount)
+                                  YouTubeAccount, VimeoSyncAccount)
 from subtitles.models import SubtitleLanguage, SubtitleVersion
 from videos.models import VideoUrl
 from auth.models import CustomUser as User
@@ -158,3 +158,8 @@ def import_video_from_youtube_account(account_id):
     except YouTubeAccount.DoesNotExist:
         logging.warn("import_video_from_youtube_account: "
                      "YouTubeAccount.DoesNotExist ({})".format(account_id))
+
+@task
+def unlink_external_sync_accounts(owner):
+    YouTubeAccount.objects.for_owner(owner).delete()
+    VimeoSyncAccount.objects.for_owner(owner).delete()
