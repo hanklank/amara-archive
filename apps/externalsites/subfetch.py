@@ -61,9 +61,11 @@ def lookup_youtube_accounts(video_url, user, team):
     fetch_subs_youtube()
     """
     if team:
-        return YouTubeAccount.objects.for_team_or_synced_with_team(team).filter(fetch_initial_subtitles=True)
+        return YouTubeAccount.objects.for_team_or_synced_with_team(team).filter(channel_id=video_url.owner_username,
+                                                                                fetch_initial_subtitles=True)
     elif user:
-        return YouTubeAccount.objects.for_owner(user).filter(fetch_initial_subtitles=True)
+        return YouTubeAccount.objects.filter(channel_id=video_url.owner_username,
+                                             fetch_initial_subtitles=True)
     else:
         return YouTubeAccount.objects.none()
 
@@ -74,10 +76,10 @@ def lookup_vimeo_accounts(video_url, user, team):
     """
     if team:
         return VimeoSyncAccount.objects.for_team_or_synced_with_team(team).filter(username=video_url.owner_username,
-                                                                                fetch_initial_subtitles=True)
+                                                                                  fetch_initial_subtitles=True)
     elif user:
-        return VimeoSyncAccount.objects.for_owner(user).filter(username=video_url.owner_username,
-                                                             fetch_initial_subtitles=True)
+        return VimeoSyncAccount.objects.filter(username=video_url.owner_username,
+                                               fetch_initial_subtitles=True)
     else:
         return VimeoSyncAccount.objects.none()
 
