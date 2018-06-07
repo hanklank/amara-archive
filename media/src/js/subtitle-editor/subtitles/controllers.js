@@ -298,7 +298,7 @@ var angular = angular || null;
                 evt.stopPropagation();
             } else if (evt.keyCode === 27) {
                 // Escape cancels editing
-                $scope.currentEdit.cancel(subtitleList);
+                $scope.currentEdit.finish(subtitleList);
                 $scope.$root.$emit('work-done');
                 evt.preventDefault();
                 evt.stopPropagation();
