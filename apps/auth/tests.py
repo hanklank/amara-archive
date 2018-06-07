@@ -33,6 +33,7 @@ from auth import signals
 from auth.models import CustomUser as User, UserLanguage
 from auth.models import LoginToken, AmaraApiKey
 from caching.tests.utils import assert_invalidates_model_cache
+from externalsites.models import YouTubeAccount, VimeoSyncAccount
 from subtitles.tests.utils import make_sl
 from utils.factories import *
 from utils import test_utils
@@ -286,7 +287,8 @@ class UserDeactivateTest(TestCase):
         self.assertFalse(self.user.team_members.all().exists())
         self.assertNotEqual(self.user.username, old_username)
         self.assertFalse(self.user.is_active)
-        self.assertFalse(self.user.external_sync_accounts)
+        self.assertFalse(YouTubeAccount.objects.for_owner(self.user).exists())
+        self.assertFalse(VimeoSyncAccount.objects.for_owner(self.user).exists())
 
     def test_delete_account_data(self):
         old_username = self.user.username

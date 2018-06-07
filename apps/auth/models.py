@@ -268,13 +268,14 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
             tasks.notify_blocked_user.delay(self)
 
     def deactivate_account(self):
-        self.unlink_external()
-        self.unlink_external_sync_accounts()
-        self.team_members.all().delete()
-        self.username_old = self.username
-        self.username = CustomUser.generate_random_username()
-        self.is_active = False
-        self.save()
+        with transaction.atomic():
+            self.unlink_external()
+            self.team_members.all().delete()
+            self.username_old = self.username
+            self.username = CustomUser.generate_random_username()
+            self.is_active = False
+            self.save()
+            signals.user_account_deactivated.send(sender=self)
 
     def delete_account_data(self):
         # Alternate implementation is to blank all the fields except for some fields
@@ -669,20 +670,6 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
             self.openid_connect_link.delete()
         except:
             pass
-
-    @property
-    def external_sync_accounts(self):
-        from externalsites.models import YouTubeAccount, VimeoSyncAccount
-        accounts = []
-        for account in YouTubeAccount.objects.for_owner(self):
-            accounts.append(account)
-        for account in VimeoSyncAccount.objects.for_owner(self):
-            accounts.append(account)
-        return accounts
-
-    def unlink_external_sync_accounts(self):
-        for account in self.external_sync_accounts:
-            account.delete()
 
     def check_api_key(self, key):
         try:
