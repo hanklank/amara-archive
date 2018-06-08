@@ -1140,21 +1140,18 @@ class ActivityRecord(models.Model):
 
     class Meta:
         ordering = ['-created', '-id']
-        # If we were using a newer version of django we would have this:
-        #index_together = [
-            ## Team activity stream.  There's often lots of activity per-team,
-            ## so we add some extra indexes here
-            #('team', 'created'),
-            #('team', 'type', 'created'),
-            #('team', 'language_code', 'created'),
-            #('team', 'video_language_code', 'created'),
-            ## Video activity stream
-            #('video', 'copied_from', 'created')
-            ## User activity stream
-            #('user', 'copied_from', 'created')
-        #]
-        # Instead, these are handled by the setup_indexes code and a south
-        # migration
+        index_together = [
+            # Team activity stream.  There's often lots of activity per-team,
+            # so we add some extra indexes here
+            ('team', 'created'),
+            ('team', 'type', 'created'),
+            ('team', 'language_code', 'created'),
+            ('team', 'type', 'video_language_code', 'created'),
+            # Video activity stream
+            ('video', 'copied_from', 'created'),
+            # User activity stream
+            ('user', 'copied_from', 'created'),
+        ]
 
     def __unicode__(self):
         return u'ActivityRecord: {}'.format(self.type)
