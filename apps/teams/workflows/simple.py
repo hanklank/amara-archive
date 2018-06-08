@@ -27,6 +27,28 @@ from teams import forms
 from teams.workflows import TeamWorkflow
 from utils.breadcrumbs import BreadCrumb
 from .subtitleworkflows import TeamVideoWorkflow
+from videos.behaviors import VideoPageCustomization
+
+def render_team_header(request, team):
+    return render_to_string('future/header.html', {
+        'team': team,
+        'brand': 'future/teams/brand.html',
+        'brand_url': team.get_absolute_url(),
+        'primarynav': 'future/teams/primarynav.html',
+    }, RequestContext(request))
+
+class SimpleVideoPageCustomization(VideoPageCustomization):
+    def __init__(self, team, request):
+        self.team = team
+        self.request = request
+        self.header = self.setup_header()
+
+    def setup_header():
+        self.header = None
+        if self.team:
+            self.header = render_team_header(self.request, self.team)
+        else:
+            self.header = None
 
 class SimpleTeamWorkflow(TeamWorkflow):
     """Workflow for basic public/private teams
@@ -68,3 +90,20 @@ class SimpleTeamWorkflow(TeamWorkflow):
             ],
         })
 
+    def video_page_customize(self, request, video):
+        team = self.find_team_for_page(request)
+        return SimpleVideoPageCustomization(team, request, video)
+
+    def find_team_for_page(self, request):
+        slug = request.GET.get('team')
+        if slug == self.team.slug:
+            team = self.team
+        else:
+            try:
+                team = Team.objects.get(slug=slug)
+            except Team.DoesNotExist:
+                return None
+        if team.user_is_member(request.user):
+            return team
+        else:
+            return None
