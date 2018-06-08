@@ -416,8 +416,6 @@ ROSETTA_EXCLUDED_APPLICATIONS = (
     'rosetta'
 )
 
-INSTALLED_APPS += optionalapps.get_apps()
-
 # List of modules to extract docstrings from for the update_docs management
 # command.
 API_DOCS_MODULES = [
