@@ -302,6 +302,7 @@ LOCALE_INDEPENDENT_PATHS = [
     re.compile('^/auth/set-hidden-message-id/'),
     re.compile('^/crossdomain.xml'),
     re.compile('^/embedder-widget-iframe/'),
+    re.compile('^/__debug__/'),
 ]
 
 OPENID_SREG = {"required": "nickname, email", "optional":"postcode, country", "policy_url": ""}
