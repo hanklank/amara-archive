@@ -282,12 +282,8 @@ def manage_members_form(request, team, form_name, members, page):
 
     else:
         try:
-<<<<<<< HEAD
             form = FormClass(request.user, members, selection, all_selected,
-                             is_owner=is_owner)
-=======
-            form = FormClass(request.user, members, selection, all_selected, team=team)
->>>>>>> add16216c33fcc4b7d1b5f686f4f64720bc261a8
+                             is_owner=is_owner, team=team)
         except Exception as e:
             logger.error(e, exc_info=True)
 
