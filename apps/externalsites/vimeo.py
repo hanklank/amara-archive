@@ -20,6 +20,7 @@ import babelsubs, unilangs
 from google import APIError
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from requests.auth import HTTPBasicAuth
 import base64, requests, logging
 
 logger = logging.getLogger(__name__)
@@ -159,32 +160,26 @@ def get_values(video_id, user=None, team=None):
         accounts = VimeoSyncAccount.objects.none()
     video_url = "/videos/" + video_id
     video_data = None
+
+    # This specifies the Vimeo API version to be used in this request
+    accept_header = "application/vnd.vimeo.*+json;version=3.4"
+
     for account in accounts:
-        headers = {"Authorization":
-                   ("Bearer " + account.access_token)}
+        headers = { "Accept": accept_header,
+                    "Authorization": ("Bearer " + account.access_token)}
         response = requests.get(VIMEO_API_BASE_URL + video_url,
                                 headers=headers)
         if response.ok:
             video_data = response.json()
             break
     if video_data is None:
-        headers = {"Authorization":
-                   ("basic " + \
-                    base64.b64encode(VIMEO_API_KEY + ":" + VIMEO_API_SECRET))}
-        data = {"grant_type": "client_credentials"}
-        url = "/oauth/authorize/client"
-        response = requests.post(VIMEO_API_BASE_URL + url,
-                                 data=data,
-                                 headers=headers)
+        response = requests.get(VIMEO_API_BASE_URL + video_url, 
+                                auth=HTTPBasicAuth(VIMEO_API_KEY, VIMEO_API_SECRET),
+                                headers={ "Accept": accept_header })
         if response.ok:
-            access_token = response.json()['access_token']
-            headers = {"Authorization": "Bearer " + access_token}
-            response = requests.get(VIMEO_API_BASE_URL + url,
-                                    headers=headers)
-            if response.ok:
-                video_data = response.json()
+            video_data = response.json()
     if video_data is not None:
-        thumbnail = sorted(video_data['pictures'], key=lambda x: -x["width"])[0]['link']
+        thumbnail = sorted(video_data['pictures']['sizes'], key=lambda x: -x["width"])[0]['link']
         return (video_data["name"],
                 video_data["description"],
                 video_data['duration'],

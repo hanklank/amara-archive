@@ -139,7 +139,7 @@ var angular = angular || null;
         $scope.$watch('versionNumber', $scope.versionNumberChanged);
     }]);
 
-    module.controller('WorkingSubtitlesController', ["$scope", "DomWindow", "$filter", function($scope, DomWindow, $filter) {
+    module.controller('WorkingSubtitlesController', ["$scope", "DomWindow", "$filter", "VideoPlayer", function($scope, DomWindow, $filter, VideoPlayer) {
         /**
          * Handles the subtitles the user is working on.
          */
@@ -162,11 +162,7 @@ var angular = angular || null;
             updateSyncHelpers();
         });
 
-        subtitleList.addChangeCallback(function(change) {
-            if(change == 'insert' || change == 'remove') {
-                updateSyncHelpers();
-            }
-        });
+        $scope.$on('subtitle-list-changed', updateSyncHelpers);
 
         $scope.$watch('currentEdit.inProgress()', function(value) {
             if(value) {
@@ -177,6 +173,17 @@ var angular = angular || null;
 
         });
 
+        $scope.splitCurrentSubtitle = function() {
+            var currentSubtitle = $scope.currentEdit.storedSubtitle();
+            if(!$scope.canSplitSubtitle(currentSubtitle)) {
+                return;
+            }
+            var splitInfo = $scope.calcSubtitleSplit(currentSubtitle);
+            $scope.currentEdit.finish(true, subtitleList);
+            subtitleList.splitSubtitle(currentSubtitle, splitInfo.first, splitInfo.second);
+            $scope.$root.$emit('work-done');
+        }
+
         function trackMouseDown() {
             // Disconnect any previous handlers to keep sanity
             DomWindow.offDocumentEvent('mousedown.subtitle-edit');
@@ -186,6 +193,7 @@ var angular = angular || null;
                 var clicked = $(evt.target);
                 var textarea = $('textarea.subtitle-edit', li);
                 if(clicked[0] != textarea[0] &&
+                    !clicked.hasClass('subtitle-overlay-text') &&
                     !clicked.hasClass('info-tray') &&
                     clicked.parents('.info-tray').length == 0) {
                     $scope.$apply(function() {
@@ -202,8 +210,8 @@ var angular = angular || null;
             }
         };
 
-        function insertAndStartEdit(before) {
-            var newSub = subtitleList.insertSubtitleBefore(before);
+        function insertAndStartEdit(before, region) {
+            var newSub = subtitleList.insertSubtitleBefore(before, region);
             $scope.currentEdit.start(newSub);
         }
 
@@ -231,12 +239,12 @@ var angular = angular || null;
                     break;
 
                 case 'insert-top':
-                    insertAndStartEdit(subtitle);
+                    insertAndStartEdit(subtitle, subtitle.region);
                     madeChange = true;
                     break;
 
                 case 'insert-down':
-                    insertAndStartEdit(subtitleList.nextSubtitle(subtitle));
+                    insertAndStartEdit(subtitleList.nextSubtitle(subtitle), subtitle.region);
                     madeChange = true;
                     break;
 
@@ -269,7 +277,8 @@ var angular = angular || null;
         }
 
         $scope.newSubtitleClicked = function(evt) {
-            insertAndStartEdit(null);
+            var lastSubtitle = subtitleList.lastSubtitle();
+            insertAndStartEdit(null, lastSubtitle.region);
             evt.preventDefault();
             $scope.$root.$emit('work-done');
         }
@@ -277,17 +286,20 @@ var angular = angular || null;
         $scope.onEditKeydown = function(evt) {
             var subtitle = $scope.currentEdit.draft.storedSubtitle;
 
-	    var isAltPressed = function(evt) {
-		return (evt.altKey || evt.metaKey);
-	    };
+            var isAltPressed = function(evt) {
+                return (evt.altKey || evt.metaKey);
+            };
 
-            if (evt.keyCode === 13 && !evt.shiftKey) {
+            if (evt.keyCode === 13 && evt.ctrlKey) {
+                // Ctrl-enter splits the subtitles
+                $scope.splitCurrentSubtitle();
+            } else if (evt.keyCode === 13 && !evt.shiftKey) {
                 // Enter without shift finishes editing
                 var nextSubtitle = subtitleList.nextSubtitle(subtitle);
                 finishEdit(true);
                 if(nextSubtitle === null) {
                     if(!$scope.timelineShown) {
-                        insertAndStartEdit(null);
+                        insertAndStartEdit(null, subtitle.region);
                     }
                 } else {
                     $scope.currentEdit.start(nextSubtitle);

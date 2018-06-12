@@ -93,7 +93,7 @@
             <header>
               <h1>{% blocktrans with language=subtitle_language.get_language_code_display %}{{ language }} subtitles{% endblocktrans %}</h1>
               {% if subtitle_version and subtitle_version.has_subtitles %}
-              <div class="header-actions dropdown">
+              <div class="header-actions dropdown small">
                 <button id="download-button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{% trans "Download" %}<span class="caret"></span></button>
                 <ul class="dropdown-menu" aria-labeledby="download-button">
                   {% for format_name in downloadable_formats %}
@@ -148,7 +148,7 @@
                 <div class="col-xs-1">
                   <div class="checkbox">
                     <input type="checkbox" id="revision-{{revision.id}}" data-id="{{ revision.id }}">
-                    <label for="revision-{{ revision.id }}"><span></span></label>
+                    <label for="revision-{{ revision.id }}"><span class="checkbox-icon"></span></label>
                   </div>
                 </div>
                 <div class="col-xs-6">
@@ -166,7 +166,7 @@
                 <div class="col-xs-5 end-xs">
                   <strong>{{ revision.get_origin_display }}</strong>
                   <br>
-                  {{ revision.created|format_time }}
+                  {{ revision.created|datetime }}
                 </div>
                 {% if enable_edit_in_admin %}
                 <a class="hangingLink-link" href="{% url "admin:subtitles_subtitleversion_change" revision.id %}" target="_blank"><i class="icon icon-edit"></i></a>

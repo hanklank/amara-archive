@@ -17,6 +17,12 @@
 # http://www.gnu.org/licenses/agpl-3.0.html.
 
 import htmllib, formatter
+import bleach
+
+CLEAN_DEFAULTS = {
+        'tags': ['a', 'b', 'strong', 'i', 'em', 'u', 'li', 'ol', 'ul'],
+        'attributes': {'a': 'href'},
+        'protocols': ['http', 'https']}
 
 def unescape(s):
     p = htmllib.HTMLParser(formatter.NullFormatter() )
@@ -26,3 +32,8 @@ def unescape(s):
     p.save_bgn()
     p.feed(s)
     return p.save_end().strip()
+
+def clean_html(source, tags=CLEAN_DEFAULTS['tags'],
+               attributes=CLEAN_DEFAULTS['attributes'],
+               protocols=CLEAN_DEFAULTS['protocols']):
+    return bleach.clean(source, tags=tags, attributes=attributes, protocols=protocols)

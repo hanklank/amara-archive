@@ -31,10 +31,12 @@ from collections import namedtuple, OrderedDict
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import authenticate, login as auth_login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import redirect_to_login
 from django.core.cache import cache
 from django.core.paginator import Paginator
+from django.core.signing import BadSignature
 from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.core.exceptions import PermissionDenied
@@ -52,10 +54,11 @@ from .behaviors import get_main_project
 from .bulk_actions import add_videos_from_csv
 from .exceptions import ApplicationInvalidException
 from .models import (Invite, Setting, Team, Project, TeamVideo,
-                     TeamLanguagePreference, TeamMember, Application)
+                     TeamLanguagePreference, TeamMember, Application, EmailInvite)
 from .statistics import compute_statistics
 from activity.models import ActivityRecord
 from auth.models import CustomUser as User
+from auth.forms import CustomUserCreationForm
 from messages import tasks as messages_tasks
 from subtitles.models import SubtitleLanguage
 from teams.workflows import TeamWorkflow
@@ -67,8 +70,10 @@ from utils.decorators import staff_member_required
 from utils.pagination import AmaraPaginator, AmaraPaginatorFuture
 from utils.forms import autocomplete_user_view, FormRouter
 from utils.text import fmt
-from utils.translation import get_language_label
+from utils.translation import get_language_label, get_user_languages_from_cookie
 from videos.models import Video
+
+import datetime
 
 logger = logging.getLogger('teams.views')
 
@@ -216,9 +221,11 @@ def members(request, team):
         'next': next_page,
         'previous': prev_page,
         'filters_form': filters_form,
+        'team_nav': 'member_directory',
         'show_invite_link': permissions.can_invite(team, request.user),
         'show_add_link': permissions.can_add_members(team, request.user),
         'show_application_link': show_application_link,
+        'team_nav': 'member_directory',
     }
 
     if form_name and is_team_admin:
@@ -259,31 +266,41 @@ def manage_members_form(request, team, form_name, members, page):
     # filter out the current user from the full queryset
     members = members.exclude(user=request.user)
 
+    modal_context = {}
     if request.method == 'POST':
         try:
             form = FormClass(request.user, members, selection, all_selected,
-                             data=request.POST, files=request.FILES, is_owner=is_owner)
+                             data=request.POST, files=request.FILES,
+                             is_owner=is_owner, team=team)
         except Exception as e:
             logger.error(e, exc_info=True)
         if form.is_valid():
             return render_management_form_submit(request, form)
+        elif (isinstance(form, forms.ChangeMemberRoleForm)
+              and request.POST.get('role') == TeamMember.ROLE_PROJ_LANG_MANAGER):
+            modal_context.update({'show_proj_lang_selectors': True})
+
     else:
         try:
+<<<<<<< HEAD
             form = FormClass(request.user, members, selection, all_selected,
                              is_owner=is_owner)
+=======
+            form = FormClass(request.user, members, selection, all_selected, team=team)
+>>>>>>> add16216c33fcc4b7d1b5f686f4f64720bc261a8
         except Exception as e:
             logger.error(e, exc_info=True)
 
     template_name = 'future/teams/members/forms/{}.html'.format(form_name)
-    modal_context = {
+    modal_context.update({
         'form': form,
         'team': team,
         'selection_count': len(selection),
         'single_selection': len(selection) == 1,
-    }
+    })
     if modal_context['single_selection']:
         modal_context['member'] = members.get(id=selection[0])
-        modal_context['username'] = modal_context['member'].user.username
+        modal_context['username'] = modal_context['member'].user.display_username
         modal_context['role'] = modal_context['member'].role
 
     response_renderer = AJAXResponseRenderer(request)
@@ -557,6 +574,12 @@ def invite(request, team):
             # sending invites twice for the same user, and that borks
             # the naive signal for only created invitations
             form.save()
+            success_msg = []
+            if form.cleaned_data['username']:
+                success_msg.append(u'{} has been invited to the team.'.format(form.cleaned_data['username']))
+            if form.cleaned_data['email']:
+                success_msg.append(u'{} has been sent an email invite.'.format(form.cleaned_data['email']))
+            messages.success(request, _("<br/>".join(success_msg)))
             return HttpResponseRedirect(reverse('teams:members',
                                                 args=[team.slug]))
     else:
@@ -566,6 +589,12 @@ def invite(request, team):
         template_name = 'teams/invite_members.html'
     else:
         template_name = 'new-teams/invite.html'
+        # template_name = 'future/teams/members/invite.html'
+        '''
+        The future UI invite member page still need works
+        1. Make autocomplete work with the new field
+        2. The text-box does not render properly
+        '''
 
     return render(request, template_name,  {
         'team': team,
@@ -576,6 +605,39 @@ def invite(request, team):
             BreadCrumb(_('Invite')),
         ],
     })
+
+def email_invite(request, signed_pk):
+    try:
+        pk = EmailInvite.signer.unsign(signed_pk)
+        email_invite = EmailInvite.objects.get(pk=pk)
+
+        form = CustomUserCreationForm(request.POST or None, label_suffix="")
+
+        if(request.method == 'POST' and form.is_valid()):
+            new_user = form.save()
+            user = authenticate(username=new_user.username,
+                                password=form.cleaned_data['password1'])
+            langs = get_user_languages_from_cookie(request)
+            for l in langs:
+                UserLanguage.objects.get_or_create(user=user, language=l)
+            auth_login(request, user)
+
+            email_invite.link_to_account(user)
+
+            return redirect(reverse("teams:dashboard", kwargs={"slug": email_invite.team.slug}))
+
+        if (email_invite.is_expired()):
+            return redirect('teams:email_invite_invalid')
+        else:
+            return render(request, 'new-teams/email_invite_accept.html', {
+                'creation_form': form,
+                'team_name': email_invite.team.name,
+            })
+    except (BadSignature, EmailInvite.DoesNotExist):
+        return redirect('teams:email_invite_invalid')
+
+def email_invite_invalid(request):
+    return render(request, 'new-teams/email_invite_error.html')
 
 @team_view
 def autocomplete_invite_user(request, team):
@@ -742,6 +804,12 @@ def statistics(request, team, tab):
     else:
         return render(request, 'new-teams/statistics.html', context)
 
+@team_view
+def resources(request, team):
+    return render(request, 'future/teams/resources.html', {
+        'team': team,
+        'team_nav': 'resources',
+    })
 
 def dashboard(request, slug):
     team = get_object_or_404(
@@ -981,15 +1049,12 @@ def settings_messages(request, team):
         return old_views.settings_messages(request, team)
 
     initial = team.settings.all_messages()
+    initial['resources_page_content'] = team.resources_page_content
     if request.POST:
         form = forms.GuidelinesMessagesForm(request.POST, initial=initial)
 
         if form.is_valid():
-            for key, val in form.cleaned_data.items():
-                setting, c = Setting.objects.get_or_create(team=team, key=Setting.KEY_IDS[key])
-                setting.data = val
-                setting.save()
-
+            form.save(team)
             messages.success(request, _(u'Guidelines and messages updated.'))
             return HttpResponseRedirect(request.path)
     else:

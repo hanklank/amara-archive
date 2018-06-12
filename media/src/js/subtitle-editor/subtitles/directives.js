@@ -156,6 +156,10 @@ var USER_IDLE_MINUTES = 15;
                 scope.positionSyncHelpers();
                 scope.positionInfoTray();
             });
+
+            scope.$root.$on('timeline-subtitle-drag', function(evt, args) {
+                scope.updateSubtitleFromDraft(args.draftSubtitle);
+            });
         };
     }]);
 
@@ -311,7 +315,7 @@ var USER_IDLE_MINUTES = 15;
                 }
             });
 
-            subtitleList.addChangeCallback(onChange);
+            subtitleList.addChangeCallback(handleChanges);
             reloadSubtitles();
 
             function makeSubtitleMenu() {
@@ -411,7 +415,11 @@ var USER_IDLE_MINUTES = 15;
                 return null;
             }
 
-            function onChange(change) {
+            function handleChanges(changes) {
+                _.each(changes, handleChange);
+            }
+
+            function handleChange(change) {
                 var subtitle = change.subtitle;
                 switch(change.type) {
                     case 'remove':
@@ -449,6 +457,11 @@ var USER_IDLE_MINUTES = 15;
                     case 'reload':
                         reloadSubtitles();
                 }
+                $scope.$emit('subtitle-list-changed');
+            }
+
+            $scope.updateSubtitleFromDraft = function(draftSubtitle) {
+                renderSubtitle(draftSubtitle, subtitleMap[draftSubtitle.storedSubtitle.id]);
             }
 
             function startEditOn(draft) {
@@ -492,6 +505,26 @@ var USER_IDLE_MINUTES = 15;
                         subtitleList.removeSubtitle(draft.storedSubtitle);
                     }
                 }
+            }
+
+            $scope.canSplitSubtitle = function(subtitle) {
+                var li = subtitleMap[subtitle.id];
+                if(!li) {
+                    return false;
+                }
+                var textarea = $('textarea.subtitle-edit', li);
+                return textarea.length > 0;
+            }
+
+            $scope.calcSubtitleSplit = function(subtitle) {
+                var li = subtitleMap[subtitle.id];
+                var textarea = $('textarea.subtitle-edit', li);
+                var selectionRange = DomUtil.getSelectionRange(textarea[0]);
+                var markdown = textarea.val();
+                return {
+                    first: markdown.substring(0, selectionRange.start).replace(/\s+$/, ''),
+                    second: markdown.substring(selectionRange.start).replace(/^\s+/, '')
+                };
             }
 
             function reloadSubtitles() {

@@ -25,7 +25,6 @@ from django.shortcuts import render
 from django.template import RequestContext, loader
 from django.views.generic.base import TemplateView, RedirectView
 from sitemaps import sitemaps, sitemap_view, sitemap_index
-from socialauth.models import AuthMeta, OpenidProfile
 from django.views.decorators.clickjacking import xframe_options_exempt
 from auth.forms import CustomPasswordResetForm
 import optionalapps
@@ -33,13 +32,6 @@ from utils.genericviews import JSTemplateView
 from auth.views import login as user_login
 admin.autodiscover()
 admin.site.login = user_login
-# these really should be unregistred but while in development the dev server
-# might have not registred yet, so we silence this exception
-try:
-    #admin.site.unregister([AuthMeta, OpenidProfile])
-    admin.site.unregister([AuthMeta,])
-except admin.sites.NotRegistered:
-    pass
 
 # Monkeypatch the Celery admin to show a column for task run time in the list view.
 from djcelery.admin import TaskMonitor
@@ -75,15 +67,13 @@ urlpatterns = patterns('',
         name='password_reset_done'),
     url(r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/'
         '(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
-        'django.contrib.auth.views.password_reset_confirm', {'post_reset_redirect': '/reset/done/'}, name='password_reset_confirm'),
+        'auth.views.password_reset_confirm', {'post_reset_redirect': '/reset/done/'}, name='password_reset_confirm'),
     url(r'^reset-external/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
         'django.contrib.auth.views.password_reset_confirm',
         {'extra_context': {'external_account': True}, 'post_reset_redirect': '/reset/done/'},
         name='password_reset_confirm_external'),
     url(r'^reset/done/$',
         'auth.views.password_reset_complete'),
-    url(r'^socialauth/',
-        include('socialauth.urls')),
     url(r'^styleguide/', include('styleguide.urls')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^staff/', include('staff.urls', namespace='staff')),

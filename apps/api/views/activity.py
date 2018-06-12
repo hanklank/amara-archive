@@ -94,6 +94,8 @@ associated with them
 +----------------------+---------------------------+-------------------------+
 | version-added        | Subtitle version added    |                         |
 +----------------------+---------------------------+-------------------------+
+| video-title-changed  | Video title changed       |                         |
++----------------------+---------------------------+-------------------------+
 | video-url-added      | URL added to video        | ``url`` will contain    |
 |                      |                           | the new URL             |
 +----------------------+---------------------------+-------------------------+
@@ -365,6 +367,8 @@ class UserActivityView(generics.ListAPIView):
         except User.DoesNotExist:
             raise Http404()
         if not auth.permissions.can_view_activity(user, self.request.user):
+            raise Http404()
+        if not user.is_active:
             raise Http404()
         return ActivityRecord.objects.for_user(user)
 

@@ -27,6 +27,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.core.files import File
+from django.core.signing import Signer
 from django.db import connection
 from django.db import models
 from django.db import transaction
@@ -34,7 +35,7 @@ from django.db.models import query, Q, Count, Sum
 from django.db.models.signals import post_save, post_delete, pre_delete
 from django.http import Http404
 from django.template.loader import render_to_string
-from django.utils.translation import ugettext_lazy as _, ugettext
+from django.utils.translation import ugettext_lazy as _, ugettext 
 
 import teams.moderation_const as MODERATION
 from caching import ModelCacheManager
@@ -47,7 +48,7 @@ from subtitles.signals import subtitles_deleted
 from teams.moderation_const import WAITING_MODERATION, UNMODERATED, APPROVED
 from teams.permissions_const import (
     TEAM_PERMISSIONS, PROJECT_PERMISSIONS, ROLE_OWNER, ROLE_ADMIN, ROLE_MANAGER,
-    ROLE_CONTRIBUTOR
+    ROLE_CONTRIBUTOR, ROLE_PROJ_LANG_MANAGER
 )
 from teams import tasks
 from teams import workflows
@@ -58,10 +59,11 @@ from teams.signals import (member_leave, api_subtitles_approved,
                            team_settings_changed)
 from utils import DEFAULT_PROTOCOL
 from utils import enum
-from utils import translation
+from utils import translation, send_templated_email
 from utils.amazon import S3EnabledImageField, S3EnabledFileField
 from utils.panslugify import pan_slugify
 from utils.text import fmt
+from utils.translation import get_language_label
 from videos.models import Video, VideoUrl, SubtitleVersion, SubtitleLanguage
 from videos.tasks import video_changed_tasks
 from subtitles.models import (
@@ -220,6 +222,7 @@ class Team(models.Model):
     name = models.CharField(_(u'name'), max_length=250, unique=True)
     slug = models.SlugField(_(u'slug'), unique=True)
     description = models.TextField(_(u'description'), blank=True, help_text=_('All urls will be converted to links. Line breaks and HTML not supported.'))
+    resources_page_content = models.TextField(_(u'Team resources page text'), blank=True)
 
     logo = S3EnabledImageField(verbose_name=_(u'logo'), blank=True,
                                upload_to='teams/logo/',
@@ -246,7 +249,6 @@ class Team(models.Model):
     highlight = models.BooleanField(default=False)
     video = models.ForeignKey(Video, null=True, blank=True, related_name='intro_for_teams', verbose_name=_(u'Intro Video'))
     application_text = models.TextField(blank=True)
-    page_content = models.TextField(_(u'Page content'), blank=True, help_text=_(u'You can use markdown. This will replace Description.'))
     is_moderated = models.BooleanField(default=False)
     header_html_text = models.TextField(blank=True, default='', help_text=_(u"HTML that appears at the top of the teams page."))
     last_notification_time = models.DateTimeField(editable=False, default=datetime.datetime.now)
@@ -715,6 +717,20 @@ class Team(models.Model):
     def user_is_manager(self, user):
         member = self.get_member(user)
         return bool(member and member.is_manager())
+
+    def user_is_a_project_manager(self, user):
+        member = self.get_member(user)
+        return bool(member and member.is_a_project_manager())
+
+    def user_is_any_type_of_manager(self, user):
+        member = self.get_member(user)
+        return bool(member and member.is_any_type_of_manager())
+
+    def user_is_a_project_or_language_manager(self, user):
+        member = self.get_member(user)
+        return bool(member and
+                   (member.is_a_project_manager() or
+                    member.is_a_language_manager()))
 
     def invitable_users(self):
         pending_invites = (Invite.objects
@@ -1560,6 +1576,7 @@ class TeamMember(models.Model):
     ROLE_ADMIN = ROLE_ADMIN
     ROLE_MANAGER = ROLE_MANAGER
     ROLE_CONTRIBUTOR = ROLE_CONTRIBUTOR
+    ROLE_PROJ_LANG_MANAGER = ROLE_PROJ_LANG_MANAGER
 
     ROLES = (
         (ROLE_OWNER, _("Owner")),
@@ -1662,6 +1679,17 @@ class TeamMember(models.Model):
         """Test if the user is a manager or above."""
         return self.role in (ROLE_OWNER, ROLE_ADMIN, ROLE_MANAGER)
 
+    def is_any_type_of_manager(self):
+        """
+        This method checks if this team member is one of the floowing:
+          - a manager for team
+          - a language manager for at least one language
+          - a project manager for at least one project
+        """
+        return (self.is_manager() or
+                self.is_a_project_manager() or
+                self.is_a_language_manager())
+
     def is_admin(self):
         """Test if the user is an admin or owner."""
         return self.role in (ROLE_OWNER, ROLE_ADMIN)
@@ -1683,9 +1711,20 @@ class TeamMember(models.Model):
             project_id = project
         return project_id in (p.id for p in self.get_projects_managed())
 
+    def is_a_project_manager(self):
+        """Test if the user is a project manager of any project"""
+        return bool(self.get_projects_managed())
+
     def is_language_manager(self, language_code):
         return (language_code in
                 (l.code for l in self.get_languages_managed()))
+
+    def is_a_language_manager(self):
+        """Test if the user is a language manager of any language"""
+        return bool(self.get_languages_managed())
+
+    def is_a_project_or_language_manager(self):
+        return self.is_a_project_manager() or self.is_a_language_manager()
 
     def make_project_manager(self, project):
         self.projects_managed.add(project)
@@ -1698,6 +1737,16 @@ class TeamMember(models.Model):
 
     def remove_language_manager(self, language_code):
         self.languages_managed.filter(code=language_code).delete()
+
+    def remove_as_language_manager(self):
+        self.languages_managed.all().delete()
+
+    def remove_as_project_manager(self):
+        self.projects_managed.clear()
+
+    def remove_as_proj_lang_manager(self):
+        self.remove_as_language_manager()
+        self.remove_as_project_manager()
 
     class Meta:
         unique_together = (('team', 'user'),)
@@ -1717,6 +1766,10 @@ class LanguageManager(models.Model):
     member = models.ForeignKey(TeamMember, related_name='languages_managed')
     code = models.CharField(max_length=16,
                             choices=translation.ALL_LANGUAGE_CHOICES)
+
+    @property
+    def readable_name(self):
+        return get_language_label(self.code)
 
 # MembershipNarrowing
 class MembershipNarrowing(models.Model):
@@ -1984,6 +2037,52 @@ class Invite(models.Model):
     def message_json_data(self, data, msg):
         data['can-reply'] = False
         return data
+
+
+class EmailInvite(models.Model):
+    SECRET_CODE_MAX_LENGTH = 256 # 27 characters for the actual code, and an arbitrary number for the primary key length
+    SECRET_CODE_EXPIRATION_MINUTES = 4320 # 72 hours / 3 days expiration
+
+    signer = Signer(sep="/", salt='teams.emailinvite')
+
+    email = models.EmailField(max_length=254) # the email recipient of the email-invite, not necessarily the same with the email to be used as username
+    team = models.ForeignKey(Team, related_name='email_invitations')
+    note = models.TextField(blank=True, max_length=200)
+    author = models.ForeignKey(User)
+    role = models.CharField(max_length=16, choices=TeamMember.ROLES,
+                            default=TeamMember.ROLE_CONTRIBUTOR)
+    secret_code = models.CharField(max_length=SECRET_CODE_MAX_LENGTH)
+    created = models.DateTimeField(auto_now_add=True)
+
+    @staticmethod
+    def create_invite(email, author, team, role=TeamMember.ROLE_CONTRIBUTOR):
+        email_invite = EmailInvite.objects.create(email=email, author=author,
+            team=team, role=role, secret_code="")
+        email_invite.secret_code = EmailInvite.signer.sign(email_invite.pk)
+        email_invite.save()
+
+        return email_invite
+
+    def link_to_account(self, user):
+        member = TeamMember.objects.create(team=self.team, user=user, role=self.role)
+        notifier.team_member_new.delay(member.pk)
+        self.delete()
+
+    def get_url(self):
+        return reverse('teams:email_invite', kwargs={'signed_pk' : self.secret_code})
+
+    def is_expired(self):
+        time_delta = datetime.datetime.now() - self.created
+        time_delta_minutes = time_delta.total_seconds() / 60
+        return (time_delta_minutes > EmailInvite.SECRET_CODE_EXPIRATION_MINUTES)
+
+    def send_mail(self, message):
+        send_templated_email(to=self.email,
+            subject=_('Amara - Team Invite for {}'.format(self.team.name)),
+            body_template='new-teams/email_invite.html',
+            body_dict={ 'team_name': self.team.name,
+                'message': message,
+                'invite_url': self.get_url()})           
 
 
 # Workflows
@@ -3012,6 +3111,7 @@ class Setting(models.Model):
         (310, 'block_new_video_message'),
         (311, 'block_new_collab_assignments_message'),
         (312, 'block_collab_auto_unassignments_message'),
+        (313, 'block_collab_deadlines_passed_message'),
         # 400 is for text displayed on web pages
         (401, 'pagetext_welcome_heading'),
         (402, 'pagetext_warning_tasks'),
