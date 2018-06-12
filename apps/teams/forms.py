@@ -1809,16 +1809,12 @@ class ChangeMemberRoleForm(ManagementForm):
                     self.invalid_permission_count += 1
                 else:
                     try:
-<<<<<<< HEAD
-                        member.change_role(role)
-=======
-                        if self.cleaned_data['role'] == TeamMember.ROLE_PROJ_LANG_MANAGER:
+                        if role == TeamMember.ROLE_PROJ_LANG_MANAGER:
                             member.change_role(TeamMember.ROLE_CONTRIBUTOR)
                             self.update_proj_lang_management(member)
                         else:
                             member.remove_as_proj_lang_manager()
-                            member.change_role(self.cleaned_data['role'])
->>>>>>> add16216c33fcc4b7d1b5f686f4f64720bc261a8
+                            member.change_role(role)
                         self.changed_count += 1
                     except Exception as e:
                         logger.error(e, exc_info=True)
