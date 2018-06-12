@@ -288,7 +288,7 @@ var angular = angular || null;
                 $scope.currentEdit.finish(subtitleList);
                 if(nextSubtitle === null) {
                     if(!$scope.timelineShown) {
-                        insertAndStartEdit(null, subtitle.region, {removeEmptySubs: true});
+                        $scope.currentEdit.appendAndStart(subtitleList);
                     }
                 } else {
                     $scope.currentEdit.start(nextSubtitle);

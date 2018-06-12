@@ -390,7 +390,7 @@ var angular = angular || null;
         SubtitleList.prototype._changesDone = function(changeDescription, changeGroup) {
             this.rollbackStack.reverse();
 
-            if(this._shouldCombineUndoItem(changeGroup)) {
+            if(changeGroup && this.lastChangeGroup() === changeGroup) {
                 this.mergeRollbackStackIntoUndoStack();
             } else {
                 this.undoStack.push([changeDescription, this.rollbackStack, changeGroup]);
@@ -402,10 +402,12 @@ var angular = angular || null;
             this._invokeChangeCallbacks();
         }
 
-        SubtitleList.prototype._shouldCombineUndoItem = function(changeGroup) {
-            return (changeGroup !== undefined &&
-                    this.undoStack.length > 0 &&
-                    _.last(this.undoStack)[2] == changeGroup);
+        SubtitleList.prototype.lastChangeGroup = function() {
+            if(this.undoStack.length > 0) {
+                return _.last(this.undoStack)[2];
+            } else {
+                return null;
+            }
         }
 
         // Take the current changes in the rollback stack and merge them into the changes in the last undo stack entry.
@@ -822,6 +824,17 @@ var angular = angular || null;
             return subtitle;
         }
 
+        SubtitleList.prototype.insertSubtitleAtEnd = function(changeGroup) {
+            if(this.subtitles.length > 0) {
+                var region = this.lastSubtitle().region;
+            } else {
+                var region = undefined;
+            }
+            var subtitle = this._insertSubtitle(this.subtitles.length, { region: region });
+            this._changesDone(gettext('Insert subtitle'), changeGroup);
+            return subtitle;
+        }
+
         // Take a subtitle and split it in half.
         //
         // subtitle will now take up only the first half of the time and get firstSubtitleMarkdown as its content
@@ -1040,48 +1053,53 @@ var angular = angular || null;
     module.service('CurrentEditManager', [function() {
         CurrentEditManager = function() {
             this.subtitle = null;
-            this.initialContent = '';
             this.counter = 0;
-            this.initialCaretPos = 0;
         }
 
         CurrentEditManager.prototype = {
+            // Called when the user starts editing a subtitle
             start: function(subtitle, options) {
                 if(options === undefined) {
                     options = {};
                 }
                 options = _.defaults(options, {
                     initialCaretPos: subtitle.markdown.length,
-                    removeEmptySubs: false
                 });
                 this.subtitle = subtitle;
                 this.initialCaretPos = options.initialCaretPos;
-                this.removeEmptySubs = options.removeEmptySubs;
-                this.initialContent = subtitle.markdown;
-                this.changeGroup = 'text-edit-' + this.counter++;
+                this.autoCreatChangeGroup = null;
+                this.updateChangeGroup = 'text-edit-' + this.counter++;
+            },
+            // Called when the user hits enter from the last subtitle in typing
+            // mode.  We automatically create a new subtitle at the end of the
+            // subtitle list, then start editing it.  There's also some code in
+            // to handle automatically undoing the insert if the user
+            // immediately clicks away.
+            appendAndStart: function(subtitleList) {
+                this.autoCreatChangeGroup = 'text-auto-insert-' + this.counter;
+                this.subtitle = subtitleList.insertSubtitleAtEnd(this.autoCreatChangeGroup);
+                this.initialCaretPos = 0;
+                this.updateChangeGroup = 'text-edit-' + this.counter++;
             },
             update: function(subtitleList, content) {
                 if(this.hasChanges(content)) {
-                    subtitleList.updateSubtitleContent(this.subtitle, content, this.changeGroup);
+                    subtitleList.updateSubtitleContent(this.subtitle, content, this.updateChangeGroup);
                 }
             },
             hasChanges: function(content) {
                 return this.subtitle.markdown != content;
             },
-            finish: function(subtitleList) {
-                if(this.subtitle.isEmpty() && this.removeEmptySubs) {
-                    subtitleList.removeSubtitle(this.subtitle);
+            undoAutoCreatedSubtitle: function(subtitleList) {
+                if(this.autoCreatChangeGroup &&
+                        subtitleList.lastChangeGroup() === this.autoCreatChangeGroup) {
+                    subtitleList.undo();
+                    return true;
                 }
-                this.subtitle = null;
-                this.initialContent = '';
+                return false;
             },
-            cancel: function(subtitleList) {
-                // call updateSubtitleContent manually, because we don't want
-                // to use the same changeGroup to group this with other
-                // changes.  This way if the user hits undo afterwards, the
-                // content will be restored.
-                subtitleList.updateSubtitleContent(this.subtitle, this.initialContent);
-                this.finish(subtitleList);
+            finish: function(subtitleList) {
+                this.undoAutoCreatedSubtitle(subtitleList);
+                this.subtitle = null;
             },
             isForSubtitle: function(subtitle) {
                 return this.subtitle === subtitle;

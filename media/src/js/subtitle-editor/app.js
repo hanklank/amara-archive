@@ -556,6 +556,14 @@ var angular = angular || null;
             } else if (evt.keyCode === 90 && ctrlOrCmd(evt) && !evt.altKey) {
                 // Ctrl-Z -- undo
                 if($scope.currentEdit.inProgress()) {
+                    if($scope.currentEdit.undoAutoCreatedSubtitle($scope.workingSubtitles.subtitleList)) {
+                        // Corner case: the user hit enter in typing mode to
+                        // create a new subtitle, then hit Ctrl-Z.  We
+                        // auto-undo the insert in this case.  Don't try to
+                        // also undo the change before that.
+                        $scope.$root.$emit('work-done');
+                        return;
+                    }
                     $scope.currentEdit.finish($scope.workingSubtitles.subtitleList);
                 }
                 if($scope.workingSubtitles.subtitleList.canUndo()) {
