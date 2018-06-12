@@ -156,6 +156,10 @@ var USER_IDLE_MINUTES = 15;
                 scope.positionSyncHelpers();
                 scope.positionInfoTray();
             });
+
+            scope.$root.$on('timeline-subtitle-drag', function(evt, args) {
+                scope.updateSubtitleFromDraft(args.draftSubtitle);
+            });
         };
     }]);
 
@@ -454,6 +458,10 @@ var USER_IDLE_MINUTES = 15;
                         reloadSubtitles();
                 }
                 $scope.$emit('subtitle-list-changed');
+            }
+
+            $scope.updateSubtitleFromDraft = function(draftSubtitle) {
+                renderSubtitle(draftSubtitle, subtitleMap[draftSubtitle.storedSubtitle.id]);
             }
 
             function startEditOn(draft) {

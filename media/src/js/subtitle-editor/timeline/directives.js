@@ -318,15 +318,27 @@ var angular = angular || null;
                 var initialPageX = evt.pageX;
 
                 function placeSubtitlesAfterDrag() {
-                    placeSubtitle(context.startTime, context.endTime, div);
+                    placeSubtitleAfterDrag(storedSubtitle, context.startTime, context.endTime, div);
 
                     if (previousDiv && context.previousSubtitleEndTimeNew) {
-                        placeSubtitle(prevSubtitle.startTime, context.previousSubtitleEndTimeNew, previousDiv);
+                        placeSubtitleAfterDrag(prevSubtitle, prevSubtitle.startTime, context.previousSubtitleEndTimeNew, previousDiv);
                     }
 
                     if (nextDiv && context.nextSubtitleStartTimeNew) {
-                        placeSubtitle(context.nextSubtitleStartTimeNew, nextSubtitle.endTime, nextDiv);
+                        placeSubtitleAfterDrag(nextSubtitle, context.nextSubtitleStartTimeNew, nextSubtitle.endTime, nextDiv);
                     }
+                }
+
+                function placeSubtitleAfterDrag(subtitle, startTime, endTime, div) {
+                    var draftSubtitle = subtitle.draftSubtitle();
+                    draftSubtitle.startTime = startTime;
+                    draftSubtitle.endTime = endTime;
+                    placeSubtitle(startTime, endTime,  div);
+                    if(scope.currentEdit.isForSubtitle(subtitle)) {
+                        scope.currentEdit.draft.startTime = startTime;
+                        scope.currentEdit.draft.endTime = endTime;
+                    }
+                    scope.$root.$emit("timeline-subtitle-drag", { draftSubtitle: draftSubtitle });
                 }
 
                 function saveChangesAfterDrag() {
