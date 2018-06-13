@@ -24,7 +24,6 @@ from django.contrib.auth.models import AnonymousUser
 from django.shortcuts import render
 from django.template import RequestContext, loader
 from django.views.generic.base import TemplateView, RedirectView
-from sitemaps import sitemaps, sitemap_view, sitemap_index
 from django.views.decorators.clickjacking import xframe_options_exempt
 from auth.forms import CustomPasswordResetForm
 import optionalapps
@@ -67,7 +66,7 @@ urlpatterns = patterns('',
         name='password_reset_done'),
     url(r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/'
         '(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
-        'django.contrib.auth.views.password_reset_confirm', {'post_reset_redirect': '/reset/done/'}, name='password_reset_confirm'),
+        'auth.views.password_reset_confirm', {'post_reset_redirect': '/reset/done/'}, name='password_reset_confirm'),
     url(r'^reset-external/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
         'django.contrib.auth.views.password_reset_confirm',
         {'extra_context': {'external_account': True}, 'post_reset_redirect': '/reset/done/'},
@@ -133,10 +132,6 @@ urlpatterns = patterns('',
     url(r'^test-mp4$',
         TemplateView.as_view(template_name='alpha-test01-mp4.htm'),
         name='test-mp4-page'),
-    url(r'^sitemap\.xml$', sitemap_index, {'sitemaps': sitemaps},
-        name="sitemap-index"),
-    url(r'^sitemap-(?P<section>.+)\.xml$', sitemap_view, {'sitemaps': sitemaps},
-        name="sitemap"),
     url(r"helpers/",
         include('testhelpers.urls', namespace='helpers')),
     url(r'^videos/', include('videos.urls', namespace='videos',

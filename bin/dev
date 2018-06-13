@@ -130,7 +130,8 @@ class Test(Command):
 
     def run(self):
         ensure_node_modules()
-        run_manage(['test', '--settings=dev_settings_test'] + self.args)
+        run_manage(['test', '--settings=dev_settings_test'] + self.args,
+                   check=False)
 
 class JSTest(Command):
     """Run Javascript unittests."""
@@ -498,13 +499,16 @@ NEEDS_ROOT = [
     'compile_translations',
     'makemigrations',
 ]
-def run_manage(args, **kwargs):
+def run_manage(args, check=True, **kwargs):
     if args and args[0] in NEEDS_ROOT:
         cmdline = ['docker-compose', 'run', '--rm', '-u', 'root', 'app',
                    'manage']
     else:
         cmdline = ['docker-compose', 'run', '--rm', 'app', 'manage']
-    subprocess.check_call(cmdline + args, **kwargs)
+    if check:
+        subprocess.check_call(cmdline + args, **kwargs)
+    else:
+        subprocess.call(cmdline + args, **kwargs)
 
 # If you update this, make sure to also change the value in
 # codeship-services.yml
