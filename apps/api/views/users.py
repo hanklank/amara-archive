@@ -286,8 +286,14 @@ class UserUpdateSerializer(UserSerializer):
     create_login_token = serializers.BooleanField(write_only=True,
                                                   required=False)
 
+    default_error_messages = {
+        'api-password-change': 'Password changes are not supported through the API'
+    }
+
     def __init__(self, *args, **kwargs):
         super(UserUpdateSerializer, self).__init__(*args, **kwargs)
+        if 'password' in kwargs:
+            self.fail('api-password-change')
         if 'instance' in kwargs and \
            not can_modify_user(self.context['request'].user, kwargs['instance']):
             self.fields.pop('email')
