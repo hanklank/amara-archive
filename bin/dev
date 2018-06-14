@@ -130,8 +130,9 @@ class Test(Command):
 
     def run(self):
         ensure_node_modules()
-        run_manage(['test', '--settings=dev_settings_test'] + self.args,
-                   check=False)
+        cmdline = ['docker-compose', 'run', '--rm', 'test', 'test']
+        cmdline.extend(self.args)
+        return subprocess.call(cmdline)
 
 class JSTest(Command):
     """Run Javascript unittests."""

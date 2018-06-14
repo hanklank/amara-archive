@@ -332,7 +332,9 @@ AUTHENTICATION_BACKENDS = (
 # Use cookie storage always since it works the best with our caching system
 MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
 
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+# We actually use pytest to run our tests, but this settings prevents a
+# spurious warning
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
 LOGIN_URL = '/auth/login/'
 LOGIN_REDIRECT_URL = '/'
