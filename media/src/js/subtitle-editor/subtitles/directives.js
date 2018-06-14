@@ -472,6 +472,7 @@ var USER_IDLE_MINUTES = 15;
                         if($scope.currentEdit.hasChanges(content)) {
                             $scope.currentEdit.update(subtitleList, textarea.val());
                             $scope.$root.$emit('work-done');
+                            $scope.$root.$digest();
                         }
                     });
                     if($scope.onEditKeydown) {
