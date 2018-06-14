@@ -292,7 +292,7 @@ class UserUpdateSerializer(UserSerializer):
 
     def __init__(self, *args, **kwargs):
         super(UserUpdateSerializer, self).__init__(*args, **kwargs)
-        if 'password' in kwargs:
+        if kwargs.get('data') and 'password' in kwargs.get('data'):
             self.fail('api-password-change')
         if 'instance' in kwargs and \
            not can_modify_user(self.context['request'].user, kwargs['instance']):
