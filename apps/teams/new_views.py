@@ -248,7 +248,6 @@ def manage_members_form(request, team, form_name, members, page):
         selection = request.GET['selection'].split('-')
     except StandardError:
         return HttpResponseBadRequest()
-
     if form_name == 'role':
         FormClass = forms.ChangeMemberRoleForm
     elif form_name == 'remove':
@@ -262,6 +261,8 @@ def manage_members_form(request, team, form_name, members, page):
         member for member in page
         if member.user_id != request.user.id
     ])
+
+    is_owner = team.is_owner(request.user)
     all_selected = len(selection) >= enabled_checkbox_count
     # filter out the current user from the full queryset
     members = members.exclude(user=request.user)
