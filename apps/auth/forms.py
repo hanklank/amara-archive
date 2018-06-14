@@ -19,7 +19,9 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.core.validators import EMPTY_VALUES
+from django.core.urlresolvers import reverse
 from django.utils.encoding import force_bytes
+from django.utils.html import format_html
 from django.utils.http import urlsafe_base64_encode
 from captcha.fields import CaptchaField
 from django.template import loader
@@ -229,5 +231,18 @@ class SecureCustomPasswordResetForm(CustomPasswordResetForm):
     captcha = CaptchaField()
 
 class DeleteUserForm(forms.Form):
-    password = forms.CharField(widget=forms.PasswordInput())
+    def __init__(self, *args, **kwargs):
+        super(DeleteUserForm, self).__init__(*args, **kwargs)
+        # Can't find a lazy format_html
+        self.fields['password'].help_text = format_html(
+            _('<a href="{link}">Forgot your password?</a>'),
+            link=reverse('password_reset')
+            )
+
+    password = forms.CharField(widget=forms.PasswordInput(), 
+        label="Please enter your login password to confirm.")
+    delete_account_data = forms.BooleanField(required=False,
+        help_text="This will erase your personal data, including your personal name, photo, and any other data on your user profile.")
+    delete_videos_and_subtitles = forms.BooleanField(required=False,
+        help_text="This will delete videos that you have added to Amara that no other user has added subtitles to. It will also delete the related subtitles. If you want to delete other videos/subtitles that you've worked on, please email support@amara.org.")
 
