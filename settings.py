@@ -195,7 +195,6 @@ INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    'django.contrib.sitemaps',
     'django.contrib.webdesign',
     # third party apps
     'djcelery',
@@ -297,7 +296,6 @@ LOCALE_INDEPENDENT_PATHS = [
     re.compile('^/api/'),
     re.compile('^/api2/'),
     re.compile('^/jstest/'),
-    re.compile('^/sitemap.*.xml'),
     re.compile('^/externalsites/youtube-callback'),
     re.compile('^/auth/set-hidden-message-id/'),
     re.compile('^/crossdomain.xml'),
