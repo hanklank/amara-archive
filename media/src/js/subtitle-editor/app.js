@@ -285,6 +285,19 @@ var angular = angular || null;
             $scope.$root.$emit('work-done');
         };
 
+        $scope.showDeleteEmptySubtitlesModal = function($event) {
+            $scope.dialogManager.openDialog('confirmDeleteEmptySubtitles', {
+                continueButton: $scope.deleteEmptySubtitles
+            });
+            $event.stopPropagation();
+            $event.preventDefault();
+        };
+
+        $scope.deleteEmptySubtitles = function() {
+            $scope.workingSubtitles.subtitleList.deleteEmptySubtitles();
+            $scope.$root.$emit('work-done');
+        };
+
         $scope.showTutorial = function($event) {
             $scope.toggleTutorial(true);
             $event.stopPropagation();

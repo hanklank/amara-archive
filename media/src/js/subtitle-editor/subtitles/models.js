@@ -186,6 +186,10 @@ var angular = angular || null;
         }
     }
 
+    Subtitle.prototype.isWhiteSpaceOnly = function() {
+        return !$.trim(this.markdown)
+    }
+
     function StoredSubtitle(parser, node, id) {
         /* Subtitle stored in a SubtitleList
          *
@@ -579,6 +583,15 @@ var angular = angular || null;
                 this._updateSubtitle(i, {content: ''});
             }
             this._changesDone(gettext('Clear text'));
+        }
+
+        SubtitleList.prototype.deleteEmptySubtitles = function () {
+            for(var i=this.subtitles.length -1; i >= 0; i--) {
+                if (this.subtitles[i].isWhiteSpaceOnly()) {
+                    this._removeSubtitle(i, {})
+                }
+            }
+            this._changesDone(gettext('Delete empty subtitles'));
         }
 
         // Copy the subtitle times from another subtitle list
