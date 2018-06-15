@@ -55,11 +55,11 @@ var angular = angular || null;
     }
 
     function bottomRegion() {
-        return '<region xml:id="bottom" style="amara-style" tts:extent="100% 20%" tts:origin="0 80%" />';
+        return '<region xml:id="bottom" style="amara-style" tts:extent="100% 20%" tts:origin="0% 80%" />';
     }
 
     function topRegion() {
-        return '<region xml:id="top" style="amara-style" tts:extent="100% 20%" tts:origin="0 0" />';
+        return '<region xml:id="top" style="amara-style" tts:extent="100% 20%" tts:origin="0% 0%" />';
     }
 
     function preprocessDFXP(xml) {
