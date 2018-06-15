@@ -34,9 +34,11 @@ elif [ "$ACTION" = "manage" ]; then
     shift
     exec manage "$@"
 elif [ "$ACTION" = "test" ]; then
-    cd /var/run/amara/test-output/
     source /usr/local/bin/config_env
-    exec manage test --settings=dev_settings_test
+    cd /run/pytest
+    shift
+    export DJANGO_SETTINGS_MODULE=dev_settings_test
+    exec /opt/apps/amara/bin/test.py --rootdir=/run/pytest/ --nomigrations /opt/apps/amara "$@"
 elif [ "$ACTION" = "shell" ]; then
     echo "Running shell..."
     echo "Use the manage script to run django management commands"
