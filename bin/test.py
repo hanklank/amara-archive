@@ -26,12 +26,11 @@ class AmaraPyTest(object):
         'docs',
         'templates',
         'pykss',
+        'guitests',
     ])
 
-    def pytest_ignore_collect(self, path, config):
-        if path.isdir():
-            return path.relto(settings.PROJECT_ROOT) in self.IGNORE_DIRS
-        return False
+    def pytest_addoption(self, parser):
+        parser.addoption('--gui', action='store_true')
 
     @pytest.mark.trylast
     def pytest_configure(self, config):
@@ -49,6 +48,15 @@ class AmaraPyTest(object):
         reporter.startdir = py.path.local('/run/pytest/amara/')
 
         before_tests.send(config)
+
+    def pytest_ignore_collect(self, path, config):
+        if path.isdir():
+            relpath = path.relto(settings.PROJECT_ROOT)
+            if config.getoption('gui'):
+                return relpath != 'guitests'
+            else:
+                return relpath in self.IGNORE_DIRS
+        return False
 
     def patch_for_rest_framework(self):
         # patch some of old django code to be compatible with the rest
