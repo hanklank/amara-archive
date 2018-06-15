@@ -55,11 +55,11 @@ var angular = angular || null;
     }
 
     function bottomRegion() {
-        return '<region xml:id="bottom" style="amara-style" tts:extent="100% 20%" tts:origin="0 80%" />';
+        return '<region xml:id="bottom" style="amara-style" tts:extent="100% 20%" tts:origin="0% 80%" />';
     }
 
     function topRegion() {
-        return '<region xml:id="top" style="amara-style" tts:extent="100% 20%" tts:origin="0 0" />';
+        return '<region xml:id="top" style="amara-style" tts:extent="100% 20%" tts:origin="0% 0%" />';
     }
 
     function preprocessDFXP(xml) {
@@ -786,7 +786,7 @@ var angular = angular || null;
                     content: firstSubtitleMarkdown
                 });
             } else {
-                var newSubAttrs = { region: subtitle.region }
+                var newSubAttrs = { region: subtitle.region, content: secondSubtitleMarkdown }
                 this._updateSubtitle(index, {content: firstSubtitleMarkdown});
             }
             var newSubtitle = this._insertSubtitle(index + 1, newSubAttrs);
@@ -1023,6 +1023,9 @@ var angular = angular || null;
                 }
              },
              isForSubtitle: function(subtitle) {
+                 if(subtitle.isDraft) {
+                     subtitle = subtitle.storedSubtitle;
+                 }
                 return (this.draft !== null && this.draft.storedSubtitle == subtitle);
              },
              inProgress: function() {

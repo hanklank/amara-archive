@@ -566,7 +566,7 @@ var angular = angular || null;
             } else if (evt.keyCode === 190 && evt.shiftKey && evt.ctrlKey) {
                 // Control+Shift+Period, go forward 4 seconds
                 VideoPlayer.seek(VideoPlayer.currentTime() + 4000);
-            } else if (evt.keyCode === 90 && ctrlOrCmd(evt)) {
+            } else if (evt.keyCode === 90 && ctrlOrCmd(evt) && !evt.altKey) {
                 // Ctrl-Z -- undo
                 if($scope.workingSubtitles.subtitleList.canUndo()) {
                     $scope.workingSubtitles.subtitleList.undo();

@@ -179,8 +179,8 @@ var angular = angular || null;
                 return;
             }
             var splitInfo = $scope.calcSubtitleSplit(currentSubtitle);
+            $scope.currentEdit.finish(true, subtitleList);
             subtitleList.splitSubtitle(currentSubtitle, splitInfo.first, splitInfo.second);
-            finishEdit(false);
             $scope.$root.$emit('work-done');
         }
 

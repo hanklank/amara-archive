@@ -421,6 +421,8 @@ describe('Test the SubtitleList class', function() {
 
             expect(sub).toHaveTimes([-1, -1]);
             expect(sub2).toHaveTimes([-1, -1]);
+            expect(sub.markdown).toEqual('one')
+            expect(sub2.markdown).toEqual('two')
             expect(subtitleList.syncedCount).toEqual(0);
         });
 
