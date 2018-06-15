@@ -33,7 +33,11 @@ marks, etc).
 We also have gui tests that use selenium to automate testing with a real
 browser.  These get run with the ``dev guitest`` command.  It accepts all the
 same arguments as ``dev test``.  GUI tests are located in the ``guitest/``
-directory.
+directory.  To see the webserver output to help debug the GUI tests, use
+``dev guitestlogs``.
+
+Lastly, there are javascript tests which are unittests for our javascript code.
+Use ``dev jstest`` to run them.
 
 Writing unit tests
 ------------------
