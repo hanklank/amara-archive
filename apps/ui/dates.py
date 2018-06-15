@@ -165,15 +165,15 @@ def due_date(deadline, when, hypothetical=False):
                 msg = ungettext('%(deadline)s due %(count)s second ago',
                                 '%(deadline)s due %(count)s seconds ago',
                             count)            
-    elif delta.days < 1:
-        if delta.seconds < 60:
+    elif delta.days < 3:
+        if delta_total_seconds < 60:
             count = None
             if hypothetical:
                 msg = _('%(deadline)s would be due now')
             else:
                 msg = _('%(deadline)s due now')
-        elif delta.seconds < 60 * 60:
-            count = int(round(delta.seconds / 60.0))
+        elif delta_total_seconds < 60 * 60 * 2:
+            count = int(round(delta_total_seconds / 60.0))
             if hypothetical:
                 msg = ungettext(u'%(deadline)s would be due in %(count)s minute',
                                 u'%(deadline)s would be due in %(count)s minutes',
@@ -183,7 +183,7 @@ def due_date(deadline, when, hypothetical=False):
                                 u'%(deadline)s due in %(count)s minutes',
                                 count)
         else:
-            count = int(round(delta.seconds / 60.0 / 60.0))
+            count = int(round(delta_total_seconds / 60.0 / 60.0))
             if hypothetical:
                 msg = ungettext(u'%(deadline)s would be due in %(count)s hour',
                                 u'%(deadline)s would be due in %(count)s hours',
