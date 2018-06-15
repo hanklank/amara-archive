@@ -302,6 +302,7 @@ LOCALE_INDEPENDENT_PATHS = [
     re.compile('^/auth/set-hidden-message-id/'),
     re.compile('^/crossdomain.xml'),
     re.compile('^/embedder-widget-iframe/'),
+    re.compile('^/__debug__/'),
 ]
 
 OPENID_SREG = {"required": "nickname, email", "optional":"postcode, country", "policy_url": ""}
@@ -331,7 +332,9 @@ AUTHENTICATION_BACKENDS = (
 # Use cookie storage always since it works the best with our caching system
 MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
 
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+# We actually use pytest to run our tests, but this settings prevents a
+# spurious warning
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
 LOGIN_URL = '/auth/login/'
 LOGIN_REDIRECT_URL = '/'
@@ -415,8 +418,6 @@ ROSETTA_EXCLUDED_APPLICATIONS = (
     'openid_consumer',
     'rosetta'
 )
-
-INSTALLED_APPS += optionalapps.get_apps()
 
 # List of modules to extract docstrings from for the update_docs management
 # command.
