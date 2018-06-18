@@ -52,6 +52,12 @@ DATABASES = {
         'OPTIONS': {
             'init_command': 'SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED',
         },
+        'TEST': {
+            # This gets used in the GUI tests.  For that situation, we want to
+            # use the normal DB name, since the test code needs to use the
+            # same database as the webserver that running in parallel.
+            'NAME': 'amara',
+        },
     }
 }
 

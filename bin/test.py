@@ -1,11 +1,22 @@
 #!/usr/bin/python
 
 from __future__ import absolute_import
+
+# before anything else, setup DJANGO_SETTINGS_MODULE
 import os
-import re
 import sys
+
+if '--gui' in sys.argv:
+    # GUI tests use the normal dev_settings because we need to connect to
+    # the actual database running in the for the test server
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'dev_settings'
+else:
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'dev_settings_test'
+
+import re
 import shutil
 import tempfile
+import time
 
 import py.path
 import pytest
@@ -13,6 +24,23 @@ from django.core.cache import cache
 from django.conf import settings
 
 import startup
+
+
+def wait_for_database():
+    import MySQLdb
+    db_info = settings.DATABASES['default']
+    end_time = time.time() + 30
+    while time.time() < end_time:
+        try:
+            MySQLdb.connect(host=db_info['HOST'], user=db_info['USER'],
+                            passwd=db_info['PASSWORD'])
+        except:
+            print "waiting for database to come up"
+        else:
+            return
+        time.sleep(5)
+    print "Could not connect to DB"
+    sys.exit(1)
 
 class AmaraPyTest(object):
     """
@@ -26,12 +54,11 @@ class AmaraPyTest(object):
         'docs',
         'templates',
         'pykss',
+        'guitests',
     ])
 
-    def pytest_ignore_collect(self, path, config):
-        if path.isdir():
-            return path.relto(settings.PROJECT_ROOT) in self.IGNORE_DIRS
-        return False
+    def pytest_addoption(self, parser):
+        parser.addoption('--gui', action='store_true')
 
     @pytest.mark.trylast
     def pytest_configure(self, config):
@@ -49,6 +76,15 @@ class AmaraPyTest(object):
         reporter.startdir = py.path.local('/run/pytest/amara/')
 
         before_tests.send(config)
+
+    def pytest_ignore_collect(self, path, config):
+        if path.isdir():
+            relpath = path.relto(settings.PROJECT_ROOT)
+            if config.getoption('gui'):
+                return relpath != 'guitests'
+            else:
+                return relpath in self.IGNORE_DIRS
+        return False
 
     def patch_for_rest_framework(self):
         # patch some of old django code to be compatible with the rest
@@ -76,6 +112,10 @@ class AmaraPyTest(object):
 
 if __name__ == '__main__':
     startup.startup()
+    if '--gui' in sys.argv:
+        wait_for_database()
+    from django.conf import settings
+    print settings.DATABASES
     sys.argv[0] = re.sub(r'(-script\.pyw?|\.exe)?$', '', sys.argv[0])
     sys.exit(pytest.main(plugins=[AmaraPyTest()]))
 
