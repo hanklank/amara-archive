@@ -21,9 +21,15 @@ To stop after the first failure:
 
     $ dev test -x
 
-To run tests matching a particular pattern (can match against any part of the
-nodeid, which includes filename, class name, method/function name, pytest
-marks, etc).
+To run tests from a single file (relative to the unisubs repository root
+directory)
+
+::
+
+    $ dev test [path]
+
+To run tests matching a particular pattern (matches against filenames, class
+name, method/function name, pytest marks, etc).
 
 ::
 
