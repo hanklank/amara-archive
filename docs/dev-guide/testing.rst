@@ -38,9 +38,13 @@ name, method/function name, pytest marks, etc).
 
 We also have gui tests that use selenium to automate testing with a real
 browser.  These get run with the ``dev guitest`` command.  It accepts all the
-same arguments as ``dev test``.  GUI tests are located in the ``guitest/``
-directory.  To see the webserver output to help debug the GUI tests, use
-``dev guitestlogs``.
+same arguments as ``dev test``.  GUI tests are located in the ``guitests/``
+directory.
+
+There's a couple tools to help debug failing tests:
+ - To see the webserver output run ``dev guitestlogs``.
+ - To see browser screenshots for failing tests, use the ``--take-screenshots``
+   flag, then check in the ``guitests/screenshots`` directory after running the tests.
 
 Lastly, there are javascript tests which are unittests for our javascript code.
 Use ``dev jstest`` to run them.

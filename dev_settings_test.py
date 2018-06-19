@@ -31,16 +31,6 @@ DATABASES = {
 }
 
 
-# disable migrations for testing
-class DisableMigrations(object):
-
-    def __contains__(self, item):
-        return True
-
-    def __getitem__(self, item):
-        return "notmigrations"
-MIGRATION_MODULES = DisableMigrations()
-
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
