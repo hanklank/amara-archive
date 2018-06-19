@@ -549,6 +549,8 @@ def add_members(request, team):
                     messages.error(request, 
                         _('The following is already a member: {}')
                             .format(", ".join(summary['already'])))
+                else:
+                    messages.error(request, _('No members were added.'))
 
                 response_renderer = AJAXResponseRenderer(request)
                 response_renderer.reload_page()
@@ -636,7 +638,6 @@ def invite(request, team):
             elif modal_tab == 'email':
                 email_tab_non_field_errors = form.non_field_errors
 
-
         response_renderer = AJAXResponseRenderer(request)
         response_renderer.show_modal(template_name, 
             { 'team': team, 
@@ -647,7 +648,7 @@ def invite(request, team):
               'team_nav': 'member_directory',
               'show_add_link': permissions.can_add_members(team, request.user),
               'show_email_invite_link': permissions.can_send_email_invite(team, request.user),
-              'modal_tab': request.POST.get('modalTab', 'username'),
+              'modal_tab': modal_tab,
             })
         return response_renderer.render()
 

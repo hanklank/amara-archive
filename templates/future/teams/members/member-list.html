@@ -7,7 +7,13 @@
     {% endif %}
     {% if show_invite_link %}
     <form style="display:inline" class="ajaxForm copyQuery" method="GET" action="{% url 'teams:invite' slug=team.slug %}">
-      <button class="cta" type="submit" value="username" name="form">{% trans 'Invite members' %}</button>
+      <button class="cta" type="submit" value="username" name="form">
+        {% if user.is_staff %}
+          {% trans 'Add/Invite members' %}
+        {% else %}
+          {% trans 'Invite members' %}
+        {% endif %}
+      </button>
     </form>
     {% endif %}
 

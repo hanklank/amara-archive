@@ -1030,7 +1030,7 @@ class InviteForm(forms.Form):
                     'You can invite multiple users by entering one username per line. '))
     email = forms.CharField(required=False,
                             widget=forms.Textarea(attrs={'rows': 3}),
-                            help_text=_('Email address of the new member you want to invite.'
+                            help_text=_('Email address of the new member you want to invite. '
                                         'You can invite multiple users by entering one email address per line.') )
     message = forms.CharField(required=False,
                               widget=forms.Textarea(attrs={'rows': 4}),
@@ -1041,10 +1041,13 @@ class InviteForm(forms.Form):
 
     def __init__(self, team, user, *args, **kwargs):
         super(InviteForm, self).__init__(*args, **kwargs)
+        if args and isinstance(args[0], dict):
+            self.modal_tab = args[0].get('modalTab', None)
         self.team = team
         self.user = user # the invite author
         self.users = [] # the users to be invited
         self.emails = []
+        self.usernames = []
         self.fields['role'].choices = [(r, ROLE_NAMES[r])
                                        for r in roles_user_can_invite(team, user)]
         self.fields['username'].queryset = team.invitable_users()
@@ -1069,6 +1072,8 @@ class InviteForm(forms.Form):
                 user = User.objects.get(username=username)
                 if Invite.objects.filter(user=user, team=self.team).exists():
                     raise forms.ValidationError(_(u'The user {} already has an invite for this team!').format(username))
+                if self.team.is_member(user):
+                    raise forms.ValidationError(_(u'The user {} already belongs to this team!').format(username))
                 self.users.append(user)
             except User.DoesNotExist:
                 raise forms.ValidationError(_(u'The user {} does not exist.').format(username))
@@ -1077,6 +1082,11 @@ class InviteForm(forms.Form):
         cleaned_data = super(InviteForm, self).clean()
         emails = cleaned_data.get('email')
         usernames = cleaned_data.get('usernames')
+
+        if self.modal_tab == 'username' and not usernames:
+            raise forms.ValidationError(_(u'At least one username must be provided!'))
+        if self.modal_tab == 'email' and not emails:
+            raise forms.ValidationError(_(u'At least one email must be provided!'))
 
         if emails:
             self.emails = emails.split()
