@@ -1,0 +1,105 @@
+version: "3"
+services:
+  app:
+    image: amara-app
+    command: app
+    environment:
+      DJANGO_SETTINGS_MODULE: dev_settings
+      LANG: en_US.UTF-8
+      WORKERS: 2
+    volumes:
+      - ..:/opt/apps/amara:z
+    depends_on:
+      - db
+      - queue
+      - cache
+    ports:
+      - "8000"
+
+  worker:
+    image: amara-app
+    command: worker
+    environment:
+      CELERY_OPTS: -B
+      CELERY_QUEUES: default,priority
+      DJANGO_SETTINGS_MODULE: dev_settings
+      LANG: en_US.UTF-8
+    volumes:
+      - ..:/opt/apps/amara:z
+    links:
+      - db
+      - queue
+      - cache
+
+  feed-worker:
+    image: amara-app
+    command: feed_worker
+    environment:
+      DJANGO_SETTINGS_MODULE: dev_settings
+      LANG: en_US.UTF-8
+      JSON_LOGGING:
+    volumes:
+      - ..:/opt/apps/amara:z
+    depends_on:
+      - db
+      - queue
+      - cache
+
+  db:
+    image: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: amara
+      MYSQL_USER: amara
+      MYSQL_PASSWORD: amara
+      MYSQL_DATABASE: amara
+    volumes:
+      - ../docker-dev/mysql/conf.d/:/etc/mysql/conf.d:z
+    ports:
+      - "3306"
+
+  queue:
+    image: rabbitmq
+    ports:
+      - "5672"
+      - "15672"
+
+  cache:
+    image: memcached
+    ports:
+      - "11211"
+
+  varnish:
+    image: amara/amara-cache
+    ports:
+      - "9000"
+    networks:
+      default:
+        aliases:
+          - dev.amara.org
+    depends_on:
+      - app
+
+  selenium:
+    image: selenium/standalone-firefox:3.12.0-cobalt
+    ports:
+      - "4444:4444"
+    volumes:
+      - "/dev/shm:/dev/shm"
+
+  test:
+    image: amara-app
+    command: ["test", "--gui"]
+    environment:
+      DJANGO_SETTINGS_MODULE: dev_settings
+      GUITEST_HOSTNAME: dev.amara.org
+      LANG: en_US.UTF-8
+    volumes:
+      - ..:/opt/apps/amara:z
+      - amara-pytest-data:/var/run/pytest/
+    depends_on:
+      - selenium
+      - varnish
+      - worker
+
+volumes:
+  amara-pytest-data:

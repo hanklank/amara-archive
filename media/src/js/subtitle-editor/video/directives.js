@@ -252,10 +252,7 @@ var angular = angular || null;
                 var sub = $scope.workingSubtitles.subtitleList.getSubtitleById(subtitleId);
                 if(sub) {
                     var region = calcRegionForDrop($(this));
-                    $scope.workingSubtitles.subtitleList.setRegion(sub, region);
-                    if($scope.currentEdit.draft && $scope.currentEdit.draft.storedSubtitle.id == sub.id) {
-                        $scope.currentEdit.draft.region = region;
-                    }
+                    $scope.workingSubtitles.subtitleList.updateSubtitleRegion(sub, region);
                 }
                 evt.preventDefault();
             });
