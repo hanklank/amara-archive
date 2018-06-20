@@ -20,6 +20,8 @@ from __future__ import absolute_import
 
 from django.contrib import messages
 from django.shortcuts import redirect, render
+from django.template import RequestContext
+from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
 
 from teams import views as old_views
@@ -38,17 +40,19 @@ def render_team_header(request, team):
     }, RequestContext(request))
 
 class SimpleVideoPageCustomization(VideoPageCustomization):
-    def __init__(self, team, request):
+    def __init__(self, team, request, video):
         self.team = team
         self.request = request
-        self.header = self.setup_header()
+        self.sidebar = None
+        self.setup_header()
 
-    def setup_header():
+    def setup_header(self):
         self.header = None
         if self.team:
             self.header = render_team_header(self.request, self.team)
         else:
             self.header = None
+
 
 class SimpleTeamWorkflow(TeamWorkflow):
     """Workflow for basic public/private teams
