@@ -227,8 +227,8 @@ class NewCreateVideoUrlForm(forms.Form):
 
 class VideoForm(forms.Form):
     video_url = VideoURLField(
-        help_text=_('Acceptable Formats Include: Vimeo, Youtube, '
-                    'mp4, WebM, flv, ogg & mp3'))
+        help_text=_('Acceptable Formats Include: Vimeo, YouTube, '
+                    'MP4, WebM, FLV, OGG, and MP3'))
 
     def __init__(self, user=None, *args, **kwargs):
         if user and not user.is_authenticated():
