@@ -194,7 +194,6 @@ INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    'django.contrib.sitemaps',
     'django.contrib.webdesign',
     # third party apps
     'djcelery',
@@ -296,11 +295,11 @@ LOCALE_INDEPENDENT_PATHS = [
     re.compile('^/api/'),
     re.compile('^/api2/'),
     re.compile('^/jstest/'),
-    re.compile('^/sitemap.*.xml'),
     re.compile('^/externalsites/youtube-callback'),
     re.compile('^/auth/set-hidden-message-id/'),
     re.compile('^/crossdomain.xml'),
     re.compile('^/embedder-widget-iframe/'),
+    re.compile('^/__debug__/'),
 ]
 
 OPENID_SREG = {"required": "nickname, email", "optional":"postcode, country", "policy_url": ""}
@@ -330,10 +329,15 @@ AUTHENTICATION_BACKENDS = (
 # Use cookie storage always since it works the best with our caching system
 MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
 
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+# We actually use pytest to run our tests, but this settings prevents a
+# spurious warning
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
 LOGIN_URL = '/auth/login/'
 LOGIN_REDIRECT_URL = '/'
+
+MINIMUM_PASSWORD_SCORE = 2
+PASSWORD_RESET_TIMEOUT_DAYS = 1
 
 AUTH_PROFILE_MODULE = 'profiles.Profile'
 ACCOUNT_ACTIVATION_DAYS = 9999  # we are using registration only to verify emails
@@ -410,8 +414,6 @@ ROSETTA_EXCLUDED_APPLICATIONS = (
     'openid_consumer',
     'rosetta'
 )
-
-INSTALLED_APPS += optionalapps.get_apps()
 
 # List of modules to extract docstrings from for the update_docs management
 # command.

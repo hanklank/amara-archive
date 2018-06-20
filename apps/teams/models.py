@@ -35,7 +35,7 @@ from django.db.models import query, Q, Count, Sum
 from django.db.models.signals import post_save, post_delete, pre_delete
 from django.http import Http404
 from django.template.loader import render_to_string
-from django.utils.translation import ugettext_lazy as _, ugettext
+from django.utils.translation import ugettext_lazy as _, ugettext 
 
 import teams.moderation_const as MODERATION
 from caching import ModelCacheManager
@@ -48,7 +48,7 @@ from subtitles.signals import subtitles_deleted
 from teams.moderation_const import WAITING_MODERATION, UNMODERATED, APPROVED
 from teams.permissions_const import (
     TEAM_PERMISSIONS, PROJECT_PERMISSIONS, ROLE_OWNER, ROLE_ADMIN, ROLE_MANAGER,
-    ROLE_CONTRIBUTOR
+    ROLE_CONTRIBUTOR, ROLE_PROJ_LANG_MANAGER
 )
 from teams import tasks
 from teams import workflows
@@ -63,6 +63,7 @@ from utils import translation, send_templated_email
 from utils.amazon import S3EnabledImageField, S3EnabledFileField
 from utils.panslugify import pan_slugify
 from utils.text import fmt
+from utils.translation import get_language_label
 from videos.models import Video, VideoUrl, SubtitleVersion, SubtitleLanguage
 from videos.tasks import video_changed_tasks
 from subtitles.models import (
@@ -125,15 +126,10 @@ class TeamQuerySet(query.QuerySet):
         }
         return self.extra(select=select, select_params=[user.id])
 
-class TeamManager(models.Manager):
-    def get_queryset(self):
-        """Return a QS of all non-deleted teams."""
-        return TeamQuerySet(Team).filter(deleted=False)
-
     def for_user(self, user, allow_unlisted=False):
         """Return the teams visible for the given user.  """
         if user.is_superuser:
-            return self.all()
+            return self
         if allow_unlisted:
             q = ~models.Q(team_visibility=TeamVisibility.PRIVATE)
         else:
@@ -141,7 +137,7 @@ class TeamManager(models.Manager):
         if user.is_authenticated():
             user_teams = TeamMember.objects.filter(user=user)
             q |= models.Q(id__in=user_teams.values('team_id'))
-        return self.get_queryset().filter(q)
+        return self.filter(q)
 
     def with_recent_billing_record(self, day_range):
         """Find teams that have had a new video recently"""
@@ -152,13 +148,19 @@ class TeamManager(models.Manager):
                         .filter(created__gt=start_date)
                         .values_list('team_id', flat=True)
                         .distinct())
-        return Team.objects.filter(id__in=team_ids)
+        return self.filter(id__in=team_ids)
 
     def needs_new_video_notification(self, notify_interval):
         return (self.filter(
             notify_interval=notify_interval,
             teamvideo__created__gt=models.F('last_notification_time'))
             .distinct())
+
+
+class TeamManager(models.Manager):
+    def get_queryset(self):
+        """Return a QS of all non-deleted teams."""
+        return TeamQuerySet(Team).filter(deleted=False)
 
 TeamVisibility = enum.Enum('TeamVisibility', [
     ('PUBLIC', _(u'Public')),
@@ -301,8 +303,8 @@ class Team(models.Model):
     partner = models.ForeignKey('Partner', null=True, blank=True,
                                 related_name='teams')
 
-    objects = TeamManager()
-    all_objects = models.Manager() # For accessing deleted teams, if necessary.
+    objects = TeamManager.from_queryset(TeamQuerySet)()
+    all_objects = TeamQuerySet.as_manager()
 
     cache = ModelCacheManager()
 
@@ -1575,6 +1577,7 @@ class TeamMember(models.Model):
     ROLE_ADMIN = ROLE_ADMIN
     ROLE_MANAGER = ROLE_MANAGER
     ROLE_CONTRIBUTOR = ROLE_CONTRIBUTOR
+    ROLE_PROJ_LANG_MANAGER = ROLE_PROJ_LANG_MANAGER
 
     ROLES = (
         (ROLE_OWNER, _("Owner")),
@@ -1721,6 +1724,9 @@ class TeamMember(models.Model):
         """Test if the user is a language manager of any language"""
         return bool(self.get_languages_managed())
 
+    def is_a_project_or_language_manager(self):
+        return self.is_a_project_manager() or self.is_a_language_manager()
+
     def make_project_manager(self, project):
         self.projects_managed.add(project)
 
@@ -1732,6 +1738,16 @@ class TeamMember(models.Model):
 
     def remove_language_manager(self, language_code):
         self.languages_managed.filter(code=language_code).delete()
+
+    def remove_as_language_manager(self):
+        self.languages_managed.all().delete()
+
+    def remove_as_project_manager(self):
+        self.projects_managed.clear()
+
+    def remove_as_proj_lang_manager(self):
+        self.remove_as_language_manager()
+        self.remove_as_project_manager()
 
     class Meta:
         unique_together = (('team', 'user'),)
@@ -1751,6 +1767,10 @@ class LanguageManager(models.Model):
     member = models.ForeignKey(TeamMember, related_name='languages_managed')
     code = models.CharField(max_length=16,
                             choices=translation.ALL_LANGUAGE_CHOICES)
+
+    @property
+    def readable_name(self):
+        return get_language_label(self.code)
 
 # MembershipNarrowing
 class MembershipNarrowing(models.Model):
@@ -2266,7 +2286,6 @@ class TaskManager(models.Manager):
     def not_deleted(self):
         """Return a QS of tasks that are not deleted."""
         return self.get_queryset().filter(deleted=False)
-
 
     def incomplete(self):
         """Return a QS of tasks that are not deleted or completed."""
