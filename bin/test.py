@@ -5,12 +5,9 @@ from __future__ import absolute_import
 # before anything else, setup DJANGO_SETTINGS_MODULE
 import os
 import sys
-
-if '--gui' in sys.argv:
-    # GUI tests use the normal dev_settings because we need to connect to
-    # the actual database running in the for the test server
-    os.environ['DJANGO_SETTINGS_MODULE'] = 'dev_settings'
-else:
+if '--gui' not in sys.argv:
+    # only change it for the non-GUI tests.  For GUI tests, we want to use the
+    # same settings as the app is using.
     os.environ['DJANGO_SETTINGS_MODULE'] = 'dev_settings_test'
 
 import re
@@ -24,7 +21,6 @@ from django.core.cache import cache
 from django.conf import settings
 
 import startup
-
 
 def wait_for_database():
     import MySQLdb
@@ -59,6 +55,7 @@ class AmaraPyTest(object):
 
     def pytest_addoption(self, parser):
         parser.addoption('--gui', action='store_true')
+        parser.addoption('--take-screenshots', action='store_true')
 
     @pytest.mark.trylast
     def pytest_configure(self, config):
@@ -74,6 +71,10 @@ class AmaraPyTest(object):
 
         reporter = config.pluginmanager.getplugin('terminalreporter')
         reporter.startdir = py.path.local('/run/pytest/amara/')
+
+        if config.getoption('gui'):
+            # Use the normal DB for GUI tests
+            settings.DATABASES['default']['TEST']['NAME'] = settings.DATABASES['default']['NAME']
 
         before_tests.send(config)
 
@@ -114,8 +115,5 @@ if __name__ == '__main__':
     startup.startup()
     if '--gui' in sys.argv:
         wait_for_database()
-    from django.conf import settings
-    print settings.DATABASES
     sys.argv[0] = re.sub(r'(-script\.pyw?|\.exe)?$', '', sys.argv[0])
     sys.exit(pytest.main(plugins=[AmaraPyTest()]))
-

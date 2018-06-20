@@ -143,7 +143,8 @@ class GUITest(Command):
         run_node(['node', 'node_modules/gulp/bin/gulp.js', 'build'])
         cmdline = ['docker-compose', 'run', '--rm', 'test', 'test', '--gui']
         cmdline.extend(self.args)
-        return subprocess.call(cmdline, cwd="guitests")
+        subprocess.call(cmdline, cwd="guitests")
+        subprocess.call(['docker-compose', 'stop'], cwd='guitests')
 
 class GUITestLogs(Command):
     """Run unittests."""

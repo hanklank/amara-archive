@@ -37,7 +37,6 @@ elif [ "$ACTION" = "test" ]; then
     source /usr/local/bin/config_env
     cd /opt/apps/amara/
     shift
-    export DJANGO_SETTINGS_MODULE=dev_settings_test
     exec /opt/apps/amara/bin/test.py --rootdir=/run/pytest/ --nomigrations "$@"
 elif [ "$ACTION" = "shell" ]; then
     echo "Running shell..."

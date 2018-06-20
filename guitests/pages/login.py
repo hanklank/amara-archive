@@ -22,10 +22,10 @@ class LoginPage(Page):
     path = 'auth/login'
 
     def username_field(self):
-        return self.driver.find_element_by_id('id_username')
+        return self.driver.find_element_by_css_selector('form.auth-form #id_username')
 
     def password_field(self):
-        return self.driver.find_element_by_id('id_password')
+        return self.driver.find_element_by_css_selector('form.auth-form #id_password')
 
     def signin_button(self):
         return self.driver.find_element_by_css_selector(
