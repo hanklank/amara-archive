@@ -130,8 +130,29 @@ class Test(Command):
 
     def run(self):
         ensure_node_modules()
-        run_manage(['test', '--settings=dev_settings_test'] + self.args,
-                   check=False)
+        cmdline = ['docker-compose', 'run', '--rm', 'test', 'test']
+        cmdline.extend(self.args)
+        return subprocess.call(cmdline)
+
+class GUITest(Command):
+    """Run unittests."""
+    raw_args = True
+
+    def run(self):
+        ensure_node_modules()
+        run_node(['node', 'node_modules/gulp/bin/gulp.js', 'build'])
+        cmdline = ['docker-compose', 'run', '--rm', 'test', 'test', '--gui']
+        cmdline.extend(self.args)
+        subprocess.call(cmdline, cwd="guitests")
+        subprocess.call(['docker-compose', 'stop'], cwd='guitests')
+
+class GUITestLogs(Command):
+    """Run unittests."""
+    raw_args = True
+
+    def run(self):
+        cmdline = ['docker-compose', 'logs', 'app']
+        return subprocess.call(cmdline, cwd="guitests")
 
 class JSTest(Command):
     """Run Javascript unittests."""
@@ -555,6 +576,8 @@ class Dev(RootCommand):
         Bump,
         SyncTranslations,
         Test,
+        GUITest,
+        GUITestLogs,
         Up,
         VarnishLogs,
         NPM,

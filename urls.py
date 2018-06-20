@@ -168,11 +168,13 @@ urlpatterns += patterns('',
 
 
 if settings.DEBUG:
+    import debug_toolbar
     urlpatterns += patterns('',
         (r'^site_media/(?P<path>.*)$', 'django.views.static.serve',
          {'document_root': settings.STATIC_ROOT, 'show_indexes': True}),
         (r'^user-data/(?P<path>.*)$', 'django.views.static.serve',
          {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
+        url(r'^__debug__/', include(debug_toolbar.urls)),
     )
 
 def ensure_user(request):
