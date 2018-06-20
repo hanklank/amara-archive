@@ -183,32 +183,6 @@ var angular = angular || null;
                     $reference.last().height($reference.last().height() + $working.height() - $reference.height() );
             }
         }
-	/*
-         * Might not be the right location
-         * TODO: move this to the proper place (probably the SubtitleList
-         * model).
-         */
-        $scope.copyTimingOver = function() {
-            var nextWorkingSubtitle = $scope.workingSubtitles.subtitleList.firstSubtitle();
-            var nextReferenceSubtitle = $scope.referenceSubtitles.subtitleList.firstSubtitle();
-            while (nextWorkingSubtitle && nextReferenceSubtitle) {
-                $scope.workingSubtitles.subtitleList.updateSubtitleTime(nextWorkingSubtitle,
-                                                                        nextReferenceSubtitle.startTime,
-                                                                        nextReferenceSubtitle.endTime);
-                $scope.workingSubtitles.subtitleList.updateSubtitleParagraph(nextWorkingSubtitle,
-                                                                             $scope.referenceSubtitles.subtitleList.getSubtitleParagraph(nextReferenceSubtitle));
-                nextWorkingSubtitle = $scope.workingSubtitles.subtitleList.nextSubtitle(nextWorkingSubtitle);
-                nextReferenceSubtitle = $scope.referenceSubtitles.subtitleList.nextSubtitle(nextReferenceSubtitle);
-            }
-            while (nextWorkingSubtitle) {
-                $scope.workingSubtitles.subtitleList.updateSubtitleTime(nextWorkingSubtitle, -1, -1);
-                $scope.workingSubtitles.subtitleList.updateSubtitleParagraph(nextWorkingSubtitle, false);
-                nextWorkingSubtitle = $scope.workingSubtitles.subtitleList.nextSubtitle(nextWorkingSubtitle);
-            }
-            // Sent no matter anything has changed or not, ideally we'd only emit
-            // that if anything changed
-            $scope.$root.$emit('work-done');
-	}
 
 	$scope.copyTimingEnabled = function() {
             return ($scope.workingSubtitles.subtitleList.length() > 0 &&
@@ -289,47 +263,41 @@ var angular = angular || null;
             return rv;
         }
 
-        $scope.showCopyTimingModal = function($event) {
+        $scope.onCopyTimingClicked = function($event) {
+            console.log('copy timing');
             $scope.dialogManager.openDialog('confirmCopyTiming', {
-                continueButton: $scope.copyTimingOver
+                continueButton: function() {
+                    $scope.workingSubtitles.subtitleList.copyTimingsFrom($scope.referenceSubtitles.subtitleList);
+                    $scope.$root.$emit('work-done');
+                }
             });
             $event.stopPropagation();
             $event.preventDefault();
         };
 
-        $scope.showClearTimingModal = function($event) {
-            $scope.dialogManager.openDialog('confirmTimingReset', {
-                continueButton: $scope.clearTiming
-            });
-            $event.stopPropagation();
-            $event.preventDefault();
-        };
-
-        $scope.clearTiming = function() {
-            var nextWorkingSubtitle = $scope.workingSubtitles.subtitleList.firstSubtitle();
-            while (nextWorkingSubtitle) {
-                $scope.workingSubtitles.subtitleList.updateSubtitleTime(nextWorkingSubtitle, -1, -1);
-                nextWorkingSubtitle = $scope.workingSubtitles.subtitleList.nextSubtitle(nextWorkingSubtitle);
-             }
+        $scope.onClearTimingsClicked = function($event) {
+            $scope.workingSubtitles.subtitleList.clearAllTimings();
             $scope.$root.$emit('work-done');
         };
 
-        $scope.showClearTextModal = function($event) {
-            $scope.dialogManager.openDialog('confirmTextReset', {
-                continueButton: $scope.clearText
+        $scope.onClearTextClicked = function($event) {
+            $scope.workingSubtitles.subtitleList.clearAllText();
+            $scope.$root.$emit('work-done');
+        };
+
+        $scope.showDeleteEmptySubtitlesModal = function($event) {
+            $scope.dialogManager.openDialog('confirmDeleteEmptySubtitles', {
+                continueButton: $scope.deleteEmptySubtitles
             });
             $event.stopPropagation();
             $event.preventDefault();
         };
 
-        $scope.clearText = function() {
-            var nextWorkingSubtitle = $scope.workingSubtitles.subtitleList.firstSubtitle();
-            while (nextWorkingSubtitle) {
-                $scope.workingSubtitles.subtitleList.updateSubtitleContent(nextWorkingSubtitle, "");
-                nextWorkingSubtitle = $scope.workingSubtitles.subtitleList.nextSubtitle(nextWorkingSubtitle);
-             }
+        $scope.deleteEmptySubtitles = function() {
+            $scope.workingSubtitles.subtitleList.deleteEmptySubtitles();
             $scope.$root.$emit('work-done');
         };
+
         $scope.showTutorial = function($event) {
             $scope.toggleTutorial(true);
             $event.stopPropagation();
@@ -533,6 +501,7 @@ var angular = angular || null;
     }]);
 
     module.controller("AppControllerEvents", ["$scope", "VideoPlayer", function($scope, VideoPlayer) {
+        $scope.isMac = navigator.platform.toUpperCase().indexOf('MAC') > -1;
         function insertAndEditSubtitle() {
             var sub = $scope.workingSubtitles.subtitleList.insertSubtitleBefore(null);
             $scope.currentEdit.start(sub);
@@ -557,6 +526,15 @@ var angular = angular || null;
                     evt.shiftKey = true;
             }
             $scope.handleAppKeyDown(evt);
+        }
+        if($scope.isMac) {
+            function ctrlOrCmd(evt) {
+                return evt.metaKey;
+            }
+        } else {
+            function ctrlOrCmd(evt) {
+                return evt.ctrlKey;
+            }
         }
         $scope.handleAppKeyDown = function(evt) {
             // Reset the lock timer.
@@ -588,21 +566,47 @@ var angular = angular || null;
             } else if (evt.keyCode === 190 && evt.shiftKey && evt.ctrlKey) {
                 // Control+Shift+Period, go forward 4 seconds
                 VideoPlayer.seek(VideoPlayer.currentTime() + 4000);
+            } else if (evt.keyCode === 90 && ctrlOrCmd(evt) && !evt.altKey) {
+                // Ctrl-Z -- undo
+                if($scope.currentEdit.inProgress()) {
+                    if($scope.currentEdit.undoAutoCreatedSubtitle($scope.workingSubtitles.subtitleList)) {
+                        // Corner case: the user hit enter in typing mode to
+                        // create a new subtitle, then hit Ctrl-Z.  We
+                        // auto-undo the insert in this case.  Don't try to
+                        // also undo the change before that.
+                        $scope.$root.$emit('work-done');
+                        return;
+                    }
+                    $scope.currentEdit.finish($scope.workingSubtitles.subtitleList);
+                }
+                if($scope.workingSubtitles.subtitleList.canUndo()) {
+                    $scope.workingSubtitles.subtitleList.undo();
+                    $scope.$root.$emit('work-done');
+                }
+            } else if ( (!$scope.isMac && evt.keyCode === 89 && evt.ctrlKey) ||
+                        ($scope.isMac && evt.keyCode === 90 && evt.metaKey && evt.shiftKey)) {
+                // Ctrl-Y -- redo
+                if($scope.workingSubtitles.subtitleList.canRedo()) {
+                    $scope.workingSubtitles.subtitleList.redo();
+                    $scope.$root.$emit('work-done');
+                }
             } else if (evt.keyCode === 73 && isAltPressed(evt) && evt.shiftKey) {
                 // Alt+Shift+i, insert subtitle below
-		if($scope.currentEdit.storedSubtitle())
+		if($scope.currentEdit.inProgress()) {
 		    $scope.workingSubtitles.subtitleList.insertSubtitleBefore(
-			$scope.workingSubtitles.subtitleList.nextSubtitle($scope.currentEdit.storedSubtitle()));
+			$scope.workingSubtitles.subtitleList.nextSubtitle($scope.currentEdit.subtitle));
+                }
             } else if (evt.keyCode === 73 && isAltPressed(evt)) {
                 // Alt+i, insert subtitle above
-		if($scope.currentEdit.storedSubtitle())
+		if($scope.currentEdit.inProgress()) {
 		    $scope.workingSubtitles.subtitleList.insertSubtitleBefore(
-			$scope.currentEdit.storedSubtitle());
+			$scope.currentEdit.subtitle);
+                }
             } else if (isDel(evt.keyCode) && isAltPressed(evt)) {
                 // Alt+del, remove current subtitle
-		if($scope.currentEdit.storedSubtitle()){
+		if($scope.currentEdit.inProgress()){
                     var subtitleList = $scope.workingSubtitles.subtitleList;
-                    var currentSubtitle = $scope.currentEdit.storedSubtitle();
+                    var currentSubtitle = $scope.currentEdit.subtitle;
                     var nextSubtitle = subtitleList.nextSubtitle(currentSubtitle);
                     var prevSubtitle = subtitleList.prevSubtitle(currentSubtitle);
                     var replacement = nextSubtitle || prevSubtitle;
@@ -612,9 +616,7 @@ var angular = angular || null;
                     // After removing current subtitle, move cursor and open text-area of adjacent subtitle
                     if (replacement){
                         // Tell the root scope that we're no longer editing, now.
-                        if($scope.currentEdit.inProgress()) {
-                            $scope.currentEdit.finish(true, subtitleList);
-                        }
+                        $scope.currentEdit.finish(subtitleList);
                         $scope.currentEdit.start(replacement);
                         $scope.$root.$emit('scroll-to-subtitle', replacement);
                         evt.preventDefault();
@@ -624,7 +626,7 @@ var angular = angular || null;
                 }
             } else if (isAltPressed(evt) && ((evt.keyCode === 38) || (evt.keyCode === 40))) {
 		var nextSubtitle;
-		var subtitle = $scope.currentEdit.storedSubtitle();
+		var subtitle = $scope.currentEdit.subtitle;
 		var subtitleList = $scope.workingSubtitles.subtitleList;
 		if(subtitle) {
 		    if (evt.keyCode === 38)
@@ -632,8 +634,7 @@ var angular = angular || null;
 		    else
 			nextSubtitle = subtitleList.nextSubtitle(subtitle);
 		    if (nextSubtitle) {
-			if($scope.currentEdit.finish(true, subtitleList))
-			    $scope.$root.$emit('work-done');
+			$scope.currentEdit.finish(subtitleList);
 			$scope.currentEdit.start(nextSubtitle);
 			$scope.$root.$emit('scroll-to-subtitle', nextSubtitle);
 			evt.preventDefault();
@@ -655,7 +656,7 @@ var angular = angular || null;
                 $scope.$root.$emit("sync-next-start-time");
             } else if ((evt.keyCode == 38) && ($scope.timelineShown)) {
                 $scope.$root.$emit("sync-next-end-time");
-            } else if ((evt.keyCode == 13) && (!$scope.timelineShown)) {
+            } else if ((evt.keyCode == 13) && (!$scope.timelineShown) && (!$scope.dialogManager.current())) {
                 insertAndEditSubtitle();
             } else {
                 return;

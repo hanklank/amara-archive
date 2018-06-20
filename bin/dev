@@ -130,7 +130,29 @@ class Test(Command):
 
     def run(self):
         ensure_node_modules()
-        run_manage(['test', '--settings=dev_settings_test'] + self.args)
+        cmdline = ['docker-compose', 'run', '--rm', 'test', 'test']
+        cmdline.extend(self.args)
+        return subprocess.call(cmdline)
+
+class GUITest(Command):
+    """Run unittests."""
+    raw_args = True
+
+    def run(self):
+        ensure_node_modules()
+        run_node(['node', 'node_modules/gulp/bin/gulp.js', 'build'])
+        cmdline = ['docker-compose', 'run', '--rm', 'test', 'test', '--gui']
+        cmdline.extend(self.args)
+        subprocess.call(cmdline, cwd="guitests")
+        subprocess.call(['docker-compose', 'stop'], cwd='guitests')
+
+class GUITestLogs(Command):
+    """Run unittests."""
+    raw_args = True
+
+    def run(self):
+        cmdline = ['docker-compose', 'logs', 'app']
+        return subprocess.call(cmdline, cwd="guitests")
 
 class JSTest(Command):
     """Run Javascript unittests."""
@@ -499,13 +521,16 @@ NEEDS_ROOT = [
     'compile_translations',
     'makemigrations',
 ]
-def run_manage(args, **kwargs):
+def run_manage(args, check=True, **kwargs):
     if args and args[0] in NEEDS_ROOT:
         cmdline = ['docker-compose', 'run', '--rm', '-u', 'root', 'app',
                    'manage']
     else:
         cmdline = ['docker-compose', 'run', '--rm', 'app', 'manage']
-    subprocess.check_call(cmdline + args, **kwargs)
+    if check:
+        subprocess.check_call(cmdline + args, **kwargs)
+    else:
+        subprocess.call(cmdline + args, **kwargs)
 
 # If you update this, make sure to also change the value in
 # codeship-services.yml
@@ -552,6 +577,8 @@ class Dev(RootCommand):
         Bump,
         SyncTranslations,
         Test,
+        GUITest,
+        GUITestLogs,
         Up,
         VarnishLogs,
         NPM,

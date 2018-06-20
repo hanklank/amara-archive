@@ -55,6 +55,9 @@ var angular = angular || null;
             this.startTime = -500;
         }
         this.endTime = this.startTime + this.duration;
+        if(scope.duration !== null) {
+            this.endTime = Math.min(this.endTime, scope.duration)
+        }
         this.width = durationToPixels(this.duration, scope.scale);
     }
 
@@ -106,23 +109,24 @@ var angular = angular || null;
             function drawSecond(ctx, xPos, t) {
                 // draw the second text on the timeline
                 ctx.fillStyle = '#686868';
-                var text = displayTimeSecondsFilter(t * 1000);
+                var text = displayTimeSecondsFilter(t);
                 var metrics = ctx.measureText(text);
                 var x = xPos - (metrics.width / 2);
                 ctx.fillText(text, x, 60);
             }
-            function drawTics(ctx, xPos) {
+            function drawTics(ctx, xPos, duration) {
                 // draw the tic marks between seconds
+                // duration represents the amount of time to draw tics for in ms
                 ctx.strokeStyle = '#686868';
-                var divisions = 4;
-                var step = durationToPixels(1000/divisions, scope.scale);
+                var divisions = duration / 250;
+                var step = durationToPixels(250, scope.scale);
                 ctx.lineWidth = 1;
                 ctx.beginPath();
                 for(var i = 1; i < divisions; i++) {
                     var x = Math.floor(0.5 + xPos + step * i);
                     x += 0.5;
                     ctx.moveTo(x, 60);
-                    if(i == divisions / 2) {
+                    if(i == 2) {
                         // draw an extra long tic for the 50% mark;
                         ctx.lineTo(x, 45);
                     } else {
@@ -136,21 +140,20 @@ var angular = angular || null;
                 ctx.clearRect(0, 0, width, height);
                 ctx.font = (height / 5) + 'px Open Sans';
 
-                var startTime = Math.floor(bufferTimespan.startTime / 1000);
-                var endTime = Math.floor(bufferTimespan.endTime / 1000);
+                var startTime = bufferTimespan.startTime;
+                var endTime = bufferTimespan.endTime;
                 if(startTime < 0) {
                     startTime = 0;
                 }
-                if(scope.duration !== null && endTime > scope.duration / 1000) {
-                    endTime = Math.floor(scope.duration / 1000);
+                if(scope.duration) {
+                    endTime = Math.min(endTime, scope.duration);
                 }
 
-                for(var t = startTime; t < endTime; t++) {
-                    var ms = t * 1000;
-                    var xPos = durationToPixels(ms - bufferTimespan.startTime,
+                for(var t = startTime; t < endTime; t += 1000) {
+                    var xPos = durationToPixels(t - bufferTimespan.startTime,
                             scope.scale);
                     drawSecond(ctx, xPos, t);
-                    drawTics(ctx, xPos);
+                    drawTics(ctx, xPos, Math.min(1000, endTime-t));
                 }
             }
 
@@ -171,7 +174,8 @@ var angular = angular || null;
                 visibleTimespan = new VisibleTimespan(scope, containerWidth,
                         deltaMS);
                 if(bufferTimespan === null ||
-                    !visibleTimespan.fitsInBuffer(bufferTimespan)) {
+                    !visibleTimespan.fitsInBuffer(bufferTimespan) ||
+                    bufferTimespan.endTime > scope.duration) {
                     makeNewBuffer();
                 }
                 visibleTimespan.positionDiv(bufferTimespan, canvas);
@@ -198,6 +202,7 @@ var angular = angular || null;
             var timelineDivWidth = 0;
             var bufferTimespan = null;
             var visibleTimespan = null;
+            var dragCounter = 0; // increments 1 for each drag we do.  Used to create unique changeGroups for updateSubtitleTimes
             // Map XML subtitle nodes to the div we created to show them
             var timelineDivs = {}
             // Store the DIV for the unsynced subtitle
@@ -261,7 +266,7 @@ var angular = angular || null;
                 return scope.workingSubtitles.subtitleList;
             }
 
-            function handleMouseDown(evt, dragHandler) {
+            function handleMouseDown(evt) {
                 scope.handleAppMouseClick(evt);
                 if (evt.which == 3) return;
                 if(!scope.canSync) {
@@ -284,9 +289,13 @@ var angular = angular || null;
                     var storedSubtitle = subtitle.storedSubtitle;
                     var div = unsyncedDiv;
                 }
+
                 if(!div) {
                     return false;
                 }
+
+                var changeGroup = 'timeline-drag-' + dragCounter++;
+
                 var previousDiv = null, nextDiv = null; 
                 var nextSubtitle = subtitleList().nextSubtitle(storedSubtitle);
                 context.nextSubtitleStartTimeOr = context.nextSubtitleStartTimeNew = null;
@@ -317,42 +326,46 @@ var angular = angular || null;
 
                 var initialPageX = evt.pageX;
 
+                function updateSubtitleTimes() {
+                    var changes = [];
+                    changes.push({
+                        subtitle: storedSubtitle,
+                        startTime: context.startTime,
+                        endTime: context.endTime,
+                    });
+
+                    if (context.previousSubtitleEndTimeNew) {
+                        changes.push({
+                            subtitle: prevSubtitle,
+                            startTime: prevSubtitle.startTime,
+                            endTime: context.previousSubtitleEndTimeNew
+                        });
+                    }
+
+                    if (context.nextSubtitleStartTimeNew) {
+                        changes.push({
+                            subtitle: nextSubtitle,
+                            startTime: context.nextSubtitleStartTimeNew,
+                            endTime: nextSubtitle.endTime
+                        });
+                    }
+
+                    subtitleList().updateSubtitleTimes(changes, changeGroup);
+                    scope.$root.$emit("work-done");
+                    scope.$root.$digest();
+                }
+
                 $(document).on('mousemove.timelinedrag', function(evt) {
                     var deltaX = evt.pageX - initialPageX;
                     var deltaMS = pixelsToDuration(deltaX, scope.scale);
                     dragHandler(context, deltaMS);
-                    placeSubtitle(context.startTime, context.endTime, div);
-                    subtitleList().updateSubtitleTime(storedSubtitle,
-                        context.startTime, context.endTime);
-                    if (previousDiv && context.previousSubtitleEndTimeNew)
-                        placeSubtitle(prevSubtitle.startTime, context.previousSubtitleEndTimeNew, previousDiv);
-                    if (nextDiv && context.nextSubtitleStartTimeNew)
-                        placeSubtitle(context.nextSubtitleStartTimeNew, nextSubtitle.endTime, nextDiv);
-                    if (context.previousSubtitleEndTimeNew)
-                        subtitleList().updateSubtitleTime(prevSubtitle,
-                            prevSubtitle.startTime, context.previousSubtitleEndTimeNew);
-                    if (context.nextSubtitleStartTimeNew) 
-                        subtitleList().updateSubtitleTime(nextSubtitle,
-                            context.nextSubtitleStartTimeNew, nextSubtitle.endTime);
+                    updateSubtitleTimes();
                 }).on('mouseup.timelinedrag', function(evt) {
                     $(document).off('.timelinedrag');
-                    subtitleList().updateSubtitleTime(storedSubtitle,
-                        context.startTime, context.endTime);
-                    if (context.previousSubtitleEndTimeNew)
-                        subtitleList().updateSubtitleTime(prevSubtitle,
-                            prevSubtitle.startTime, context.previousSubtitleEndTimeNew);
-                    if (context.nextSubtitleStartTimeNew) 
-                        subtitleList().updateSubtitleTime(nextSubtitle,
-                            context.nextSubtitleStartTimeNew, nextSubtitle.endTime);
-                    scope.$root.$emit("work-done");
-                    scope.$root.$digest();
+                    updateSubtitleTimes();
                 }).on('mouseleave.timelinedrag', function(evt) {
                     $(document).off('.timelinedrag');
-                    placeSubtitle(subtitle.startTime, subtitle.endTime, div);
-                    if (previousDiv && context.previousSubtitleEndTimeNew)
-                        placeSubtitle(prevSubtitle.startTime, context.previousSubtitleEndTimeNew, previousDiv);
-                    if (nextDiv && context.nextSubtitleStartTimeNew)
-                        placeSubtitle(context.nextSubtitleStartTimeNew, nextSubtitle.endTime, nextDiv);
+                    updateSubtitleTimes();
                 });
                 // need to prevent the default event from happening so that the
                 // browser's DnD code doesn't mess with us.
@@ -507,7 +520,7 @@ var angular = angular || null;
 
                 var shownSubtitle = subtitleList().subtitleAt(
                     scope.currentTime);
-		scope.subtitle = shownSubtitle;
+                scope.subtitle = shownSubtitle;
                 if(shownSubtitle === null && unsyncedSubtitle !== null &&
                         unsyncedSubtitle.startTime <= scope.currentTime) {
                     shownSubtitle = unsyncedSubtitle.storedSubtitle;
@@ -569,9 +582,6 @@ var angular = angular || null;
                 }
             }
 
-            scope.unsyncedShown = function() {
-                return (unsyncedDiv != null);
-            }
             // Put redrawSubtitles in the scope so that the controller can
             // call it.
             scope.redrawSubtitles = function(options) {
