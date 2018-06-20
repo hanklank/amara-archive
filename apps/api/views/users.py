@@ -89,7 +89,7 @@ Updating user accounts
 
     :param username username: must match the username of the auth credentials sent
 
-    Inputs the same fields as POST, except `username` and
+    Inputs the same fields as POST, except `username`, `password`, and
     `find_unique_username`.
 
 .. _user_ids:
@@ -283,12 +283,17 @@ class UserCreateSerializer(UserSerializer):
 
 class UserUpdateSerializer(UserSerializer):
     username = serializers.CharField(read_only=True)
-    password = PasswordField(required=False, write_only=True)
     create_login_token = serializers.BooleanField(write_only=True,
                                                   required=False)
 
+    default_error_messages = {
+        'api-password-change': 'Password changes are not supported through the API'
+    }
+
     def __init__(self, *args, **kwargs):
         super(UserUpdateSerializer, self).__init__(*args, **kwargs)
+        if kwargs.get('data') and 'password' in kwargs.get('data'):
+            self.fail('api-password-change')
         if 'instance' in kwargs and \
            not can_modify_user(self.context['request'].user, kwargs['instance']):
             self.fields.pop('email')
@@ -303,7 +308,7 @@ class UserUpdateSerializer(UserSerializer):
     class Meta:
         model = User
         fields = UserSerializer.Meta.fields + (
-            'email', 'password', 'create_login_token',
+            'email', 'create_login_token',
         )
 
 class UserViewSet(mixins.RetrieveModelMixin,
@@ -328,6 +333,8 @@ class UserViewSet(mixins.RetrieveModelMixin,
     def get_object(self):
         try:
             user = userlookup.lookup_user(self.kwargs['identifier'])
+            if not user.is_active:
+                raise Http404()
         except User.DoesNotExist:
             raise Http404()
         self.check_object_permissions(self.request, user)
