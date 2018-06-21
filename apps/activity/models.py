@@ -940,7 +940,7 @@ class ActivityQuerySet(query.QuerySet):
 
     def for_user(self, user):
         return (self.filter(user=user).original()
-                .force_index('user_copied_created'))
+                .force_index('activity_activityrecord_user_id_9a176575334d68_idx'))
 
     def for_team(self, team):
         return self.filter(team=team)
