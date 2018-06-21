@@ -46,6 +46,7 @@ def base_url():
 def pytest_configure(config):
     global TAKE_SCREENSHOTS
     TAKE_SCREENSHOTS = config.getoption('take_screenshots')
+    settings.ENABLE_LOGIN_CAPTCHA = False
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):
