@@ -1805,7 +1805,7 @@ class ChangeMemberRoleForm(ManagementForm):
                 if self.would_remove_last_owner(member, role):
                     self.only_owner_count += 1
                 # check if user has permission to change the member's role
-                elif not can_assign_role(member.team, self.user, role, member.user):
+                elif not permissions.can_assign_role(member.team, self.user, role, member.user):
                     self.invalid_permission_count += 1
                 else:
                     try:
