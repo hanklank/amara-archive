@@ -1839,7 +1839,7 @@ class RemoveMemberForm(ManagementForm):
     label = _("Remove Member")
 
     def __init__(self, user, queryset, selection, all_selected,
-                 data=None, files=None):
+                 data=None, files=None, **kwargs):
         self.user = user
         super(RemoveMemberForm, self).__init__(
             queryset, selection, all_selected, data=data, files=files)
