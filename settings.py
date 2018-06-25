@@ -718,6 +718,7 @@ MEDIA_BUNDLES = {
 # use https for production to prevent attackers from seeing the access token.
 # For development, we care less about that so we typically use http
 OAUTH_CALLBACK_PROTOCOL = 'https'
+ENABLE_LOGIN_CAPTCHA = True
 
 EMAIL_BACKEND = "utils.safemail.InternalOnlyBackend"
 EMAIL_FILE_PATH = '/tmp/unisubs-messages'
