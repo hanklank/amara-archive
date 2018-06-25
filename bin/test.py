@@ -22,22 +22,6 @@ from django.conf import settings
 
 import startup
 
-def wait_for_database():
-    import MySQLdb
-    db_info = settings.DATABASES['default']
-    end_time = time.time() + 30
-    while time.time() < end_time:
-        try:
-            MySQLdb.connect(host=db_info['HOST'], user=db_info['USER'],
-                            passwd=db_info['PASSWORD'])
-        except:
-            print "waiting for database to come up"
-        else:
-            return
-        time.sleep(5)
-    print "Could not connect to DB"
-    sys.exit(1)
-
 class AmaraPyTest(object):
     """
     Pytest plugin used by amara
@@ -72,11 +56,8 @@ class AmaraPyTest(object):
         reporter = config.pluginmanager.getplugin('terminalreporter')
         reporter.startdir = py.path.local('/run/pytest/amara/')
 
-        if config.getoption('gui'):
-            # Use the normal DB for GUI tests
-            settings.DATABASES['default']['TEST']['NAME'] = settings.DATABASES['default']['NAME']
-
         before_tests.send(config)
+
 
     def pytest_ignore_collect(self, path, config):
         if path.isdir():
@@ -107,13 +88,11 @@ class AmaraPyTest(object):
         cache.clear()
 
     @pytest.fixture(autouse=True)
-    def global_fixture(self, db):
+    def setup_amara_db(self, db):
         from auth.models import CustomUser
         CustomUser.get_amara_anonymous()
 
 if __name__ == '__main__':
     startup.startup()
-    if '--gui' in sys.argv:
-        wait_for_database()
     sys.argv[0] = re.sub(r'(-script\.pyw?|\.exe)?$', '', sys.argv[0])
     sys.exit(pytest.main(plugins=[AmaraPyTest()]))
