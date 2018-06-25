@@ -1842,7 +1842,7 @@ class RemoveMemberForm(ManagementForm):
                  data=None, files=None, **kwargs):
         self.user = user
         super(RemoveMemberForm, self).__init__(
-            queryset, selection, all_selected, data=data, files=files)
+            queryset, selection, all_selected, data=data, files=files, **kwargs)
 
     def would_remove_last_owner(self, members):
         # if no owners are going to be removed
