@@ -1760,8 +1760,8 @@ class ChangeMemberRoleForm(ManagementForm):
 
     def setup_fields(self):
         if self.is_owner:
-            self.fields['role'].choices += [(TeamMember.ROLE_OWNER, _('Owner'))]
             self.fields['role'].choices += [(TeamMember.ROLE_ADMIN, _('Admin'))]
+            self.fields['role'].choices += [(TeamMember.ROLE_OWNER, _('Owner'))]
 
     def would_remove_last_owner(self, member, role):
         if role == TeamMember.ROLE_OWNER:
