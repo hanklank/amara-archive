@@ -25,11 +25,10 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 TAKE_SCREENSHOTS = False
 
-@pytest.fixture(autouse=True)
-def global_fixture(transactional_db):
-    # NOTE: need to use transactional_db, since otherwise the entire test runs
-    # inside a transaction, so changes inside the test are not visible in the
-    # webapp
+@pytest.fixture(scope="session")
+def setup_amara_db():
+    # Override the default setup_amara_db() fixture, since we don't want to
+    # access the database from the GUI tests
     pass
 
 @pytest.fixture(scope="session")
@@ -46,7 +45,6 @@ def base_url():
 def pytest_configure(config):
     global TAKE_SCREENSHOTS
     TAKE_SCREENSHOTS = config.getoption('take_screenshots')
-    settings.ENABLE_LOGIN_CAPTCHA = False
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):
