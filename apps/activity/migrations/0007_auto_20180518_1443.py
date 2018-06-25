@@ -8,7 +8,7 @@ import codefield
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('activity', '0005_auto_20180518_1406'),
+        ('activity', '0006_merge'),
     ]
 
     operations = [
