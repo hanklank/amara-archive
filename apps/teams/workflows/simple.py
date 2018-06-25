@@ -29,7 +29,7 @@ from teams import forms
 from teams.workflows import TeamWorkflow
 from utils.breadcrumbs import BreadCrumb
 from .subtitleworkflows import TeamVideoWorkflow
-from videos.behaviors import VideoPageCustomization
+from videos.behaviors import VideoPageCustomization, SubtitlesPageCustomization
 
 def render_team_header(request, team):
     return render_to_string('future/header.html', {
@@ -47,12 +47,23 @@ class SimpleVideoPageCustomization(VideoPageCustomization):
         self.setup_header()
 
     def setup_header(self):
-        self.header = None
         if self.team:
             self.header = render_team_header(self.request, self.team)
         else:
             self.header = None
 
+class SimpleSubtitlesPageCustomization(SubtitlesPageCustomization):
+    def __init__(self, request, video, subtitle_language, team):
+        super(SimpleSubtitlesPageCustomization, self).__init__(request.user, video, subtitle_language)
+        self.request = request
+        self.team = team
+        self.setup_header()
+
+    def setup_header(self):
+        if self.team:
+            self.header = render_team_header(self.request, self.team)
+        else:
+            self.header = None
 
 class SimpleTeamWorkflow(TeamWorkflow):
     """Workflow for basic public/private teams
@@ -97,6 +108,10 @@ class SimpleTeamWorkflow(TeamWorkflow):
     def video_page_customize(self, request, video):
         team = self.find_team_for_page(request)
         return SimpleVideoPageCustomization(team, request, video)
+
+    def subtitles_page_customize(self, request, video, subtitle_language):
+        team = self.find_team_for_page(request)
+        return SimpleSubtitlesPageCustomization(request, video, subtitle_language, team)
 
     def find_team_for_page(self, request):
         slug = request.GET.get('team')
