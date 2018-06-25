@@ -23,7 +23,7 @@ from django.utils.translation import ugettext as _
 from teams.models import Team, MembershipNarrowing, Workflow, TeamMember, Task
 from teams.permissions_const import (
     ROLES_ORDER, ROLE_OWNER, ROLE_CONTRIBUTOR, ROLE_ADMIN, ROLE_MANAGER,
-    ROLE_OUTSIDER
+    ROLE_OUTSIDER, ROLE_PROJ_LANG_MANAGER
 )
 class TeamsPermissionsCheck(object):
     """The result of some functions below.
@@ -133,7 +133,7 @@ def roles_user_can_assign(team, user, to_user=None):
     user_role = get_role_for_target(user, team)
 
     if user_role == ROLE_OWNER:
-        return ROLES_ORDER
+        return ROLES_ORDER + [ROLE_PROJ_LANG_MANAGER]
     elif user_role == ROLE_ADMIN:
         if to_user:
             if get_role(get_member(to_user, team)) == ROLE_OWNER or get_role(get_member(to_user, team)) == ROLE_ADMIN:
