@@ -166,11 +166,6 @@
                 <td> {% trans "Shift + ENTER" %}</td>
             </tr>
             <tr>
-                <td> {% trans "Delete empty subtitle" %}</td>
-                <td> {% trans "ESC" %}</td>
-                <td> {% trans "ESC" %}</td>
-            </tr>
-            <tr>
                 <td> {% trans "Exit edit mode of current subtitle" %}</td>
                 <td> {% trans "ESC" %}</td>
                 <td> {% trans "ESC" %}</td>
@@ -204,6 +199,16 @@
               <td> {% trans "Navigate to the next subtitle" %}</td>
               <td> {% trans "Alt + DOWN Arrow" %}</td>
               <td> {% trans "Option + DOWN Arrow" %}</td>
+            </tr>
+            <tr>
+                <td> {% trans "Undo last action" %}</td>
+                <td> {% trans "CTRL + z" %}</td>
+                <td> {% trans "CMD + z" %}</td>
+            </tr>
+            <tr>
+                <td> {% trans "Redo last action" %}</td>
+                <td> {% trans "CTRL + y" %}</td>
+                <td> {% trans "CMD + Shift + z" %}</td>
             </tr>
             </tbody>
         </table>
@@ -258,16 +263,6 @@
                     </tr>
                 </thead>
                 <tbody>
-                <tr>
-                    <td> {% trans "Undo last action" %}</td>
-                    <td> {% trans "CTRL + z" %}</td>
-                    <td> {% trans "CMD + z" %}</td>
-                </tr>
-                <tr>
-                    <td> {% trans "Redo last action" %}</td>
-                    <td> {% trans "CTRL + Shift + z" %}</td>
-                    <td> {% trans "CMD + Shift + z" %}</td>
-                </tr>
                 <tr>
                     <td> {% trans "Save a version" %}</td>
                     <td> {% trans "CTRL + s" %}</td>
