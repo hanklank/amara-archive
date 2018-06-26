@@ -136,7 +136,7 @@ class TestRules(BaseTestPermission):
         # Admins can do anything except assign owners and changing owners' roles.
         with self.role(ROLE_ADMIN):
             self.assertItemsEqual(roles_user_can_assign(team, user, None), [
-                ROLE_MANAGER, ROLE_CONTRIBUTOR
+                ROLE_MANAGER, ROLE_CONTRIBUTOR, ROLE_PROJ_LANG_MANAGER
             ])
             self.assertItemsEqual(roles_user_can_assign(team, user, self.owner.user), [])
 
