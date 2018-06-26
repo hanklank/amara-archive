@@ -81,7 +81,6 @@ def calc_widget_type(field):
     elif isinstance(widget, forms.CheckboxInput):
         return 'checkbox'
     elif isinstance(widget, forms.Textarea):
-        widget.attrs['class'] = 'form-control'
         return 'default'
     else:
         return 'default'
