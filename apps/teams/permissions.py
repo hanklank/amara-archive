@@ -138,7 +138,7 @@ def roles_user_can_assign(team, user, to_user=None):
         if to_user:
             if get_role(get_member(to_user, team)) == ROLE_OWNER or get_role(get_member(to_user, team)) == ROLE_ADMIN:
                 return []
-        return ROLES_ORDER[2:]
+        return ROLES_ORDER[2:] + [ROLE_PROJ_LANG_MANAGER]
     else:
         return []
 
