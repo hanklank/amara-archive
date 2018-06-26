@@ -227,6 +227,14 @@ def search(request):
         queryset = Video.objects.none()
     return video_listing_page(request, subheader, queryset, query)
 
+@behavior
+def videos_create_template():
+    return 'videos/create.html'
+
+@behavior
+def videos_create_extra_data(request, create_form):
+    return {}
+
 def create(request):
     initial = {
         'video_url': request.GET.get('initial_url'),
@@ -249,11 +257,9 @@ def create(request):
     else:
         create_form = None
 
-    return render(request, 'videos/create.html', {
-        'create_form': create_form,
-    })
-
-create.csrf_exempt = True
+    data = { 'create_form': create_form }
+    data.update(videos_create_extra_data(request, create_form))
+    return render(request, videos_create_template(), data)
 
 def shortlink(request, encoded_pk):
     pk = base62.to_decimal(encoded_pk)

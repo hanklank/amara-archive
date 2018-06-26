@@ -3,68 +3,19 @@
 {% load i18n forms %}
 
 {% block content %}
-<div class="container persistentTabs trackClicks" data-persistent-tab-cookie="create-video-choice" data-event-category="Videos - Create">
-  <div class="videosCreateSwitcher">
-    <div class="videosCreateSwitcher-box bg-sea-green">
-      <h1 class="hidden-sm hidden-xs">{% trans "Subtitle in a Public Space" %}</h1>
-      <h1 class="visible-sm visible-xs">{% trans "Public" %}</h1>
-      <p>{% trans "Add videos publicly and allow Amara users to contribute subtitles in any language." %}</p>
-      <ul class="videosCreateSwitcher-features bullets">
-        <li>{% trans "Award-winning Amara Editor" %}</li>
-        <li>{% trans "Videos publicly visible"  %}</li>
-        <li>{% trans "Open, so everyone can help with subtitles" %}</li>
-      </ul>
-      <div class="videosCreateSwitcher-spacer"></div>
-      <div class="videosCreateSwitcher-button">
-        {% if request.user.is_authenticated %}
-        <a href="#create-form" data-toggle="tab" data-event-action="Show add video form" class="button plum tall block persistentTab trackClicks-item">{% trans "Begin" %}</a>
-        {% else  %}
-        <a href="{% url "auth:login" %}?next={% url "videos:create" %}" data-event-action="Show add video form" data-persistent-tab-value="#create-form" class="button tall block plum persistentTab trackClicks-item">{% trans "Begin" %}</a>
-        {% endif %}
-      </div>
-    </div>
-
-    <div class="videosCreateSwitcher-box bg-plum">
-      <h1 class="hidden-xs hidden-sm">{% trans "Subtitle in a Private Space" %}</h1>
-      <h1 class="visible-xs visible-sm">{% trans "Private" %}</h1>
-      <p>{% trans "Add videos to your own private space and select who has access to create subtitles." %}</p>
-      <ul class="videosCreateSwitcher-features bullets">
-        <li>{% trans "Award-winning Amara Editor" %}</li>
-        <li>{% trans "Add videos to your own private space" %}</li>
-        <li>{% trans "Full control over who can view and subtitle videos" %}</li>
-        <li>{% trans "Management and workflow options" %}</li>
-      </ul>
-      <div class="videosCreateSwitcher-spacer"></div>
-      <div class="videosCreateSwitcher-button"><a href="#pricing-table" data-event-action="Show pricing table" data-toggle="tab" class="button tall block sea-green persistentTab trackClicks-item">{% trans "Learn More" %}</a></div>
-    </div>
+<div class="container">
+  <div class="videosCreateForm bg-sea-green{% if not request.user.is_authenticated %} text-center{% endif %}">
+    <h1>{% trans "Subtitle a Video" %}</h1>
+    {% if request.user.is_authenticated %}
+    <p>{% trans "Enter a video URL to use the Amara Editor. It will appear and remain on your public profile." %}</p>
+    <form method="POST">
+      {% csrf_token %}
+      {% trans "Begin" as label %}
+      {% button_field create_form.video_url label "plum" %}
+    </form>
+    {% else %}
+    <a href="{% url "auth:login" %}?next={% url "videos:create" %}" data-persistent-tab-value="#create-form" class="button plum persistentTab">{% trans "Login to get started" %}</a>
+    {% endif %}
   </div>
-
-  <div class="tab-content videosCreateTabs">
-    <div id="create-form" class="tab-pane">
-      <div class="videosCreateTab">
-        <div class="videosCreateForm bg-sea-green{% if not request.user.is_authenticated %} text-center{% endif %}">
-          <h1>{% trans "Subtitle a Video" %}</h1>
-          {% if request.user.is_authenticated %}
-          <p>{% trans "Enter a video URL to use the Amara Editor. It will appear and remain on your public profile." %}</p>
-          <form method="POST">
-            {% csrf_token %}
-            {% trans "Begin" as label %}
-            {% button_field create_form.video_url label "plum" %}
-          </form>
-          {% else %}
-          <a href="{% url "auth:login" %}?next={% url "videos:create" %}" data-persistent-tab-value="#create-form" class="button plum persistentTab">{% trans "Login to get started" %}</a>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-
-    <div id="pricing-table" class="tab-pane">
-      <div class="videosCreateTab">
-        {% include "pricing-table.html" with on_videos_create_page=True %}
-      </div>
-    </div>
-  </div>
-
-
 </div>
 {% endblock %}
