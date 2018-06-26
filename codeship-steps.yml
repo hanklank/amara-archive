@@ -13,6 +13,7 @@
 - name: GUI Tests
   service: deploy-agent
   command: amara-guitest
+  tag: dev
 - name: Push to ECR
   service: amara
   type: push
