@@ -35,19 +35,33 @@ name, method/function name, pytest marks, etc).
 
     $ dev test -k [pattern]
 
+GUI Tests
+---------
 
 We also have gui tests that use selenium to automate testing with a real
 browser.  These get run with the ``dev guitest`` command.  It accepts all the
 same arguments as ``dev test``.  GUI tests are located in the ``guitests/``
 directory.
 
-There's a couple tools to help debug failing tests:
- - To see the webserver output run ``dev guitestlogs``.
- - To see browser screenshots for failing tests, use the ``--take-screenshots``
-   flag, then check in the ``guitests/screenshots`` directory after running the tests.
+GUITests have a special setup:
+  - Before the tests run, we startup a server to test against.
+  - We run the ``setup_guitests`` management commands to clear out the database
+    for the test server, and auto-populate it with some data.
+  - The tests themselves never access the DB.
 
-Lastly, there are javascript tests which are unittests for our javascript code.
-Use ``dev jstest`` to run them.
+There's a couple tools to help debug failing tests:
+  - To see the webserver output run ``dev guitestlogs``.
+  - To see browser screenshots for failing tests, use the ``--take-screenshots``
+    flag, then check in the ``guitests/screenshots`` directory after running the tests.
+  - To start up the test webserver run ``dev up --guitests``.  This is useful
+    if you want to manually step through a failing test.
+  - You can also use ``dev manage --guitests``` to run management commands in
+    the GUI test environment.
+
+Javascript Tests
+----------------
+
+We use jasmine to run our javascript tests.  Use ``dev jstest`` to run them.
 
 Writing unit tests
 ------------------
