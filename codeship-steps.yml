@@ -10,7 +10,7 @@
 - name: Test
   service: amara
   command: test
-- name: Deploy
+- name: GUI Tests
   service: deploy-agent
   command: amara-guitest
 - name: Push to ECR
