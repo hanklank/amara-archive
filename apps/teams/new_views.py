@@ -1340,6 +1340,22 @@ def ajax_member_search(request, team):
     return HttpResponse(json.dumps(data), 'application/json')
 
 @team_view
+def ajax_inviteable_users_search(request, team):
+    query = request.GET.get('q', '')
+    qs = User.objects.search(query)
+    data = {
+        'results': [
+            { 'id': user.username,
+              'text': user.username + ("" if unicode(user) == user.username 
+                                          else " ({})".format(unicode(user))),
+            }
+            for user in qs[:8]
+        ]
+    }
+
+    return HttpResponse(json.dumps(data), 'application/json')
+
+@team_view
 def ajax_video_search(request, team):
     query = request.GET.get('q', '')
     qs = Video.objects.search(query).filter(teamvideo__team=team)[:8]

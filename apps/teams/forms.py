@@ -66,7 +66,7 @@ from teams.workflows import TeamWorkflow
 from ui.forms import (FiltersForm, ManagementForm, AmaraChoiceField,
                       AmaraRadioSelect, SearchField, AmaraClearableFileInput,
                       AmaraFileInput, HelpTextList, MultipleLanguageField)
-from ui.forms import LanguageField as NewLanguageField
+from ui.forms import LanguageField as NewLanguageField, MultipleUserAutocompleteField
 from utils.html import clean_html
 from utils import send_templated_email
 from utils.forms import (ErrorableModelForm, get_label_for_value,
@@ -1023,11 +1023,10 @@ class InviteForm(forms.Form):
         help_text="Amara username of the user you want to invite")
 
     # For new style teams that allow sending invites to multiple users at a time
-    usernames = forms.CharField(
-        label=_('Username'), required=False,
-        widget=forms.Textarea(attrs={'rows': 3}), 
-        help_text=_('Amara username of the existing user you want to invite. ' 
-                    'You can invite multiple users by entering one username per line. '))
+    usernames = MultipleUserAutocompleteField(label=_('Username'),
+                                  required=False,
+                                  help_text=_('Amara username of the existing user you want to invite. '
+                                              'You can invite multiple users.'))
     email = forms.CharField(required=False,
                             widget=forms.Textarea(attrs={'rows': 3}),
                             help_text=_('Email address of the new member you want to invite. '
@@ -1054,6 +1053,9 @@ class InviteForm(forms.Form):
         self.fields['username'].set_autocomplete_url(
             reverse('teams:autocomplete-invite-user', args=(team.slug,))
         )
+        self.fields['usernames'].set_ajax_autocomplete_url(
+            reverse('teams:ajax-inviteable-users-search', kwargs={'slug':team.slug})
+            )
 
     def validate_emails(self):
         for email in self.emails:

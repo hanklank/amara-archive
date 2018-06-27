@@ -23,9 +23,12 @@ from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe, SafeUnicode
 from django.utils.translation import ugettext_lazy as _
 from django import forms
+from django.forms import widgets as django_widgets
 
 from utils import translation
 from ui.forms import widgets
+
+from auth.models import CustomUser as User
 
 class HelpTextList(SafeUnicode):
     """
@@ -207,8 +210,33 @@ class SearchField(forms.CharField):
 class UploadOrPasteField(forms.Field):
     widget = widgets.UploadOrPasteWidget
 
+class MultipleUserAutocompleteField(AmaraMultipleChoiceField):
+    widget = django_widgets.SelectMultiple
+
+    def __init__(self, *args, **kwargs):
+        super(MultipleUserAutocompleteField, self).__init__(*args, **kwargs)
+        self.valid_queryset = User.objects.all()
+
+    def set_ajax_autocomplete_url(self, url):
+        self.set_select_data('ajax', url)
+
+    def clean(self, value):
+        values = super(MultipleUserAutocompleteField, self).clean(value)
+        print("@@@@@@@@@")
+        print(values)
+        # if not value:
+        #     return None
+        # try:
+        #     return self.queryset.get(username=value)
+        # except User.DoesNotExist:
+        #     if not User.objects.filter(username=value).exists():
+        #         raise forms.ValidationError(self.error_messages['not-found'])
+        #     else:
+        #         raise forms.ValidationError(self.error_messages['invalid'])
+
 __all__ = [
     'AmaraChoiceField', 'AmaraMultipleChoiceField', 'LanguageField',
     'MultipleLanguageField', 'SearchField', 'HelpTextList',
-    'UploadOrPasteField',
+    'UploadOrPasteField', 'MultipleUserAutocompleteField',
 ]
+
