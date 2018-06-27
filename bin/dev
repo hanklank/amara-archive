@@ -118,11 +118,18 @@ class Build(Command):
 
 class Manage(Command):
     """Run manage.py inside the app container."""
-    raw_args = True
+    def add_arguments(self, parser):
+        parser.add_argument('--guitests', action='store_true',
+                            help='Run in the GUITest environment')
+        parser.add_argument('manage_args', nargs=argparse.REMAINDER)
 
     def run(self):
         ensure_node_modules()
-        run_manage(self.args)
+        if self.args.guitests:
+            cwd = 'guitests'
+        else:
+            cwd = None
+        run_manage(self.args.manage_args, cwd=cwd)
 
 class Test(Command):
     """Run unittests."""
@@ -141,9 +148,11 @@ class GUITest(Command):
     def run(self):
         ensure_node_modules()
         run_node(['node', 'node_modules/gulp/bin/gulp.js', 'build'])
+        run_manage(['setup_guitests'], cwd='guitests')
         cmdline = ['docker-compose', 'run', '--rm', 'test', 'test', '--gui']
         cmdline.extend(self.args)
-        return subprocess.call(cmdline, cwd="guitests")
+        subprocess.call(cmdline, cwd="guitests")
+        subprocess.call(['docker-compose', 'stop'], cwd='guitests')
 
 class GUITestLogs(Command):
     """Run unittests."""
@@ -218,6 +227,8 @@ class Up(Command):
     """Start docker containers."""
 
     def add_arguments(self, parser):
+        parser.add_argument('--guitests', action='store_true',
+                            help='Run in the GUITest environment')
         parser.add_argument('--jsonlog', action='store_true',
                             help='Use JSON formatted logging'),
         parser.add_argument('--dblog', action='store_true',
@@ -230,9 +241,15 @@ class Up(Command):
             env['JSON_LOGGING'] = '1'
         if self.args.dblog:
             env['DB_LOGGING'] = '1'
-        subprocess.run(
-            ['docker-compose', 'up', 'app', 'worker', 'feed-worker', 'asset-builder'],
-            env=env)
+        if self.args.guitests:
+            cwd = 'guitests'
+            cmdline = ['docker-compose', '-f', 'docker-compose.yml', '-f',
+                       'docker-compose.expose-ports.yml', 'up', 'app', 'worker', 'feed-worker']
+        else:
+            cwd = None
+            cmdline = ['docker-compose', 'up', 'app', 'worker', 'feed-worker',
+                       'asset-builder']
+        subprocess.run(cmdline, env=env, cwd=cwd)
 
 class PrepDeploy(Command):
     """Start docker containers."""

@@ -19,19 +19,47 @@
 import os
 
 import pytest
+from django.conf import settings
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
-@pytest.fixture(autouse=True)
-def global_fixture(db):
+TAKE_SCREENSHOTS = False
+
+@pytest.fixture(scope="session")
+def setup_amara_db():
+    # Override the default setup_amara_db() fixture, since we don't want to
+    # access the database from the GUI tests
     pass
 
 @pytest.fixture(scope="session")
-def driver():
-    return webdriver.Remote(command_executor='http://selenium:4444/wd/hub',
-                            desired_capabilities=DesiredCapabilities.FIREFOX)
+def driver(request):
+    driver = webdriver.Remote(command_executor='http://selenium:4444/wd/hub',
+                              desired_capabilities=DesiredCapabilities.FIREFOX)
+    request.node.driver = driver
+    return driver
 
 @pytest.fixture(scope="session")
 def base_url():
     return 'http://{}/'.format(os.environ.get('GUITEST_HOSTNAME'))
 
+def pytest_configure(config):
+    global TAKE_SCREENSHOTS
+    TAKE_SCREENSHOTS = config.getoption('take_screenshots')
+
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    # execute all other hooks to obtain the report object
+    outcome = yield
+    rep = outcome.get_result()
+
+    if (TAKE_SCREENSHOTS and rep.when == "call" and rep.failed):
+        basename = item.nodeid.replace('/', '__')
+        path = '{}/guitests/screenshots/{}.png'.format(
+            settings.PROJECT_ROOT, basename)
+        png_data = item.session.driver.get_screenshot_as_png()
+        with open(path, 'w') as f:
+            f.write(png_data)
+
+def pytest_sessionfinish(session, exitstatus):
+    if hasattr(session, 'driver'):
+        session.driver.quit()

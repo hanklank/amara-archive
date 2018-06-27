@@ -5,14 +5,12 @@ from __future__ import absolute_import
 # before anything else, setup DJANGO_SETTINGS_MODULE
 import os
 import sys
-
-if '--gui' in sys.argv:
-    # GUI tests use the normal dev_settings because we need to connect to
-    # the actual database running in the for the test server
-    os.environ['DJANGO_SETTINGS_MODULE'] = 'dev_settings'
-else:
+if '--gui' not in sys.argv:
+    # only change it for the non-GUI tests.  For GUI tests, we want to use the
+    # same settings as the app is using.
     os.environ['DJANGO_SETTINGS_MODULE'] = 'dev_settings_test'
 
+from glob import glob
 import re
 import shutil
 import tempfile
@@ -23,24 +21,8 @@ import pytest
 from django.core.cache import cache
 from django.conf import settings
 
+import optionalapps
 import startup
-
-
-def wait_for_database():
-    import MySQLdb
-    db_info = settings.DATABASES['default']
-    end_time = time.time() + 30
-    while time.time() < end_time:
-        try:
-            MySQLdb.connect(host=db_info['HOST'], user=db_info['USER'],
-                            passwd=db_info['PASSWORD'])
-        except:
-            print "waiting for database to come up"
-        else:
-            return
-        time.sleep(5)
-    print "Could not connect to DB"
-    sys.exit(1)
 
 class AmaraPyTest(object):
     """
@@ -59,6 +41,7 @@ class AmaraPyTest(object):
 
     def pytest_addoption(self, parser):
         parser.addoption('--gui', action='store_true')
+        parser.addoption('--take-screenshots', action='store_true')
 
     @pytest.mark.trylast
     def pytest_configure(self, config):
@@ -75,16 +58,43 @@ class AmaraPyTest(object):
         reporter = config.pluginmanager.getplugin('terminalreporter')
         reporter.startdir = py.path.local('/run/pytest/amara/')
 
+        self.prep_collection(config)
+
         before_tests.send(config)
+
+    def prep_collection(self, config):
+        if config.getoption('gui'):
+            # allow_dirs will collect the set of directories we don't ignore
+            # in pytest_ignore_collect.
+            self.allow_dirs = set()
+            # allow the root guitests directory
+            self.allow_dirs.add(
+                os.path.join(settings.PROJECT_ROOT, 'guitests'))
+            # allow the any directory that contains the string "guitests" in
+            # our submodules
+            for repo_path in optionalapps.get_repository_paths():
+                globspec = os.path.join(repo_path, '*guitests*')
+                for guitest_path in glob(globspec):
+                    self.allow_dirs.add(repo_path)
+                    self.allow_dirs.add(guitest_path)
 
     def pytest_ignore_collect(self, path, config):
         if path.isdir():
-            relpath = path.relto(settings.PROJECT_ROOT)
             if config.getoption('gui'):
-                return relpath != 'guitests'
+                return path not in self.allow_dirs
             else:
+                relpath = path.relto(settings.PROJECT_ROOT)
                 return relpath in self.IGNORE_DIRS
         return False
+
+    def guitests_ignore_directory(self, path, relpath, config):
+        # for the GUI tests, we only allow a couple directories:
+        #  - /guitests/
+        #  - directories containing "guitests" inside optional repo
+        if relpath == 'guitests':
+            return True
+        if relpath in optionalapps.AMARA_EXTENSIONS:
+            return True
 
     def patch_for_rest_framework(self):
         # patch some of old django code to be compatible with the rest
@@ -106,16 +116,11 @@ class AmaraPyTest(object):
         cache.clear()
 
     @pytest.fixture(autouse=True)
-    def global_fixture(self, db):
+    def setup_amara_db(self, db):
         from auth.models import CustomUser
         CustomUser.get_amara_anonymous()
 
 if __name__ == '__main__':
     startup.startup()
-    if '--gui' in sys.argv:
-        wait_for_database()
-    from django.conf import settings
-    print settings.DATABASES
     sys.argv[0] = re.sub(r'(-script\.pyw?|\.exe)?$', '', sys.argv[0])
     sys.exit(pytest.main(plugins=[AmaraPyTest()]))
-

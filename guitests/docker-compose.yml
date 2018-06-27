@@ -6,7 +6,8 @@ services:
     environment:
       DJANGO_SETTINGS_MODULE: dev_settings
       LANG: en_US.UTF-8
-      WORKERS: 2
+      WORKERS: "2"
+      DISABLE_LOGIN_CAPTCHA: "1"
     volumes:
       - ..:/opt/apps/amara:z
     depends_on:
@@ -46,7 +47,7 @@ services:
       - cache
 
   db:
-    image: mysql
+    image: mysql:5.7
     environment:
       MYSQL_ROOT_PASSWORD: amara
       MYSQL_USER: amara
@@ -71,11 +72,11 @@ services:
   varnish:
     image: amara/amara-cache
     ports:
-      - "9000"
+      - "80"
     networks:
       default:
         aliases:
-          - dev.amara.org
+          - unisubs.example.com
     depends_on:
       - app
 
@@ -91,12 +92,13 @@ services:
     command: ["test", "--gui"]
     environment:
       DJANGO_SETTINGS_MODULE: dev_settings
-      GUITEST_HOSTNAME: dev.amara.org
+      GUITEST_HOSTNAME: unisubs.example.com
       LANG: en_US.UTF-8
     volumes:
       - ..:/opt/apps/amara:z
       - amara-pytest-data:/var/run/pytest/
     depends_on:
+      - db
       - selenium
       - varnish
       - worker
