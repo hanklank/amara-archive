@@ -1096,7 +1096,7 @@ class InviteForm(forms.Form):
             self.validate_emails()
             
         if usernames:
-            self.usernames = usernames.split()
+            self.usernames = usernames
             self.usernames = set(self.usernames)
             self.validate_usernames()
 

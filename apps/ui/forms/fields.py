@@ -220,19 +220,15 @@ class MultipleUserAutocompleteField(AmaraMultipleChoiceField):
     def set_ajax_autocomplete_url(self, url):
         self.set_select_data('ajax', url)
 
-    def clean(self, value):
-        values = super(MultipleUserAutocompleteField, self).clean(value)
-        print("@@@@@@@@@")
-        print(values)
-        # if not value:
-        #     return None
-        # try:
-        #     return self.queryset.get(username=value)
-        # except User.DoesNotExist:
-        #     if not User.objects.filter(username=value).exists():
-        #         raise forms.ValidationError(self.error_messages['not-found'])
-        #     else:
-        #         raise forms.ValidationError(self.error_messages['invalid'])
+    '''
+    This is not really a useful error message, override this to 
+    be more specific on what is actually being validated
+    '''
+    def clean(self, values):
+        qs = self.valid_queryset.filter(username__in=values)
+        if len(qs) != len(values):
+            raise forms.validationError(_('Not all users are part of the valid search space!'))
+        return values
 
 __all__ = [
     'AmaraChoiceField', 'AmaraMultipleChoiceField', 'LanguageField',
