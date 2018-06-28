@@ -1,5 +1,5 @@
 html5lib==1.0.1
-Django==1.7.11
+Django==1.8.19
 easy-thumbnails==1.4
 Pillow==5.1.0
 python-magic==0.4.15
