@@ -104,15 +104,9 @@
             buttons: [ 'continueButton', 'cancel' ],
             allowClose: true
         },
-        confirmTimingReset: {
-            title: 'Confirm Timing Reset',
-            text: 'This will remove all subtitle timing. Do you want to continue?',
-            buttons: [ 'continueButton', 'cancel' ],
-            allowClose: true
-        },
-        confirmTextReset: {
-            title: 'Confirm Text Reset',
-            text: 'This will remove all subtitle text. Do you want to continue?',
+        confirmDeleteEmptySubtitles: {
+            title: 'Delete Empty Subtitles',
+            text: 'This will remove all subtitles with empty text. Do you want to continue?',
             buttons: [ 'continueButton', 'cancel' ],
             allowClose: true
         },

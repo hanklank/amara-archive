@@ -29,5 +29,6 @@ raven==6.1.0
 django-simple-captcha==0.5.1
 django-registration
 pygal
-pafy
+pafy==0.5.4
 subprocess32
+zxcvbn==4.4.26
