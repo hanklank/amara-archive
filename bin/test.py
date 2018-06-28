@@ -10,6 +10,7 @@ if '--gui' not in sys.argv:
     # same settings as the app is using.
     os.environ['DJANGO_SETTINGS_MODULE'] = 'dev_settings_test'
 
+from glob import glob
 import re
 import shutil
 import tempfile
@@ -20,6 +21,7 @@ import pytest
 from django.core.cache import cache
 from django.conf import settings
 
+import optionalapps
 import startup
 
 class AmaraPyTest(object):
@@ -56,17 +58,43 @@ class AmaraPyTest(object):
         reporter = config.pluginmanager.getplugin('terminalreporter')
         reporter.startdir = py.path.local('/run/pytest/amara/')
 
+        self.prep_collection(config)
+
         before_tests.send(config)
 
+    def prep_collection(self, config):
+        if config.getoption('gui'):
+            # allow_dirs will collect the set of directories we don't ignore
+            # in pytest_ignore_collect.
+            self.allow_dirs = set()
+            # allow the root guitests directory
+            self.allow_dirs.add(
+                os.path.join(settings.PROJECT_ROOT, 'guitests'))
+            # allow the any directory that contains the string "guitests" in
+            # our submodules
+            for repo_path in optionalapps.get_repository_paths():
+                globspec = os.path.join(repo_path, '*guitests*')
+                for guitest_path in glob(globspec):
+                    self.allow_dirs.add(repo_path)
+                    self.allow_dirs.add(guitest_path)
 
     def pytest_ignore_collect(self, path, config):
         if path.isdir():
-            relpath = path.relto(settings.PROJECT_ROOT)
             if config.getoption('gui'):
-                return relpath != 'guitests'
+                return path not in self.allow_dirs
             else:
+                relpath = path.relto(settings.PROJECT_ROOT)
                 return relpath in self.IGNORE_DIRS
         return False
+
+    def guitests_ignore_directory(self, path, relpath, config):
+        # for the GUI tests, we only allow a couple directories:
+        #  - /guitests/
+        #  - directories containing "guitests" inside optional repo
+        if relpath == 'guitests':
+            return True
+        if relpath in optionalapps.AMARA_EXTENSIONS:
+            return True
 
     def patch_for_rest_framework(self):
         # patch some of old django code to be compatible with the rest

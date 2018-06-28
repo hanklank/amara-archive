@@ -44,12 +44,22 @@ same arguments as ``dev test``.  GUI tests are located in the ``guitests/``
 directory.
 
 GUITests have a special setup:
+
   - Before the tests run, we startup a server to test against.
   - We run the ``setup_guitests`` management commands to clear out the database
     for the test server, and auto-populate it with some data.
   - The tests themselves never access the DB.
 
+When writing GUI tests:
+  - If you need to populate the DB with some data, do it in the
+    ``setup_guitests`` command.  If you are running tests from
+    ``amara-enterprise`` or another submodule, you can hook into the signal
+    defined in that command to populate the DB.
+  - Note which TestLodge case the test is for.  Try to keep the TestLodge case
+    up-to-date with the automated test.
+
 There's a couple tools to help debug failing tests:
+
   - To see the webserver output run ``dev guitestlogs``.
   - To see browser screenshots for failing tests, use the ``--take-screenshots``
     flag, then check in the ``guitests/screenshots`` directory after running the tests.
