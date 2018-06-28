@@ -132,6 +132,8 @@ def roles_user_can_assign(team, user, to_user=None):
     """
     user_role = get_role_for_target(user, team)
 
+    if to_user and user == to_user:
+        return []
     if user_role == ROLE_OWNER:
         return ROLES_ORDER + [ROLE_PROJ_LANG_MANAGER]
     elif user_role == ROLE_ADMIN:
