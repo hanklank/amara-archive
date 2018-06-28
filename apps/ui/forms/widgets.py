@@ -20,7 +20,7 @@ from itertools import chain
 
 from django.core.files import File
 from django.forms import widgets
-from django.forms.util import flatatt
+from django.forms.utils import flatatt
 from django.template.loader import render_to_string
 from django.utils.datastructures import MultiValueDict
 from django.utils.encoding import force_unicode, force_text

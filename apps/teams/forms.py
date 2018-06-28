@@ -31,7 +31,7 @@ from django.core.validators import EMPTY_VALUES, validate_email
 from django.db.models import Q
 from django.db import transaction, IntegrityError
 from django.forms.formsets import formset_factory
-from django.forms.util import ErrorDict
+from django.forms.utils import ErrorDict
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe

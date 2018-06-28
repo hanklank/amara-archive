@@ -1467,7 +1467,7 @@ class VideoMetadata(models.Model):
         never allow it to overwrite a key with a different name.
 
         """
-        field = VideoMetadata._meta.get_field_by_name('key')[0]
+        field = VideoMetadata._meta.get_field('key')
 
         choices = field.choices
         for x in choices:

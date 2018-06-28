@@ -37,6 +37,7 @@ from profiles.forms import (EditUserForm, EditAccountForm, SendMessageForm,
                             EditAvatarForm, AdminProfileForm, EditNotificationsForm)
 from profiles.rpc import ProfileApiClass
 import externalsites.models
+from utils import post_or_get_value
 from utils.objectlist import object_list
 from utils.orm import LoadRelatedQuerySet
 from utils.rpc import RpcRouter

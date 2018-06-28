@@ -13,7 +13,7 @@ import pytest
 
 from amara.signals import before_tests
 from auth.models import CustomUser
-from utils.test_utils import monkeypatch, restframeworkcompat
+from utils.test_utils import monkeypatch
 
 patcher = None
 

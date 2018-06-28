@@ -22,7 +22,7 @@ from os import path
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 
 from teams.models import Team, TeamMember, TeamVideo, Project, EmailInvite
 from videos.models import Video, VideoUrl
@@ -345,7 +345,7 @@ class ViewsTests(TestCase):
             user.save()
         return TeamMember.objects.create(user=user, role=role, team=team)
 
-class EmailInviteViewTest(TestCase):
+class EmailInviteViewTest(TransactionTestCase):
     def setUp(self):
         self.author = UserFactory()
         self.user = UserFactory()

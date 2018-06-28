@@ -32,7 +32,7 @@ from django.contrib.auth.views import password_reset as contrib_password_reset
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.forms import ValidationError
-from django.forms.util import ErrorList
+from django.forms.utils import ErrorList
 from django.http import (HttpResponseRedirect, HttpResponseForbidden,
                          HttpResponse, HttpResponseBadRequest)
 from django.shortcuts import render, render_to_response, redirect, resolve_url
@@ -55,6 +55,7 @@ from auth.providers import get_authentication_provider
 from ipware.ip import get_real_ip, get_ip
 from thirdpartyaccounts.views import facebook_login, twitter_login
 from externalsites.views import google_login
+from utils import post_or_get_value
 from utils.http import get_url_host
 from utils.translation import get_user_languages_from_cookie
 
@@ -64,7 +65,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 def login(request):
-    redirect_to = request.REQUEST.get(REDIRECT_FIELD_NAME, '')
+    redirect_to = post_or_get_value(request, REDIRECT_FIELD_NAME, '')
     if login_form_needs_captcha(request):
         form = SecureAuthenticationForm(label_suffix="")
     else:
@@ -86,7 +87,7 @@ def logout(request):
     return response
 
 def confirm_create_user(request, account_type, email):
-    redirect_to = request.REQUEST.get(REDIRECT_FIELD_NAME, '')
+    redirect_to = post_or_get_value(request, REDIRECT_FIELD_NAME, '')
     if request.method == 'POST':
         form = EmailForm(request.POST)
         if form.is_valid():
@@ -366,7 +367,7 @@ def make_redirect_to(request, default=''):
     This method has a simply check against open redirects to prevent attackers
     from putting their sites into the next GET param (see 1253)
     """
-    redirect_to = request.REQUEST.get(REDIRECT_FIELD_NAME, default)
+    redirect_to = post_or_get_value(request, REDIRECT_FIELD_NAME, default)
     if not redirect_to or '//' in redirect_to:
         return '/'
     else:

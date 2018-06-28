@@ -28,12 +28,12 @@ from urllib import urlencode
 
 from collections import namedtuple
 from django.core.urlresolvers import reverse
-from django.utils.html import format_html
-from django.utils.safestring import mark_safe
+from django.utils.html import format_html, html_safe
 from django.utils.translation import ugettext_lazy as _
 
 from utils.text import fmt
 
+@html_safe
 class Link(object):
     def __init__(self, label, view_name, *args, **kwargs):
         self.label = label
@@ -71,6 +71,7 @@ class Link(object):
                 self.label == other.label and
                 self.url == other.url)
 
+@html_safe
 class AjaxLink(Link):
     def __init__(self, label, **query_params):
         # All of our ajax links hit the current page, adding some query
@@ -109,7 +110,7 @@ class CTA(Link):
         link = link_element.format(self.url, css_class, self.icon, self.label)
         if len(self.tooltip) > 0:
             link = tooltip_element.format(self.tooltip, link)
-        return mark_safe(link)
+        return link
 
     def __eq__(self, other):
         return (isinstance(other, Link) and
@@ -136,9 +137,10 @@ class SectionWithCount(list):
         self.header_text = header_text
 
     def header(self):
-        return mark_safe(fmt(self.header_template, header=self.header_text,
-                             count=len(self)))
+        return fmt(self.header_template, header=self.header_text,
+                   count=len(self))
 
+@html_safe
 class ContextMenu(object):
     """Context menu
 
@@ -172,7 +174,7 @@ class ContextMenu(object):
             else:
                 output.append(u'<li>{}<li>'.format(unicode(item)))
         output.append(u'</ul></div>')
-        return mark_safe(u'\n'.join(output))
+        return u'\n'.join(output)
 
 class MenuSeparator(object):
     """Display a line to separate items in a ContextMenu."""

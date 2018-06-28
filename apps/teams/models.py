@@ -239,7 +239,7 @@ class Team(models.Model):
     team_visibility = enum.EnumField(enum=TeamVisibility,
                                      default=TeamVisibility.PRIVATE)
     video_visibility = enum.EnumField(enum=VideoVisibility,
-                                       default=VideoVisibility.PRIVATE)
+                                      default=VideoVisibility.PRIVATE)
     sync_metadata = models.BooleanField(_(u'Sync metadata when available (Youtube)?'), default=False)
     videos = models.ManyToManyField(Video, through='TeamVideo',  verbose_name=_('videos'))
     users = models.ManyToManyField(User, through='TeamMember', related_name='teams', verbose_name=_('users'))

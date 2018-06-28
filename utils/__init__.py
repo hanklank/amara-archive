@@ -142,3 +142,11 @@ class CheckResult(object):
     def __nonzero__(self):
         return bool(self.result)
 
+
+def post_or_get_value(request, name, default=None):
+    if name in request.POST:
+        return request.POST[name]
+    elif name in request.GET:
+        return request.GET[name]
+    else:
+        return default

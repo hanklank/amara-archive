@@ -77,7 +77,8 @@ from teams.tasks import (
     invalidate_video_visibility_caches, process_billing_report
 )
 from videos.tasks import video_changed_tasks
-from utils import render_to, render_to_json, DEFAULT_PROTOCOL
+from utils import (render_to, render_to_json, DEFAULT_PROTOCOL,
+                   post_or_get_value)
 from utils.decorators import staff_member_required
 from utils.forms import flatten_errorlists
 from utils.objectlist import object_list
@@ -140,7 +141,7 @@ def settings_page(view_func):
 
 # Management
 def index(request, my_teams=False):
-    q = request.REQUEST.get('q')
+    q = post_or_get_value(request, 'q')
 
     if my_teams:
         if request.user.is_authenticated():
@@ -998,7 +999,7 @@ class TableCell():
 # Members
 @render_to('teams/members-list.html')
 def detail_members(request, slug, role=None):
-    q = request.REQUEST.get('q')
+    q = post_or_get_value(request, 'q')
     lang = request.GET.get('lang')
     sort = request.GET.get('sort', 'joined')
     filtered = False

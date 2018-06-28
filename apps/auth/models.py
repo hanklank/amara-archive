@@ -27,6 +27,7 @@ import string
 import urllib
 import uuid
 
+from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.models import UserManager, User as BaseUser
 from django.core.cache import cache
@@ -36,7 +37,6 @@ from django.db import IntegrityError
 from django.db import models
 from django.db import transaction
 from django.db.models import Max
-from django.db.models.loading import get_model
 from django.db.models.signals import post_save
 from django.utils.http import urlquote
 from django.utils.safestring import mark_safe
@@ -499,12 +499,11 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
 
     def set_languages(self, languages):
         with transaction.atomic():
-            self.userlanguage_set.all().delete()
-            self.userlanguage_set = [
-                UserLanguage(language=l["language"],
-                             priority=l["priority"])
+            self.userlanguage_set.set([
+                UserLanguage.objects.create(
+                    user=self, language=l["language"], priority=l["priority"])
                 for l in languages
-            ]
+            ])
         self.cache.invalidate()
         signals.user_profile_changed.send(self)
 
@@ -662,7 +661,7 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
         except:
             from thirdpartyaccounts import get_thirdpartyaccount_types
             for thirdpartyaccount_type in get_thirdpartyaccount_types():
-                m = get_model(thirdpartyaccount_type[0], thirdpartyaccount_type[1])
+                m = apps.get_model(thirdpartyaccount_type[0], thirdpartyaccount_type[1])
                 if (m is not None) and (len(m.objects.for_user(self)) > 0):
                     return True
         return False
@@ -682,7 +681,7 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
     def unlink_external(self):
         from thirdpartyaccounts import get_thirdpartyaccount_types
         for thirdpartyaccount_type in get_thirdpartyaccount_types():
-            m = get_model(thirdpartyaccount_type[0], thirdpartyaccount_type[1])
+            m = apps.get_model(thirdpartyaccount_type[0], thirdpartyaccount_type[1])
             if m is not None:
                 m.objects.for_user(self).delete()
         try:

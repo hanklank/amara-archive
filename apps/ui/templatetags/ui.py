@@ -19,6 +19,7 @@
 from __future__ import absolute_import
 
 from django import template
+from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 
 import ui.siteheader
@@ -42,11 +43,13 @@ def datetime(dt):
 def header_links(context):
     nav = context.get('nav')
     parts = []
-    parts.append(u'<ul>')
+    parts.append(mark_safe(u'<ul>'))
     for tab in ui.siteheader.navlinks():
         if tab.name == nav:
-            parts.append(u'<li class="active">{}</li>'.format(unicode(tab)))
+            parts.append(
+                format_html(u'<li class="active">{}</li>',
+                            mark_safe(unicode(tab))))
         else:
-            parts.append(u'<li>{}</li>'.format(tab))
-    parts.append(u'</ul>')
-    return u'\n'.join(parts)
+            parts.append(format_html(u'<li>{}</li>', tab))
+    parts.append(mark_safe(u'</ul>'))
+    return format_html_join(u'\n', '{}', [(p,) for p in parts])

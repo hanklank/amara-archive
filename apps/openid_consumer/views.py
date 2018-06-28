@@ -5,6 +5,7 @@ from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from django.utils.http import urlencode
 import re
+from utils import post_or_get_value
 
 import openid   
 if openid.__version__ < '2.0.0':
@@ -73,7 +74,7 @@ def begin(request, confirmed=True, redirect_to=None, on_failure=None, user_url=N
         redirect_to += join + urlencode({
             'next': request.GET['next']
         })
-    openid_url = request.REQUEST.get('openid_url', None)
+    openid_url = post_or_get_value(request, 'openid_url', None)
     if openid_url:
         if '?' in redirect_to:
             join = '&'
@@ -83,7 +84,7 @@ def begin(request, confirmed=True, redirect_to=None, on_failure=None, user_url=N
             'openid_url': openid_url
         })
     if not user_url:
-        user_url = request.REQUEST.get('openid_url', None)
+        user_url = post_or_get_value(request, 'openid_url', None)
 
     if not user_url:
         request_path = request.path
