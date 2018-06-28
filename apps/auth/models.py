@@ -178,7 +178,7 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
     autoplay_preferences = models.IntegerField(
         choices=AUTOPLAY_CHOICES, default=AUTOPLAY_ON_BROWSER)
     award_points = models.IntegerField(default=0)
-    last_ip = models.IPAddressField(blank=True, null=True)
+    last_ip = models.GenericIPAddressField(blank=True, null=True)
     # videos witch are related to user. this is for quicker queries
     videos = models.ManyToManyField('videos.Video', blank=True)
     # for some login backends we end up with a full name but not
