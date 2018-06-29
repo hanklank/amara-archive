@@ -221,7 +221,7 @@ class MultipleUserAutocompleteField(AmaraMultipleChoiceField):
         self.set_select_data('ajax', url)
 
     '''
-    This is not really a useful error message, override this to 
+    This is not really a useful validation approach, override this to 
     be more specific on what is actually being validated
     '''
     def clean(self, values):

@@ -20,11 +20,10 @@ from django import forms
 from django.core.validators import EMPTY_VALUES
 from django.utils.translation import ugettext_lazy as _
 
-from teams.models import Project
-
+from auth.models import CustomUser as User
+from teams.models import Project, Invite
 from utils.text import fmt
-
-from ui.forms import AmaraChoiceField, AmaraMultipleChoiceField, widgets
+from ui.forms import AmaraChoiceField, AmaraMultipleChoiceField, widgets, MultipleUserAutocompleteField
 
 class ProjectFieldMixin(object):
     def __init__(self, *args, **kwargs):
@@ -133,3 +132,15 @@ class TeamMemberInput(forms.CharField):
             raise forms.ValidationError(fmt(
                 _(u'%(username)s is not a member of the team'),
                 username=value))
+
+class MultipleUsernameInviteField(MultipleUserAutocompleteField):
+    def __init__(self, *args, **kwargs):
+        super(MultipleUsernameInviteField, self).__init__(*args, **kwargs)
+        widget_classes = self.widget.attrs['class']
+        self.widget.attrs['class'] = widget_classes + " usernamesInviteSelect"
+
+    '''
+    Validation is done at teams.forms.InviteForm
+    '''
+    def clean(self, values):
+        return values

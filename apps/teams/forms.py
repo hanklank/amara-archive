@@ -54,7 +54,7 @@ from teams.models import (
 )
 from teams import behaviors, permissions, tasks
 from teams.exceptions import ApplicationInvalidException
-from teams.fields import TeamMemberInput, TeamMemberRoleSelect, MultipleProjectField
+from teams.fields import TeamMemberInput, TeamMemberRoleSelect, MultipleProjectField, MultipleUsernameInviteField
 from teams.permissions import (
     roles_user_can_invite, can_delete_task, can_add_video, can_perform_task,
     can_assign_task, can_remove_video, can_change_video_titles,
@@ -66,7 +66,7 @@ from teams.workflows import TeamWorkflow
 from ui.forms import (FiltersForm, ManagementForm, AmaraChoiceField,
                       AmaraRadioSelect, SearchField, AmaraClearableFileInput,
                       AmaraFileInput, HelpTextList, MultipleLanguageField)
-from ui.forms import LanguageField as NewLanguageField, MultipleUserAutocompleteField
+from ui.forms import LanguageField as NewLanguageField
 from utils.html import clean_html
 from utils import send_templated_email
 from utils.forms import (ErrorableModelForm, get_label_for_value,
@@ -1023,7 +1023,7 @@ class InviteForm(forms.Form):
         help_text="Amara username of the user you want to invite")
 
     # For new style teams that allow sending invites to multiple users at a time
-    usernames = MultipleUserAutocompleteField(label=_('Username'),
+    usernames = MultipleUsernameInviteField(label=_('Username'),
                                   required=False,
                                   help_text=_('Amara username of the existing user you want to invite. '
                                               'You can invite multiple users.'))
@@ -1042,6 +1042,12 @@ class InviteForm(forms.Form):
         super(InviteForm, self).__init__(*args, **kwargs)
         if args and isinstance(args[0], dict):
             self.modal_tab = args[0].get('modalTab', None)
+
+            form_data_usernames = args[0].getlist('usernames')
+            if form_data_usernames:
+                initial_selections = self._build_initial_data(form_data_usernames)
+                self.fields['usernames'].set_select_data('initial-selections', initial_selections)
+
         self.team = team
         self.user = user # the invite author
         self.users = [] # the users to be invited
@@ -1056,6 +1062,14 @@ class InviteForm(forms.Form):
         self.fields['usernames'].set_ajax_autocomplete_url(
             reverse('teams:ajax-inviteable-users-search', kwargs={'slug':team.slug})
             )
+        
+    def _build_initial_data(self, usernames):
+        qs = User.objects.filter(username__in=usernames)
+        data = [ { 'id': user.username,
+                   'text': user.username + ("" if unicode(user) == user.username 
+                                               else " ({})".format(unicode(user))),
+                 } for user in qs ]
+        return data
 
     def validate_emails(self):
         for email in self.emails:
@@ -1072,10 +1086,10 @@ class InviteForm(forms.Form):
         for username in self.usernames:
             try:
                 user = User.objects.get(username=username)
-                if Invite.objects.filter(user=user, team=self.team).exists():
-                    raise forms.ValidationError(_(u'The user {} already has an invite for this team!').format(username))
                 if self.team.is_member(user):
                     raise forms.ValidationError(_(u'The user {} already belongs to this team!').format(username))
+                if Invite.objects.filter(user=user, team=self.team, approved=None).exists():
+                    raise forms.ValidationError(_(u'The user {} already has an invite for this team!').format(username))                
                 self.users.append(user)
             except User.DoesNotExist:
                 raise forms.ValidationError(_(u'The user {} does not exist.').format(username))
