@@ -1,7 +1,6 @@
 {% extends "profiles/base.html" %}
 
 {% load i18n messages_tags %}
-{% load url from future %}
 
 {% block html_attrs %}id="user_account"{% endblock %}
 {% block body-class %}account {{ block.super }}{% endblock %}
@@ -160,7 +159,7 @@
                 </fieldset>
             </div>
             <div class="submit">
-                <a class="button delete" onclick="return confirm('Are you sure you want to permanently delete your account? This action is irreversible.');" href="{% url "auth:delete_user" %}">{% trans 'Delete Your Account' %}</a>
+                <a class="button delete" href="{% url "auth:delete_user" %}">{% trans 'Delete Your Account' %}</a>
             </div>
         </form>
     </div>

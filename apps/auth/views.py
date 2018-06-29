@@ -27,24 +27,29 @@ from django.contrib.auth import (
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import password_reset as contrib_password_reset
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
+from django.forms import ValidationError
 from django.forms.util import ErrorList
 from django.http import (HttpResponseRedirect, HttpResponseForbidden,
                          HttpResponse, HttpResponseBadRequest)
-from django.shortcuts import render, render_to_response, redirect
+from django.shortcuts import render, render_to_response, redirect, resolve_url
 from django.template import RequestContext
 from django.template.response import TemplateResponse
-from django.utils.http import urlquote
+from django.utils.encoding import force_text
+from django.utils.http import urlquote, urlsafe_base64_decode
 from django.utils.translation import ugettext_lazy as _, get_language
 from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.cache import never_cache
 from oauth import oauth
 from auth.forms import CustomUserCreationForm, ChooseUserForm, SecureAuthenticationForm, \
-    DeleteUserForm, CustomPasswordResetForm, SecureCustomPasswordResetForm, EmailForm
+    DeleteUserForm, CustomPasswordResetForm, SecureCustomPasswordResetForm, EmailForm, \
+    CustomSetPasswordForm
 from openid_consumer.views import begin as begin_openid
 from auth.models import (
-    UserLanguage, EmailConfirmation, LoginToken
+    CustomUser, UserLanguage, EmailConfirmation, LoginToken
 )
 from auth.providers import get_authentication_provider
 from ipware.ip import get_real_ip, get_ip
@@ -60,7 +65,7 @@ logger = logging.getLogger(__name__)
 
 def login(request):
     redirect_to = request.REQUEST.get(REDIRECT_FIELD_NAME, '')
-    if cache_get(request):
+    if login_form_needs_captcha(request):
         form = SecureAuthenticationForm(label_suffix="")
     else:
         form = AuthenticationForm(label_suffix="")
@@ -134,7 +139,7 @@ def create_user(request):
     form = CustomUserCreationForm(request.POST, label_suffix="")
     if form.is_valid():
         new_user = form.save()
-        user = authenticate(username=new_user.username,
+        user = authenticate(username=new_user,
                             password=form.cleaned_data['password1'])
         langs = get_user_languages_from_cookie(request)
         for l in langs:
@@ -156,10 +161,11 @@ def delete_user(request):
              password = form.cleaned_data['password']
              user = authenticate(username=username, password=password)
              if user:
-                 user.unlink_external()
-                 user.team_members.all().delete()
-                 user.is_active = False
-                 user.save()
+                 user.deactivate_account()
+                 if form.cleaned_data['delete_account_data']:
+                    user.delete_account_data()
+                 if form.cleaned_data['delete_videos_and_subtitles']:
+                    user.delete_self_subtitled_videos()
                  logout(request)
                  messages.success(request, _(u'Your account was deleted.'))
                  return HttpResponseRedirect('/')
@@ -183,16 +189,16 @@ def cache_key(request):
 def cache_set(request):
     cache.set(cache_key(request), True, LOGIN_CACHE_TIMEOUT)
 
-def cache_get(request):
-    return cache.get(cache_key(request))
-
 def cache_delete(request):
     cache.delete(cache_key(request))
+
+def login_form_needs_captcha(request):
+    return settings.ENABLE_LOGIN_CAPTCHA and cache.get(cache_key(request))
 
 def login_post(request):
     redirect_to = make_redirect_to(request)
     form_has_no_captcha = False
-    if 'captcha_0' in request.POST or cache_get(request):
+    if 'captcha_0' in request.POST or login_form_needs_captcha(request):
         form = SecureAuthenticationForm(data=request.POST, label_suffix="")
     else:
         form_has_no_captcha = True
@@ -206,12 +212,12 @@ def login_post(request):
             return HttpResponseRedirect(redirect_to)
         else:
             cache_set(request)
-            if form_has_no_captcha:
+            if form_has_no_captcha and settings.ENABLE_LOGIN_CAPTCHA:
                 form = SecureAuthenticationForm(data=request.POST, label_suffix="")
             return render_login(request, CustomUserCreationForm(label_suffix=""), form, redirect_to)
     except ValueError:
         cache_set(request)
-        if form_has_no_captcha:
+        if form_has_no_captcha and settings.ENABLE_LOGIN_CAPTCHA:
             form = SecureAuthenticationForm(data=request.POST, label_suffix="")
         return render_login(request, CustomUserCreationForm(label_suffix=""), form, redirect_to)
 
@@ -245,6 +251,56 @@ def token_login(request, token):
         return HttpResponseRedirect(next_url)
     else:
         return HttpResponseForbidden("Invalid user token")
+
+@never_cache
+def password_reset_confirm(request, uidb64=None, token=None,
+                           template_name='registration/password_reset_confirm.html',
+                           post_reset_redirect=None,
+                           current_app=None, extra_context=None):
+    """
+    View that checks the hash in a password reset link and presents a
+    form for entering a new password.
+    """
+    assert uidb64 is not None and token is not None  # checked by URLconf
+    if post_reset_redirect is None:
+        post_reset_redirect = reverse('password_reset_complete')
+    else:
+        post_reset_redirect = resolve_url(post_reset_redirect)
+    try:
+        # urlsafe_base64_decode() decodes to bytestring on Python 3
+        uid = force_text(urlsafe_base64_decode(uidb64))
+        user = CustomUser._default_manager.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        validlink = True
+        # move to submit form function
+        title = _('Enter new password')
+        if request.method == 'POST':
+            form = CustomSetPasswordForm(user, request.POST)
+            if form.is_valid():
+                form.save()
+                return HttpResponseRedirect(post_reset_redirect)
+        else:
+            form = CustomSetPasswordForm(user)
+    else:
+        validlink = False
+        form = None
+        title = _('Password reset unsuccessful')
+
+    context = {
+        'form': form,
+        'title': title,
+        'validlink': validlink,
+    }
+    if extra_context is not None:
+        context.update(extra_context)
+
+    if current_app is not None:
+        request.current_app = current_app
+
+    return TemplateResponse(request, template_name, context)
 
 def password_reset_complete(request,
                             template_name='registration/password_reset_complete.html',

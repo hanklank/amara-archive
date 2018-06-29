@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 
 {% load i18n profiles_tags %}
-{% load url from future %}
 
 {% block body_attrs %}class="{% block body-class %}profile v1{% endblock %}"{% endblock %}
 
@@ -26,7 +25,7 @@
         <p class="join">
             {{ user_info }} 
             {% if user_info|lower != user_info.username|lower %}
-                ({{ user_info.username }})
+                ({{ user_info.display_username }})
             {% endif %}
             joined Amara on {{ user_info.date_joined|date:"DATE_FORMAT" }}
         </p>
