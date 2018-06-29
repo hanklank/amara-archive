@@ -3,7 +3,6 @@
 {% block body_attrs %}id="video"{% endblock %}
 
 {% load paginator widget comments i18n subtitles_tags teams_tags %}
-{% load url from future %}
 
 {% block scripts %}
 <script type="text/javascript">
@@ -243,7 +242,7 @@ jQuery(function($) {
             {% if task.assignee %}
                 <td>
                     {{ task.assignee.id }} -
-                    <a href="{{ task.assignee.get_absolute_url }}">{{ task.assignee.username }}</a>
+                    <a href="{{ task.assignee.get_absolute_url }}">{{ task.assignee.display_username }}</a>
                 </td>
             {% else %}
                 <td>Unassigned</td>
