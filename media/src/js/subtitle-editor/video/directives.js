@@ -253,6 +253,7 @@ var angular = angular || null;
                 if(sub) {
                     var region = calcRegionForDrop($(this));
                     $scope.workingSubtitles.subtitleList.updateSubtitleRegion(sub, region);
+                    $scope.$root.$emit('work-done');
                 }
                 evt.preventDefault();
             });
