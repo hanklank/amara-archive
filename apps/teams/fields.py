@@ -23,7 +23,7 @@ from django.utils.translation import ugettext_lazy as _
 from auth.models import CustomUser as User
 from teams.models import Project, Invite
 from utils.text import fmt
-from ui.forms import AmaraChoiceField, AmaraMultipleChoiceField, widgets, MultipleUserAutocompleteField
+from ui.forms import AmaraChoiceField, AmaraMultipleChoiceField, widgets, MultipleAutoCompleteField
 
 class ProjectFieldMixin(object):
     def __init__(self, *args, **kwargs):
@@ -138,14 +138,17 @@ Don't forget to call this class's set_ajax_autocomplete_url(url) method
 See teams.forms:InviteForm for an example usage of this class
 set_ajax_autocomplete_url() is called in InviteForm's __init__ method
 '''
-class MultipleUsernameInviteField(MultipleUserAutocompleteField):
-    def __init__(self, *args, **kwargs):
-        super(MultipleUsernameInviteField, self).__init__(*args, **kwargs)
-        widget_classes = self.widget.attrs['class']
-        self.widget.attrs['class'] = widget_classes + " usernamesInviteSelect"
-
+class MultipleUsernameInviteField(MultipleAutoCompleteField):
     '''
     Validation is done at teams.forms.InviteForm
     '''
     def clean(self, values):
         return values
+
+    def set_initial_selections(self, usernames):
+        qs = User.objects.filter(username__in=usernames)
+        data = [ { 'id': user.username,
+                   'text': user.username + ("" if unicode(user) == user.username 
+                                               else " ({})".format(unicode(user))),
+                 } for user in qs ]
+        self._set_initial_selections(data)

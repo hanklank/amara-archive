@@ -1044,8 +1044,7 @@ class InviteForm(forms.Form):
 
             form_data_usernames = args[0].getlist('usernames')
             if form_data_usernames:
-                initial_selections = self._build_initial_data(form_data_usernames)
-                self.fields['usernames'].set_select_data('initial-selections', initial_selections)
+                self.fields['usernames'].set_initial_selections(form_data_usernames)
 
         self.team = team
         self.user = user # the invite author
@@ -1061,14 +1060,6 @@ class InviteForm(forms.Form):
         self.fields['usernames'].set_ajax_autocomplete_url(
             reverse('teams:ajax-inviteable-users-search', kwargs={'slug':team.slug})
             )
-        
-    def _build_initial_data(self, usernames):
-        qs = User.objects.filter(username__in=usernames)
-        data = [ { 'id': user.username,
-                   'text': user.username + ("" if unicode(user) == user.username 
-                                               else " ({})".format(unicode(user))),
-                 } for user in qs ]
-        return data
 
     def validate_emails(self):
         for email in self.emails:
