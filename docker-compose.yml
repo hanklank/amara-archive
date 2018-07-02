@@ -11,7 +11,6 @@ services:
       DB_LOGGING:
     volumes:
       - .:/opt/apps/amara:z
-    hostname: unisubs.example.com
     ports:
       - "8000:8000"
     depends_on:
@@ -51,7 +50,7 @@ services:
       - cache
 
   db:
-    image: mysql
+    image: mysql:5.7
     environment:
       MYSQL_ROOT_PASSWORD: amara
       MYSQL_USER: amara
@@ -94,7 +93,6 @@ services:
     volumes:
       - .:/opt/apps/amara:z
       - amara-pytest-data:/var/run/pytest/
-    hostname: unisubs.example.com
     depends_on:
       - db
       - queue

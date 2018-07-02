@@ -36,9 +36,21 @@ class ConvertLegacyIndexTogether(migrations.AlterIndexTogether):
         if not self.allowed_to_migrate(schema_editor.connection.alias, new_model):
             return
 
+        migrated_indexes = []
+        unmigrated_indexes = []
         existing_indexes = self.find_existing_indexes(schema_editor, new_model)
         for fields in self.index_together:
-            self.migrate_old_index(schema_editor, new_model, fields, existing_indexes)
+            if self.migrate_old_index(schema_editor, new_model, fields,
+                                      existing_indexes):
+                migrated_indexes.append(fields)
+            else:
+                unmigrated_indexes.append(fields)
+        # When running migrate from a fresh DB, we won't have the indexes that
+        # were created using setup_indexes.  Have Django create those from
+        # scratch.
+        if unmigrated_indexes:
+            schema_editor.alter_index_together(
+                new_model, migrated_indexes, unmigrated_indexes)
 
     def find_existing_indexes(self, schema_editor, model):
         cursor = schema_editor.connection.cursor()
@@ -64,8 +76,7 @@ class ConvertLegacyIndexTogether(migrations.AlterIndexTogether):
         columns = tuple(self.field_to_column(model, name) for name in fields)
         old_index_names = existing_indexes[columns]
         if not old_index_names:
-            raise AssertionError("No existing index for {} {}".format(
-                model, columns))
+            return False
         new_index_name = schema_editor._create_index_name(model, columns,
                                                           suffix="_idx")
         self.rename_index(schema_editor, model, old_index_names[0],
@@ -73,6 +84,7 @@ class ConvertLegacyIndexTogether(migrations.AlterIndexTogether):
         for old_index_name in old_index_names[1:]:
             # If our code created 2 indexes by accident, delete the old one
             self.delete_index(schema_editor, model, old_index_name)
+        return True
 
     def field_to_column(self, model, field):
         return model._meta.get_field_by_name(field)[0].column
