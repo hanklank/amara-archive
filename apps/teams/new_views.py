@@ -531,48 +531,59 @@ def member_profile(request, team, username):
 @team_view
 def add_members(request, team):
     summary = None
+    errors = []
+    successes = []
     if not permissions.can_add_members(team, request.user):
         return HttpResponseForbidden(_(u'You cannot invite people to this team.'))
     if request.POST:
         form = forms.AddMembersForm(team, request.user, request.POST)
         if form.is_valid():
             summary = form.save()
-
             if not team.is_old_style():
                 if summary['added']:
-                    messages.success(request, _('{} member(s) added').format(summary['added']))
+                    successes.append(_('{} member(s) added').format(summary['added']))
                 if summary['unknown']:
-                    messages.error(request, 
-                        _('The following user(s) does not exist: {}')
+                    errors.append(
+                        _('The following user(s) do not exist: {}')
                             .format(", ".join(summary['unknown'])))
                 if summary['already']:
-                    messages.error(request, 
+                    errors.append(
                         _('The following is already a member: {}')
                             .format(", ".join(summary['already'])))
-                else:
-                    messages.error(request, _('No members were added.'))
-
-                response_renderer = AJAXResponseRenderer(request)
-                response_renderer.reload_page()
-                return response_renderer.render()
-
-    form = forms.AddMembersForm(team, request.user)
+    else:
+        form = forms.AddMembersForm(team, request.user)
 
     if team.is_old_style():
         template_name = 'teams/add_members.html'
-    else:
-        template_name = 'new-teams/add_members.html'
 
-    return render(request, template_name,  {
-        'team': team,
-        'form': form,
-        'summary': summary,
-        'breadcrumbs': [
-            BreadCrumb(team, 'teams:dashboard', team.slug),
-            BreadCrumb(_('Members'), 'teams:members', team.slug),
-            BreadCrumb(_('Invite')),
-        ],
-    })
+        return render(request, template_name,  {
+            'team': team,
+            'form': form,
+            'summary': summary,
+            'breadcrumbs': [
+                BreadCrumb(team, 'teams:dashboard', team.slug),
+                BreadCrumb(_('Members'), 'teams:members', team.slug),
+                BreadCrumb(_('Invite')),
+            ],
+        })
+    else:
+        template_name = 'future/teams/members/forms/invite_modal.html'
+
+        response_renderer = AJAXResponseRenderer(request)
+        response_renderer.show_modal(template_name, 
+            { 'team': team, 
+              'form': forms.InviteForm(team, request.user), 
+              'form_add_member': form,
+              'username_tab_non_field_errors': None,
+              'email_tab_non_field_errors': None,
+              'add_tab_non_field_errors': errors,
+              'add_tab_non_field_successes': successes, 
+              'team_nav': 'member_directory',
+              'show_add_link': permissions.can_add_members(team, request.user),
+              'show_email_invite_link': permissions.can_send_email_invite(team, request.user),
+              'modal_tab': 'add',
+            })
+        return response_renderer.render()    
 
 @team_view
 def invite(request, team):
@@ -645,6 +656,8 @@ def invite(request, team):
               'form_add_member': form_add_member,
               'username_tab_non_field_errors': username_tab_non_field_errors,
               'email_tab_non_field_errors': email_tab_non_field_errors,
+              'add_tab_non_field_errors': None,
+              'add_tab_non_field_successes': None,
               'team_nav': 'member_directory',
               'show_add_link': permissions.can_add_members(team, request.user),
               'show_email_invite_link': permissions.can_send_email_invite(team, request.user),

@@ -133,6 +133,11 @@ class TeamMemberInput(forms.CharField):
                 _(u'%(username)s is not a member of the team'),
                 username=value))
 
+'''
+Don't forget to call this class's set_ajax_autocomplete_url(url) method
+See teams.forms:InviteForm for an example usage of this class
+set_ajax_autocomplete_url() is called in InviteForm's __init__ method
+'''
 class MultipleUsernameInviteField(MultipleUserAutocompleteField):
     def __init__(self, *args, **kwargs):
         super(MultipleUsernameInviteField, self).__init__(*args, **kwargs)

@@ -982,8 +982,7 @@ class AddMembersForm(forms.Form):
     role = forms.ChoiceField(choices=TeamMember.ROLES[::-1],
                              initial='contributor',
                              label=_("Assign a role"))
-    members = forms.CharField(required=False,
-                              widget=forms.Textarea(attrs={'rows': 10}),
+    members = forms.CharField(widget=forms.Textarea(attrs={'rows': 10}),
                               label=_("Users to add to team"))
     def __init__(self, team, user, *args, **kwargs):
         super(AddMembersForm, self).__init__(*args, **kwargs)
