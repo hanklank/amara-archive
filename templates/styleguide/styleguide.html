@@ -1,5 +1,4 @@
 {% load media_bundle assets %}
-{% load url from future %}
 <!DOCTYPE html>
 <html>
   <head>
@@ -29,5 +28,6 @@
       </div>
     </div>
     <script src="{% asset "js/application.js" %}"></script>
+    {% include "_analytics.html" %}
   </body>
 </html>
