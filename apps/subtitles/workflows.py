@@ -478,10 +478,9 @@ class VideoWorkflow(object):
     def editor_video_urls(self, language_code):
         return self.get_language_workflow(language_code).editor_video_urls()
 
-    def action_requires_subtitle_language_tip(self, action):
-        if action == 'send-back':
-            return False
-        return True
+    def action_requires_subtitle_language_tip(self, user, language_code, action_name):
+        action = self.lookup_action(user, language_code, action_name)
+        return action.requires_subtitle_language_tip
 
 class LanguageWorkflow(object):
     def __init__(self, video, language_code):
@@ -728,6 +727,7 @@ class Action(object):
     CLASS_ENDORSE = 'endorse'
     CLASS_SEND_BACK = 'send-back'
     subtitle_visibility = 'public'
+    requires_subtitle_language_tip = True
 
     def require_synced_subtitles(self):
         """Should we require that all subtitles have timings?
@@ -840,6 +840,7 @@ class SaveDraft(Action):
     in_progress_text = ugettext_lazy('Saving')
     complete = None
     requires_translated_metadata_if_enabled = False
+    requires_subtitle_language_tip = False
 
 class APIComplete(Action):
     """Action that handles complete=True from the API

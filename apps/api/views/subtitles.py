@@ -921,7 +921,7 @@ class Actions(views.APIView):
         language = video.subtitle_language(language_code)
         if (language is None or 
             (language.get_tip() is None
-             and workflow.action_requires_subtitle_language_tip(action))):
+             and workflow.action_requires_subtitle_language_tip(request.user, language_code, action))):
             return Response('No subtitles',
                             status=status.HTTP_400_BAD_REQUEST)
         try:
