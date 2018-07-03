@@ -840,7 +840,6 @@ class SaveDraft(Action):
     in_progress_text = ugettext_lazy('Saving')
     complete = None
     requires_translated_metadata_if_enabled = False
-    requires_subtitle_language_tip = False
 
 class APIComplete(Action):
     """Action that handles complete=True from the API
