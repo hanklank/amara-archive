@@ -20,9 +20,6 @@ from django.conf import settings
 from utils.translation import get_user_languages_from_request
 
 
-def experiments(request):
-    return {"EXPERIMENTS_CODE": getattr(settings, "EXPERIMENTS_CODE", False)}
-
 def current_site(request):
     return {
         'HOSTNAME': settings.HOSTNAME,
@@ -36,6 +33,7 @@ def current_commit(request):
 def custom(request):
     return {
         'GOOGLE_ANALYTICS_NUMBER': settings.GOOGLE_ANALYTICS_NUMBER,
+        'GOOGLE_ADWORDS_CODE': settings.GOOGLE_ADWORDS_CODE,
         'DEBUG': settings.DEBUG
     }
 
