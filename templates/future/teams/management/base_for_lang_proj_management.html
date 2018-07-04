@@ -10,11 +10,9 @@
   <li{% if current_tab == tab.name %} class="active"{% endif %}><a href="{{ tab.url }}">{{ tab.label }}</a></li>
   {% endfor %}
 
-  {% comment %}
   {% if project_id %}
   <li{% if current_tab == "videos" %} class="active"{% endif %}><a href="{% url "teams:manage_videos_project" team.slug project_id %}">{% trans "Videos" %}</a></li>
   {% endif %}
-  {% endcomment %}
   
 </ul>
 {% else %}
