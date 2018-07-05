@@ -130,6 +130,12 @@ class CustomUserManager(UserManager):
         else:
             return self.none()
 
+    '''
+    Gets all users except for the amara-bot
+    '''
+    def real_users(self):
+        return self.all().exclude(username=settings.ANONYMOUS_DEFAULT_USERNAME)
+
 def get_amara_anonymous_user():
     user, created = CustomUser.objects.get_or_create(
         pk=settings.ANONYMOUS_USER_ID,

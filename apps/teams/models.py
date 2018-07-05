@@ -737,7 +737,7 @@ class Team(models.Model):
         pending_invites = (Invite.objects
                            .pending_for(team=self)
                            .values_list('user_id'))
-        return (User.objects
+        return (User.objects.real_users()
                 .exclude(team_members__team=self)
                 .exclude(id__in=pending_invites)
                 .exclude(is_active=False))

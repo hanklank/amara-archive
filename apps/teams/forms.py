@@ -1061,28 +1061,31 @@ class InviteForm(forms.Form):
             reverse('teams:ajax-inviteable-users-search', kwargs={'slug':team.slug})
             )
 
+    def custom_field_error(self, field, error_message):
+        self._errors[field] = self.error_class([error_message])
+
     def validate_emails(self):
         for email in self.emails:
             try:
                 validate_email(email)
             except django_core_ValidationError:
-                raise forms.ValidationError(_(u"{} is an invalid email address.".format(email)))
+                self.custom_field_error('email', _(u"{} is an invalid email address.".format(email)))
 
             invitee = self.team.users.filter(email=email).first()
             if invitee:
-                raise forms.ValidationError(_(u"The email address {} belongs to {} who is already a part of the team!".format(email, invitee)))
+                self.custom_field_error('email', _(u"The email address {} belongs to {} who is already a part of the team!".format(email, invitee)))
 
     def validate_usernames(self):
         for username in self.usernames:
             try:
                 user = User.objects.get(username=username)
                 if self.team.is_member(user):
-                    raise forms.ValidationError(_(u'The user {} already belongs to this team!').format(username))
+                    self.custom_field_error('usernames', _(u'The user {} already belongs to this team!').format(username))
                 if Invite.objects.filter(user=user, team=self.team, approved=None).exists():
-                    raise forms.ValidationError(_(u'The user {} already has an invite for this team!').format(username))                
+                    self.custom_field_error('usernames', _(u'The user {} already has an invite for this team!').format(username))
                 self.users.append(user)
             except User.DoesNotExist:
-                raise forms.ValidationError(_(u'The user {} does not exist.').format(username))
+                self.custom_field_error('usernames', _(u'The user {} does not exist.').format(username))
 
     def clean(self):
         cleaned_data = super(InviteForm, self).clean()
@@ -1090,9 +1093,9 @@ class InviteForm(forms.Form):
         usernames = cleaned_data.get('usernames')
 
         if self.modal_tab == 'username' and not usernames:
-            raise forms.ValidationError(_(u'At least one username must be provided!'))
+            self.custom_field_error('usernames', _(u'At least one username must be provided!'))
         if self.modal_tab == 'email' and not emails:
-            raise forms.ValidationError(_(u'At least one email must be provided!'))
+            self.custom_field_error('email', _(u'At least one email must be provided!'))
 
         if emails:
             self.emails = emails.split()
