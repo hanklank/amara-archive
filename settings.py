@@ -180,7 +180,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'utils.context_processors.current_commit',
     'utils.context_processors.custom',
     'utils.context_processors.user_languages',
-    'utils.context_processors.experiments',
     'django.contrib.messages.context_processors.messages',
     'django.core.context_processors.i18n',
     'staticmedia.context_processors.staticmedia',
@@ -373,7 +372,7 @@ ANONYMOUS_FULL_NAME = u"Amara Bot"
 
 #Use on production
 GOOGLE_ANALYTICS_NUMBER = None
-EXPERIMENTS_CODE = None
+GOOGLE_ADWORDS_CODE = None
 
 # API integration settings
 GOOGLE_CLIENT_ID = None

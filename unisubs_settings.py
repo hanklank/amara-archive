@@ -42,7 +42,7 @@ elif INSTALLATION == PRODUCTION:
     # only send actual email on the production server
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
     GOOGLE_ANALYTICS_NUMBER = 'UA-163840-22'
-    EXPERIMENTS_CODE = "QL2-1BUpSyeABVHp9b6G8w"
+    GOOGLE_ADWORDS_CODE = 'AW-806413593'
 elif INSTALLATION == BETA:
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 elif INSTALLATION == DEMO:
