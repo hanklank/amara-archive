@@ -2096,7 +2096,11 @@ class EditVideosForm(VideoManagementForm):
                                  label=_('Thumbnail'), required=False)
 
     def setup_fields(self):
-        self.fields['project'].setup(self.team)
+        member = self.team.get_member(self.user)
+        if not member.is_manager():
+            self.fields['project'].widget = self.fields['project'].hidden_widget()
+        else:
+            self.fields['project'].setup(self.team)
 
     def setup_single_selection(self, video):
         team_video = video.teamvideo
