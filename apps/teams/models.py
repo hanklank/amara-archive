@@ -739,7 +739,8 @@ class Team(models.Model):
                            .values_list('user_id'))
         return (User.objects
                 .exclude(team_members__team=self)
-                .exclude(id__in=pending_invites))
+                .exclude(id__in=pending_invites)
+                .exclude(is_active=False))
 
     def potential_language_managers(self, language_code):
         member_qs = (TeamMember.objects

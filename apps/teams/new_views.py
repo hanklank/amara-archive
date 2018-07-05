@@ -1358,7 +1358,7 @@ def ajax_member_search(request, team):
 @team_view
 def ajax_inviteable_users_search(request, team):
     query = request.GET.get('q', '')
-    qs = User.objects.search(query)
+    qs = team.invitable_users()
     data = {
         'results': [
             { 'id': user.username,
