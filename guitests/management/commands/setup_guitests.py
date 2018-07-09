@@ -28,7 +28,7 @@ from auth.models import CustomUser as User
 from videos.models import VideoUrl
 
 # Connect to this if you want to do extra setup to prep the guitests
-setup_guitests = dispatch.Signal()
+signal = dispatch.Signal()
 
 class Command(BaseCommand):
     help = "Prepares the GUI tests to be run"
@@ -36,6 +36,7 @@ class Command(BaseCommand):
     def handle(self, **options):
         self.setup_database()
         self.create_admin_user()
+        signal.send(sender=None)
 
     def setup_database(self):
         self.wait_for_db()
