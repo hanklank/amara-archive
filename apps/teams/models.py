@@ -742,6 +742,27 @@ class Team(models.Model):
                 .exclude(id__in=pending_invites)
                 .exclude(is_active=False))
 
+    def search_invitable_users(self, query):
+        qs = self.invitable_users()
+        valid_term = False
+        for term in [term.strip() for term in query.split()]:
+            if term:
+                valid_term = True
+                try:
+                    sql = """(LOWER(first_name) LIKE %s
+                OR LOWER(last_name) LIKE %s
+                OR LOWER(email) LIKE %s
+                OR LOWER(username) LIKE %s
+                OR LOWER(biography) LIKE %s)"""
+                    term = '%' + term.lower() + '%'
+                    qs = qs.extra(where=[sql], params=[term, term, term, term, term])
+                except Exception as e:
+                    logger.error(e)
+        if valid_term:
+            return qs
+        else:
+            return self.none()
+
     def potential_language_managers(self, language_code):
         member_qs = (TeamMember.objects
                      .filter(team=self)
