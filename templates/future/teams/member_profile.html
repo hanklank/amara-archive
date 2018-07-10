@@ -18,8 +18,8 @@
 	      <div class="col-xs">
 		<h3>{{ member.get_role_display }} <a class="no-underline" href="{{ member_user.send_message_url }}"><i class="icon icon-mail"></i></a></h3>
 		<p><!--
-		  <a class="no-underline" href="{% url "teams:activity" team.slug %}">{% trans "See team activity" %}</a><br>-->
-		  <a class="no-underline" href="{% url "profiles:profile" member_user.username %}">{% trans "See full profile" %}</a>
+		  <a href="{% url "teams:activity" team.slug %}">{% trans "See team activity" %}</a><br>-->
+		  <a href="{% url "profiles:profile" member_user.username %}">{% trans "See full profile" %}</a>
 		</p>
 	      </div>
 	    </div>
