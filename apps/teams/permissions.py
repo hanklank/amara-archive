@@ -571,7 +571,6 @@ def can_view_activity(team, user):
 
 def can_invite(team, user):
     """Return whether the given user can send an invite for the given team."""
-
     role = get_role_for_target(user, team)
 
     role_required = {

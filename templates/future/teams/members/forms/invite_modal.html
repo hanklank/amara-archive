@@ -5,9 +5,11 @@
       <h4 class="dialogTitle">{% trans 'Invite members to ' %}{{ team.name }}</h4>
     </header>
     <ul class="nav nav-tabs">
+      {% if show_username_invite_link %}
       <li {% if modal_tab == 'username' %}class="active"{%endif%}>
         <a href="#username" data-toggle="tab">Invite by username</a>
       </li>
+      {% endif %}
       {% if show_email_invite_link %}
       <li {% if modal_tab == 'email' %}class="active"{%endif%}>
         <a href="#email" data-toggle="tab">Invite by email</a>
@@ -22,6 +24,7 @@
 
     <div class="tab-content">
 
+      {% if show_username_invite_link %}
       <div id="username" class="tab-pane
         {% if modal_tab == 'username' %}active{%endif%}">
         <form class="ajaxForm" method="post" action="{% url 'teams:invite' team.slug %}" class="team-invite">
@@ -37,6 +40,7 @@
           </div>
         </form>
       </div>
+      {% endif %}
 
       {% if show_email_invite_link %}
       <div id="email" class="tab-pane

@@ -582,6 +582,7 @@ def add_members(request, team):
               'add_tab_non_field_errors': errors,
               'add_tab_non_field_successes': successes, 
               'team_nav': 'member_directory',
+              'show_username_invite_link': permissions.can_invite(team, request.user),
               'show_add_link': permissions.can_add_members(team, request.user),
               'show_email_invite_link': permissions.can_send_email_invite(team, request.user),
               'modal_tab': 'add',
@@ -590,7 +591,7 @@ def add_members(request, team):
 
 @team_view
 def invite(request, team):
-    if not permissions.can_invite(team, request.user):
+    if not permissions.can_invite(team, request.user) and not permissions.can_add_members(team, user):
         return HttpResponseForbidden(_(u'You cannot invite people to this team.'))
 
     form_add_member = None
@@ -641,7 +642,11 @@ def invite(request, team):
     else:
         template_name = 'future/teams/members/forms/invite_modal.html'
 
-        modal_tab = request.POST.get('modalTab', 'username')
+        # show the Add members form by default for staff
+        if request.user.is_staff and not request.POST.get('modalTab', None):
+            modal_tab = 'add'
+        else:
+            modal_tab = request.POST.get('modalTab', 'username')
 
         # for separating the errors being rendered in the modal tabs
         username_tab_non_field_errors = None
@@ -662,6 +667,7 @@ def invite(request, team):
               'add_tab_non_field_errors': None,
               'add_tab_non_field_successes': None,
               'team_nav': 'member_directory',
+              'show_username_invite_link': permissions.can_invite(team, request.user),
               'show_add_link': permissions.can_add_members(team, request.user),
               'show_email_invite_link': permissions.can_send_email_invite(team, request.user),
               'modal_tab': modal_tab,
