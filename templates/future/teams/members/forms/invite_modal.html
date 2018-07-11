@@ -14,7 +14,7 @@
       </li>
       {% endif %}
       {% if show_add_link %}
-      <li>
+      <li {% if modal_tab == 'add' %}class="active"{%endif%}>
         <a href="#add" data-toggle="tab">Add members</a>
       </li>
       {% endif %}
