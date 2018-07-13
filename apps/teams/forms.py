@@ -1025,7 +1025,8 @@ class InviteForm(forms.Form):
     usernames = MultipleUsernameInviteField(label=_('Username'),
                                   required=False,
                                   help_text=_('Amara username of the existing user you want to invite. '
-                                              'You can invite multiple users.'))
+                                              'You can invite multiple users. '
+                                              'Pasting a comma-separated or a line-by-line list of usernames and pressing the "Enter" key also works!'))
     email = forms.CharField(required=False,
                             widget=forms.Textarea(attrs={'rows': 3}),
                             help_text=_('Email address of the new member you want to invite. '
