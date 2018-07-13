@@ -1,64 +1,118 @@
 import httplib
+import json
+import requests
+import time
 import urllib2
 import urllib
-import time
-import oauth.oauth as oauth
+import urlparse
+
+from requests_oauthlib import OAuth1
+from urllib2 import URLError
 
 from django.conf import settings
 
-CALLBACK_URL = 'http://example.com/newaccounts/login/done/'
+from auth.models import CustomUser as User
+from thirdpartyaccounts.models import TwitterAccount
 
 REQUEST_TOKEN_URL = 'https://twitter.com/oauth/request_token'
 AUTHORIZATION_URL = 'http://twitter.com/oauth/authorize'
 ACCESS_TOKEN_URL = 'https://twitter.com/oauth/access_token'
+VERIFY_CREDENTIALS_URL = 'https://api.twitter.com/1.1/account/verify_credentials.json'
 
-#CONSUMER_KEY = settings.TWITTER_CONSUMER_KEY
-#CONSUMER_SECRET = settings.TWITTER_CONSUMER_SECRET
+class TwitterOAuth1(object):
+    """A helper class containing all of the Twitter OAuth session requests.
+    """
 
-
-class TwitterOAuthClient(oauth.OAuthClient):
-
-    def __init__(self, consumer_key, consumer_secret, request_token_url=REQUEST_TOKEN_URL, access_token_url=ACCESS_TOKEN_URL, authorization_url=AUTHORIZATION_URL):
-        self.consumer_secret = consumer_secret
+    def __init__(self, consumer_key, consumer_secret, owner_key=None, owner_secret=None, verifier=None):
         self.consumer_key = consumer_key
-        self.consumer = oauth.OAuthConsumer(consumer_key, consumer_secret)
-        self.signature_method = oauth.OAuthSignatureMethod_HMAC_SHA1()
-        self.request_token_url = request_token_url
-        self.access_token_url = access_token_url
-        self.authorization_url = authorization_url
+        self.consumer_secret = consumer_secret
+        self.owner_key = owner_key
+        self.owner_secret = owner_secret
+        self.verifier = verifier
+
+    def _get_session(self, callback_url=None):
+        session = OAuth1(self.consumer_key,
+                         client_secret=self.consumer_secret,
+                         resource_owner_key=self.owner_key,
+                         resource_owner_secret=self.owner_secret,
+                         verifier=self.verifier,
+                         callback_uri=callback_url)
+        return session
 
     def fetch_request_token(self, callback_url=None):
-        params = {}
-        if callback_url is not None:
-            params = { 'oauth_callback': callback_url }
-        oauth_request = oauth.OAuthRequest.from_consumer_and_token(self.consumer, http_url=self.request_token_url, parameters=params)
-        oauth_request.sign_request(self.signature_method, self.consumer, None)
-        params = oauth_request.parameters
-        data = urllib.urlencode(params)
-        full_url='%s?%s'%(self.request_token_url, data)
-        response = urllib2.urlopen(full_url)
-        return oauth.OAuthToken.from_string(response.read())
+        session = self._get_session(callback_url=callback_url)
+        try:
+            r = requests.post(url=REQUEST_TOKEN_URL, auth=session)
+        except URLError as e:
+            raise e
+        credentials = urlparse.parse_qs(r.content)
+        return credentials
     
-    def authorize_token_url(self, token, callback_url=None):
-        oauth_request = oauth.OAuthRequest.from_token_and_callback(token=token,\
-                        callback=callback_url, http_url=self.authorization_url)
-        params = oauth_request.parameters
-        data = urllib.urlencode(params)
-        full_url='%s?%s'%(self.authorization_url, data)
-        return full_url
+    def authorize_token_url(self, oauth_token):
+        return AUTHORIZATION_URL + '?oauth_token=' + oauth_token
 
-    def fetch_access_token(self, token, oauth_verifier=None):
-        params = {}
-        if oauth_verifier is not None:
-            params = { 'oauth_verifier': oauth_verifier }
-        oauth_request = oauth.OAuthRequest.from_consumer_and_token(self.consumer, token=token, http_url=self.access_token_url, parameters=params)
-        oauth_request.sign_request(self.signature_method, self.consumer, token)
-        params = oauth_request.parameters
-        data = urllib.urlencode(params)
-        full_url='%s?%s'%(self.access_token_url, data)
-        response = urllib2.urlopen(full_url)
-        return oauth.OAuthToken.from_string(response.read())
+    def fetch_access_token(self):
+        session = self._get_session()
+        try:
+            r = requests.post(url=ACCESS_TOKEN_URL, auth=session)
+        except URLError as e:
+            raise e
 
+        credentials = urlparse.parse_qs(r.content)
+        return credentials
+
+    def get_user_info(self, get_email=True):
+        session = self._get_session()
+        params = {'include_email': True} if get_email else None
+
+        try:
+            r = requests.get(url=VERIFY_CREDENTIALS_URL, auth=session, params=params)
+        except Exception as e:
+            raise e
+        return json.loads(r.content)
+
+    def _get_name_from_user_info(self, user_info):
+        name_data = user_info.get('name').split()
+        try:
+            first, last = name_data[0], ' '.join(name_data[1:])
+        except:
+            first, last = user_info.get('screen_name'), ''
+        return first, last
+
+    def get_or_create_twitter_account(self, amara_user):
+        user_info = self.get_user_info()
+        # get username and email
+        username = user_info.get('screen_name')
+        email = user_info.get('email', None)
+
+        # check for TwitterAccount with existing username
+        try:
+            account = TwitterAccount.objects.get(username=username)
+        except TwitterAccount.DoesNotExist:
+            account = TwitterAccount.objects.create(user=amara_user,
+                                                    username=username,
+                                                    access_token=self.owner_key)
+
+        return account
+
+    def create_user_from_twitter(self):
+        user_info = self.get_user_info()
+        username = user_info.get('screen_name')
+        try:
+            account = TwitterAccount.objects.get(username=username)
+            user = User.objects.get(pk=account.user_id)
+        except (TwitterAccount.DoesNotExist, User.DoesNotExist):
+            first_name, last_name = self._get_name_from_user_info(user_info)
+            avatar = user_info.get('profile_image_url_https')
+            email = user_info.get('email', '')
+            user = User.objects.create_with_unique_username(username=username,
+                        email=email, first_name=first_name, last_name=last_name)
+            temp_password = User.objects.make_random_password(length=24)
+            user.set_password(temp_password)
+            user.save()
+
+            account = TwitterAccount.objects.create(user=user, username=username,
+                                      access_token=self.owner_key, avatar=avatar)
 
     def access_resource(self, oauth_request):
         # via post body
@@ -67,61 +121,3 @@ class TwitterOAuthClient(oauth.OAuthClient):
         self.connection.request('POST', RESOURCE_URL, body=oauth_request.to_postdata(), headers=headers)
         response = self.connection.getresponse()
         return response.read()
-
-def run_example():
-
-    # setup
-    print '** OAuth Python Library Example **'
-    client = TwitterOAuthClient()
-    
-    pause()
-
-    # get request token
-    print '* Obtain a request token ...'
-    pause()
-    
-    token = client.fetch_request_token()
-    print 'GOT'
-    print 'key: %s' % str(token.key)
-    print 'secret: %s' % str(token.secret)
-    pause()
-
-    print '* Authorize the request token ...'
-    pause()
-    # this will actually occur only on some callback
-    url = client.authorize_token_url(token)
-    print 'GOT'
-    print url
-    pause()
-
-    # get access token
-    print '* Obtain an access token ...'
-    pause()
-    
-    access_token = client.fetch_access_token(token)
-    print 'GOT'
-    print 'key: %s' % str(access_token.key)
-    print 'secret: %s' % str(access_token.secret)
-    pause()
-
-    # access some protected resources
-    print '* Access protected resources ...'
-    pause()
-    parameters = {'file': 'vacation.jpg', 'size': 'original', 'oauth_callback': CALLBACK_URL} # resource specific params
-    oauth_request = oauth.OAuthRequest.from_consumer_and_token(consumer, token=token, http_method='POST', http_url=RESOURCE_URL, parameters=parameters)
-    oauth_request.sign_request(signature_method_hmac_sha1, consumer, token)
-    print 'REQUEST (via post body)'
-    print 'parameters: %s' % str(oauth_request.parameters)
-    pause()
-    params = client.access_resource(oauth_request)
-    print 'GOT'
-    print 'non-oauth parameters: %s' % params
-    pause()
-
-def pause():
-    print ''
-    time.sleep(1)
-
-if __name__ == '__main__':
-    run_example()
-    print 'Done.'
