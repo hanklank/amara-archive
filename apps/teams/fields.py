@@ -134,11 +134,20 @@ class TeamMemberInput(forms.CharField):
                 username=value))
 
 '''
-Don't forget to call this class's set_ajax_autocomplete_url(url) method
+Don't forget to call this class's set_ajax_autocomplete_url(url)
+and set_ajax_multiple_username_url(url) methods
+
 See teams.forms:InviteForm for an example usage of this class
-set_ajax_autocomplete_url() is called in InviteForm's __init__ method
+set_ajax_autocomplete_url() and set_ajax_multiple_username_url()
+are called in InviteForm's __init__ method
 '''
 class MultipleUsernameInviteField(MultipleAutoCompleteField):
+    def __init__(self, *args, **kwargs):
+        super(MultipleUsernameInviteField, self).__init__(*args, **kwargs)
+
+        # Used for PowerUserUsernameSelect to enable parsing of multiple entries
+        # self.set_select_data('ajax-username-multiple', 1)
+
     '''
     Validation is done at teams.forms.InviteForm
     '''
@@ -147,8 +156,8 @@ class MultipleUsernameInviteField(MultipleAutoCompleteField):
 
     def set_initial_selections(self, usernames):
         qs = User.objects.filter(username__in=usernames)
-        data = [ { 'id': user.username,
-                   'text': user.username + ("" if unicode(user) == user.username 
-                                               else " ({})".format(unicode(user))),
-                 } for user in qs ]
+        data = [ user.get_select2_format() for user in qs ]
         self._set_initial_selections(data)
+
+    def set_ajax_multiple_username_url(self, url):
+        self.set_select_data('ajax-username-multiple', url)

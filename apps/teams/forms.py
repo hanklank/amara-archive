@@ -1040,8 +1040,10 @@ class InviteForm(forms.Form):
     def __init__(self, team, user, *args, **kwargs):
         super(InviteForm, self).__init__(*args, **kwargs)
         if args and isinstance(args[0], dict):
+            # getting the current modal tab from invalidated POST data
             self.modal_tab = args[0].get('modalTab', None)
 
+            # getting the current username selections from invalidated POST data
             form_data_usernames = args[0].getlist('usernames')
             if form_data_usernames:
                 self.fields['usernames'].set_initial_selections(form_data_usernames)
@@ -1059,6 +1061,9 @@ class InviteForm(forms.Form):
         )
         self.fields['usernames'].set_ajax_autocomplete_url(
             reverse('teams:ajax-inviteable-users-search', kwargs={'slug':team.slug})
+            )
+        self.fields['usernames'].set_ajax_multiple_username_url(
+            reverse('teams:ajax-inviteable-users-multiple-search', kwargs={'slug':team.slug})
             )
 
     def custom_field_error(self, field, error_message):
@@ -1081,9 +1086,10 @@ class InviteForm(forms.Form):
                 user = User.objects.get(username=username)
                 if self.team.is_member(user):
                     self.custom_field_error('usernames', _(u'The user {} already belongs to this team!').format(username))
-                if Invite.objects.filter(user=user, team=self.team, approved=None).exists():
+                elif Invite.objects.filter(user=user, team=self.team, approved=None).exists():
                     self.custom_field_error('usernames', _(u'The user {} already has an invite for this team!').format(username))
-                self.users.append(user)
+                else:
+                    self.users.append(user)
             except User.DoesNotExist:
                 self.custom_field_error('usernames', _(u'The user {} does not exist.').format(username))
 

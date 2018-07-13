@@ -250,6 +250,19 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
         else:
             return ugettext('Retired user')
 
+    @property
+    def username_with_fullname(self):
+        if self.is_active:
+            return self.username + ("" if unicode(self) == self.username 
+                                       else " ({})".format(unicode(self)))
+        else:
+            return ugettext('Retired user')
+
+    # Returns a dictionary in the select2 data format
+    def get_select2_format(self):
+        return { 'id' : self.username,
+                 'text': self.username_with_fullname }
+
     def sent_message(self):
         """
         Should be called each time a user sends a message.

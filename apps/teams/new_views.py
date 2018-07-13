@@ -1365,15 +1365,33 @@ def ajax_member_search(request, team):
 def ajax_inviteable_users_search(request, team):
     query = request.GET.get('q', '')
     qs = team.search_invitable_users(query)
-    data = {
-        'results': [
-            { 'id': user.username,
-              'text': user.username + ("" if unicode(user) == user.username 
-                                          else " ({})".format(unicode(user))),
-            }
-            for user in qs[:8]
-        ]
-    }
+    data = { 'results': [ user.get_select2_format() for user in qs[:8] ] }
+    return HttpResponse(json.dumps(data), 'application/json')
+
+@team_view
+def ajax_inviteable_users_multiple_search(request, team):
+    usernames = request.GET.getlist('usernames[]', [])
+    unknown = []
+    invited_already = []
+    member_already = []
+    invitable = []
+
+    for username in usernames:
+        try:
+            user = User.objects.get(username=username)
+            if team.is_member(user):
+                member_already.append(username)
+            elif Invite.objects.filter(user=user, team=team, approved=None).exists():
+                invited_already.append(username)
+            else:
+                invitable.append(user.get_select2_format())
+        except User.DoesNotExist:
+            unknown.append(username)
+
+    data = { 'unknown': unknown,
+             'invited_already': invited_already,
+             'member_already': member_already,
+             'invitable': invitable }
 
     return HttpResponse(json.dumps(data), 'application/json')
 
