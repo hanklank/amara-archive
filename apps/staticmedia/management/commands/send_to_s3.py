@@ -242,6 +242,6 @@ class Command(BaseCommand):
         client.copy_object(Bucket=settings.STATIC_MEDIA_S3_BUCKET,
                            Key=key,
                            CopySource='{}/experimental/{}'.format(
-                               settings.STATIC_MEDIA_S3_BUCKET, path))
+                               settings.STATIC_MEDIA_EXPERIMENTAL_EDITOR_BUCKET, path))
         self.log_upload(key)
 

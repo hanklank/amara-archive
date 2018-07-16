@@ -35,7 +35,7 @@ class Command(BaseCommand):
     def upload(self, client, bundle_name, mime_type):
         bundle = bundles.get_bundle(bundle_name)
         client.put_object(
-            Bucket=settings.STATIC_MEDIA_S3_BUCKET,
+            Bucket=settings.STATIC_MEDIA_EXPERIMENTAL_EDITOR_BUCKET,
             Key='experimental/{}/{}'.format(bundle.bundle_type, bundle_name),
             ContentType=bundle.mime_type,
             ACL='private',
