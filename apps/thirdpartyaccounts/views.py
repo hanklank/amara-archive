@@ -29,8 +29,7 @@ from django.utils.http import urlquote
 from oauth import oauth
 from requests_oauthlib import OAuth1
 from auth.models import CustomUser as User
-# TODO: consolidate twitter, oauthtwitter and oauthtwitter2
-from thirdpartyaccounts.lib.oauthtwitter2 import TwitterOAuth1
+from thirdpartyaccounts.lib.oauth_twitter import TwitterOAuth1
 from utils.http import get_url_host
 from thirdpartyaccounts.auth_backends import FacebookAccount, FacebookAuthBackend, TwitterAuthBackend, TwitterAccount
 
