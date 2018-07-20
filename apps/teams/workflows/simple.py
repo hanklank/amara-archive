@@ -19,6 +19,7 @@
 from __future__ import absolute_import
 
 from django.contrib import messages
+from django.core.urlresolvers import reverse
 from django.shortcuts import redirect, render
 from django.template import RequestContext
 from django.template.loader import render_to_string
@@ -26,11 +27,50 @@ from django.utils.translation import ugettext_lazy as _
 
 from teams import views as old_views
 from teams import forms
+from teams.behaviors import get_main_project
+from teams import forms as teams_forms
+from teams.models import Project
 from teams.workflows import TeamWorkflow
+from ui import CTA
+from utils.memoize import memoize
 from utils.breadcrumbs import BreadCrumb
+from utils.translation import get_language_label
 from .subtitleworkflows import TeamVideoWorkflow
 from videos.behaviors import VideoPageCustomization, SubtitlesPageCustomization
 
+NEWEST_MEMBERS_PER_PAGE = 10
+NEWEST_VIDEOS_PER_PAGE = 7
+MAX_AVAILABLE_VIDEOS = 3
+
+class SimpleVideoView(object):
+    def __init__(self, video, cta_languages, team):
+        self.video = video
+        self.team = team
+
+        # TODO fix this so we can use the Split-button CTA specified in enterprise 2014
+        # For now, we only take the top language of the user
+        self.cta_language = cta_languages[0]  
+        
+    def editor_url(self):
+        # return '#'
+        url = reverse('subtitles:subtitle-editor', kwargs={
+            'video_id': self.video.video_id,
+            'language_code': self.cta_language,
+        })
+        return url + '?team={}'.format(self.team.slug)
+
+    @memoize
+    def cta(self):
+        """Get a CTA link for this team video"""
+        if self.video.language == self.cta_language:
+            icon = 'icon-transcribe'
+            label =  _('Transcribe [{}]').format(self.cta_language)
+        else:
+            icon = 'icon-translate'
+            label = _('Translate [{}]').format(self.cta_language)
+        
+        return CTA(label, icon, self.editor_url())
+    
 def render_team_header(request, team):
     return render_to_string('future/header.html', {
         'team': team,
@@ -38,6 +78,63 @@ def render_team_header(request, team):
         'brand_url': team.get_absolute_url(),
         'primarynav': 'future/teams/primarynav.html',
     }, RequestContext(request))
+
+def get_dashboard_videos(team, user):
+    videos = team.videos.exclude(primary_audio_language_code='').order_by('-created')
+
+    user_languages = user.get_languages()
+    available_videos = []
+    for video in videos[:MAX_AVAILABLE_VIDEOS]:
+        video_subtitle_languages = video.languages_with_versions()
+        
+        cta_languages = [l for l in user_languages if l not in video_subtitle_languages]
+        if (cta_languages):
+            available_videos.append(SimpleVideoView(video, cta_languages, team))
+
+    return available_videos
+
+def dashboard(request, team):
+    member = team.get_member(request.user)
+    main_project = get_main_project(team)
+    if not member:
+        raise PermissionDenied()
+
+    if len(request.user.get_languages()) == 0:
+        return dashboard_set_languages(request, team)
+
+    video_qs = team.videos.all().order_by('-created')
+    if main_project:
+        video_qs = video_qs.filter(teamvideo__project=main_project)
+
+    newest_members = (team.members.all()
+                      .order_by('-created')
+                      .select_related('user')[:NEWEST_MEMBERS_PER_PAGE])
+
+    top_languages = [
+        (get_language_label(lc), count)
+        for lc, count in team.get_completed_language_counts() if count > 0
+    ]
+    top_languages.sort(key=lambda pair: pair[1], reverse=True)
+
+    context = {
+        'team': team,
+        'team_nav': 'dashboard',
+        'projects': Project.objects.for_team(team),
+        'selected_project': main_project,
+        'top_languages': top_languages,
+        'newest_members': [m.user for m in newest_members],
+        'videos': video_qs[:NEWEST_VIDEOS_PER_PAGE],
+        'more_video_count': max(0, video_qs.count() - NEWEST_VIDEOS_PER_PAGE),
+        'video_search_form': teams_forms.VideoFiltersForm(team),
+        'member_profile_url': member.get_absolute_url(),
+        'breadcrumbs': [
+            BreadCrumb(team),
+        ],
+
+        'dashboard_videos': get_available_videosget_dashboard_videos(team, request.user)
+    }
+    
+    return render(request, 'future/teams/simple/dashboard.html', context)
 
 class SimpleVideoPageCustomization(VideoPageCustomization):
     def __init__(self, team, request, video):
@@ -75,7 +172,8 @@ class SimpleTeamWorkflow(TeamWorkflow):
     type_code = 'S'
     label = _('Simple')
     api_slug = 'simple'
-    dashboard_view = staticmethod(old_views.old_dashboard)
+    
+    dashboard_view = staticmethod(dashboard)
     member_view = NotImplemented
 
     def get_subtitle_workflow(self, team_video):
