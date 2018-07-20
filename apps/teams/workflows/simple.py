@@ -25,6 +25,7 @@ from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
 
+from subtitles.models import SubtitleVersion
 from teams import views as old_views
 from teams import forms
 from teams.behaviors import get_main_project
@@ -38,11 +39,14 @@ from utils.translation import get_language_label
 from .subtitleworkflows import TeamVideoWorkflow
 from videos.behaviors import VideoPageCustomization, SubtitlesPageCustomization
 
+from collections import OrderedDict
+
 NEWEST_MEMBERS_PER_PAGE = 10
 NEWEST_VIDEOS_PER_PAGE = 7
-MAX_AVAILABLE_VIDEOS = 3
+MAX_DASHBOARD_VIDEOS = 3
+MAX_DASHBOARD_HISTORY = 20
 
-class SimpleVideoView(object):
+class SimpleDashboardVideoView(object):
     def __init__(self, video, cta_languages, team):
         self.video = video
         self.team = team
@@ -70,6 +74,14 @@ class SimpleVideoView(object):
             label = _('Translate [{}]').format(self.cta_language)
         
         return CTA(label, icon, self.editor_url())
+
+class SimpleDashboardHistoryView(object):
+    def __init__(self, team, subtitle_version):
+        self.video = subtitle_version.video
+        self.language = get_language_label(subtitle_version.language_code)
+        self.date = subtitle_version.created
+        self.video_page_url = subtitle_version.video.get_absolute_url() + '?team={}'.format(team.slug)
+        self.language_page_url = subtitle_version.subtitle_language.get_absolute_url() + '?team={}'.format(team.slug)
     
 def render_team_header(request, team):
     return render_to_string('future/header.html', {
@@ -79,19 +91,54 @@ def render_team_header(request, team):
         'primarynav': 'future/teams/primarynav.html',
     }, RequestContext(request))
 
-def get_dashboard_videos(team, user):
-    videos = team.videos.exclude(primary_audio_language_code='').order_by('-created')
+def get_dashboard_videos(team, user, main_project):
+    
 
     user_languages = user.get_languages()
     available_videos = []
-    for video in videos[:MAX_AVAILABLE_VIDEOS]:
-        video_subtitle_languages = video.languages_with_versions()
-        
+    added_videos = 0
+
+    qs = team.videos.exclude(primary_audio_language_code='').order_by('-created')
+    if main_project:
+        qs = qs.filter(teamvideo__project=main_project)
+    for video in qs:
+        video_subtitle_languages = video.languages_with_versions()        
         cta_languages = [l for l in user_languages if l not in video_subtitle_languages]
         if (cta_languages):
-            available_videos.append(SimpleVideoView(video, cta_languages, team))
+            available_videos.append(SimpleDashboardVideoView(video, cta_languages, team))
+            added_videos += 1
+        '''
+        Stop looking for videos to display in the dashboard once we reach the maximum
+        '''        
+        if added_videos == MAX_DASHBOARD_VIDEOS:
+            break
 
     return available_videos
+
+'''
+gets the latest subtitle revision made by <user> per subtitle language
+'''
+def get_dashboard_history(team, user, main_project):
+    history = OrderedDict()
+    
+    added_videos = 0
+    # hack since I can't do .distinct() by field 
+    qs = (SubtitleVersion.objects.filter(video__in=team.videos.all(),
+                                         author=user)
+                                 .order_by('-created'))
+    if main_project:
+        qs = qs.filter(video__teamvideo__project=main_project)
+    for sv in qs:
+        if (sv.video.pk, sv.language_code) in history:
+            continue
+        else:
+            history[(sv.video.pk, sv.language_code)] = SimpleDashboardHistoryView(team, sv)
+            added_videos += 1
+
+        if added_videos == MAX_DASHBOARD_HISTORY:
+            break
+
+    return [history[k] for k in history]
 
 def dashboard(request, team):
     member = team.get_member(request.user)
@@ -131,7 +178,8 @@ def dashboard(request, team):
             BreadCrumb(team),
         ],
 
-        'dashboard_videos': get_available_videosget_dashboard_videos(team, request.user)
+        'dashboard_videos': get_dashboard_videos(team, request.user, main_project),
+        'dashboard_history': get_dashboard_history(team, request.user, main_project),
     }
     
     return render(request, 'future/teams/simple/dashboard.html', context)

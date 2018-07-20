@@ -10,7 +10,7 @@
       <div class="row">
         <div class="col-xs-12">
           <div id="" class="content">
-            {% include "future/teams/simple/videos_available.html" %}
+            {% include "future/teams/simple/dashboard_videos.html" %}
           </div>
         </div>
       </div>   
@@ -21,18 +21,13 @@
     </div>
   </section>
 
-  {% if collaboration_created %}
+  {% if dashboard_history %}
   <section class="pageSection">
     <div class="container">
       <div class="row">
-        <div class="col-xs-12 col-sm-8 col-lg-9">
+        <div class="col-xs-12">
           <div id="assignments_history" class="content">
-            {% include "collab/assignments-history.html" %}
-          </div>
-        </div>
-        <div class="col-xs-12 col-sm-4 col-lg-3">
-          <div id="my_collaborators" class="content">
-            {% include "collab/my-collaborators.html" %}
+            {% include "future/teams/simple/dashboard_history.html" %}
           </div>
         </div>
       </div>
