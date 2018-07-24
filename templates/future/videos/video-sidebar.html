@@ -1,15 +1,27 @@
 {% load i18n %}
 {% with complete_languages=video.complete_languages incomplete_languages=video.incomplete_languages %}
-{% if complete_languages %}
+
+{% if create_subtitles_form %}
 <div class="content videoSubtitleList">
-  <h2 class="videoSubtitlesList-item">{% blocktrans with count=complete_languages|length %}Completed subtitles (<span class="total">{{ count }}</span>){% endblocktrans %}</h2>
-  {% include "future/videos/video-subtitles-list.html" with subtitles=complete_languages id="complete-subtitles" %}
+    <h2 class="videoSubtitlesList-item">{% trans 'Contribute' %}</h2>
+    <button type="button" class="button block cta videoSubtitlesList-item" data-toggle="modal" data-target="#create-subtitles">
+      <i class="icon icon-edit"></i>{% trans 'Create new subtitles' %}
+    </button>
 </div>
 {% endif %}
+
 {% if incomplete_languages %}
 <div class="content videoSubtitleList">
   <h2 class="videoSubtitlesList-item">{% blocktrans with count=incomplete_languages|length %}Incomplete subtitles (<span class="total">{{ count }}</span>){% endblocktrans %}</h2>
   {% include "future/videos/video-subtitles-list.html" with subtitles=incomplete_languages id="incomplete-subtitles" %}
 </div>
 {% endif %}
+
+{% if complete_languages %}
+<div class="content videoSubtitleList">
+  <h2 class="videoSubtitlesList-item">{% blocktrans with count=complete_languages|length %}Completed subtitles (<span class="total">{{ count }}</span>){% endblocktrans %}</h2>
+  {% include "future/videos/video-subtitles-list.html" with subtitles=complete_languages id="complete-subtitles" %}
+</div>
+{% endif %}
+
 {% endwith %}

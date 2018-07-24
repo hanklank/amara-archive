@@ -387,6 +387,9 @@ class CreateSubtitlesForm(CreateSubtitlesFormBase):
         super(CreateSubtitlesForm, self).__init__(request, data=data)
         if not self.needs_primary_audio_language:
             del self.fields['primary_audio_language_code']
+        self.action_url = reverse('videos:create_subtitles', kwargs={
+                'video_id': self.video.video_id
+            })
 
     def get_language_choices(self):
         # remove languages that already have subtitles

@@ -351,6 +351,21 @@ def video(request, video_id, video_url=None, title=None):
         'use_old_messages': True,
     })
 
+def create_subtitles(request, video_id):
+    try:
+        video = Video.cache.get_instance_by_video_id(video_id, 'video-page')
+    except Video.DoesNotExist:
+        raise Http404
+
+    workflow = video.get_workflow()
+    if not workflow.user_can_edit_video(request.user):
+        raise PermissionDenied()
+
+    if request.method == 'POST':
+        form = CreateSubtitlesForm(request, video, request.POST)
+        if form.is_valid():
+            return form.handle_post()
+
 def video_ajax_form(request, video_id):
     form = request.POST.get('form')
     video = get_object_or_404(Video, video_id=video_id)

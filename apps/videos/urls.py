@@ -44,6 +44,7 @@ urlpatterns = patterns(
     url(r'^(?P<video_id>(\w|-)+)/reset_metadata/$', 'reset_metadata', name='reset_metadata'),
     url(r'^(?P<video_id>(\w|-)+)/set-original-language/$', 'set_original_language', name='set_original_language'),
     url(r'^(?P<video_id>(\w|-)+)/$', 'redirect_to_video'),
+    url(r'^(?P<video_id>(\w|-)+)/create_subtitles/$', 'create_subtitles', name='create_subtitles'),
     url(r'^(?P<video_id>(\w|-)+)/info/$', 'video', name='video'),
     url(r'^(?P<video_id>(\w|-)+)/info/(?P<title>[^/]+)/$', 'video', name='video_with_title'),
     url(r'^(?P<video_id>(\w|-)+)/url/(?P<video_url>\d+)/$', 'video', name='video_url'),
