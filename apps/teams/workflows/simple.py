@@ -32,7 +32,7 @@ from teams.behaviors import get_main_project
 from teams import forms as teams_forms
 from teams.models import Project
 from teams.workflows import TeamWorkflow
-from ui import CTA
+from ui import CTA, SplitCTA
 from utils.memoize import memoize
 from utils.breadcrumbs import BreadCrumb
 from utils.translation import get_language_label
@@ -73,7 +73,10 @@ class SimpleDashboardVideoView(object):
             icon = 'icon-translate'
             label = _('Translate [{}]').format(self.cta_language)
         
-        return CTA(label, icon, self.editor_url())
+        # TODO
+        return SplitCTA(label, self.editor_url(), icon, 
+                        block=True,
+                        dropdown_items=[ 'Translate [en]', 'Translate [fr]'])
 
 class SimpleDashboardHistoryView(object):
     def __init__(self, team, subtitle_version):
@@ -180,6 +183,10 @@ def dashboard(request, team):
 
         'dashboard_videos': get_dashboard_videos(team, request.user, main_project),
         'dashboard_history': get_dashboard_history(team, request.user, main_project),
+
+        'dummy_split_cta': SplitCTA('gg', '#', 'icon-transcribe', 
+                                main_tooltip="Main tooltip",
+                                dropdown_items=[ 'Translate [en]', 'Translate [fr]' ])
     }
     
     return render(request, 'future/teams/simple/dashboard.html', context)
