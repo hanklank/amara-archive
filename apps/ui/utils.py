@@ -114,7 +114,7 @@ class SplitCTA(CTA):
         icon_mu = ""
 
         tooltip_css_class = ""
-        cta_css_class = "button"
+        cta_css_class = "button split-button"
 
         if self.icon:
             icon_mu = u'<i class="icon {}"></i>'.format(self.icon)
@@ -145,7 +145,7 @@ class SplitCTA(CTA):
         tooltip_mu = u'<span data-toggle="tooltip" data-placement="top" title="{}">{}</span>'
         dropdown_mu = u'<button class="{}" data-toggle="dropdown"><span class="caret"></span></button>'
 
-        css_class = "button split-button-dropdown-toggle"
+        css_class = "button split-button split-button-dropdown-toggle"
 
         if self.disabled:
             css_class += " disabled"
@@ -177,7 +177,9 @@ class SplitCTA(CTA):
         css_class = "btn-group"
 
         if self.block:
-            css_class += " split-button-full-width"
+            css_class += " split-button-container-full-width"
+        else:
+            css_class += " split-button-container"
 
         main_cta = self._create_main_button()
         dropdown_toggle = self._create_dropdown_toggle()

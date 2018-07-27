@@ -32,7 +32,7 @@ from teams.behaviors import get_main_project
 from teams import forms as teams_forms
 from teams.models import Project
 from teams.workflows import TeamWorkflow
-from ui import CTA, SplitCTA
+from ui import CTA, SplitCTA, Link
 from utils.memoize import memoize
 from utils.breadcrumbs import BreadCrumb
 from utils.translation import get_language_label
@@ -47,36 +47,55 @@ MAX_DASHBOARD_VIDEOS = 3
 MAX_DASHBOARD_HISTORY = 20
 
 class SimpleDashboardVideoView(object):
-    def __init__(self, video, cta_languages, team):
+    def __init__(self, video, team, cta_languages):
         self.video = video
         self.team = team
 
-        # TODO fix this so we can use the Split-button CTA specified in enterprise 2014
-        # For now, we only take the top language of the user
-        self.cta_language = cta_languages[0]  
+        '''
+        Pop off the first language in the cta_languages list 
         
-    def editor_url(self):
-        # return '#'
+        When cta_languages is calculated based on CustomUser.get_languages(), i.e. something like...
+        `[l for l in user_languages if l not in video_subtitle_languages]`
+        ...then the first object in cta_languages is guaranteed to be the user's top language if
+        there is subtitling work available for the user's top language. This is because
+        CustomUser.get_languages() retrieves the user's spoken languages in order of priority
+        '''
+        self.main_cta_language = cta_languages.pop(0)
+        self.other_cta_languages = cta_languages
+        
+    def editor_url(self, language=None):
         url = reverse('subtitles:subtitle-editor', kwargs={
             'video_id': self.video.video_id,
-            'language_code': self.cta_language,
+            'language_code': language if language else self.main_cta_language,
         })
         return url + '?team={}'.format(self.team.slug)
 
-    @memoize
-    def cta(self):
-        """Get a CTA link for this team video"""
-        if self.video.language == self.cta_language:
+    def _calc_label_for_cta(self, language):
+        if self.video.language == language:
             icon = 'icon-transcribe'
-            label =  _('Transcribe [{}]').format(self.cta_language)
+            label =  _('Transcribe [{}]').format(language)
         else:
             icon = 'icon-translate'
-            label = _('Translate [{}]').format(self.cta_language)
-        
-        # TODO
-        return SplitCTA(label, self.editor_url(), icon, 
-                        block=True,
-                        dropdown_items=[ 'Translate [en]', 'Translate [fr]'])
+            label = _('Translate [{}]').format(language)
+
+        return (icon, label)
+
+    """Get a CTA or SplitCTA for this team video"""
+    @memoize
+    def cta(self):       
+        # for dashboard videos with multiple subtitling work available
+        main_icon, main_label = self._calc_label_for_cta(self.main_cta_language)
+        if self.other_cta_languages:
+            dropdown_items = []
+            for language in self.other_cta_languages:
+                icon, label = self._calc_label_for_cta(language)
+                dropdown_items.append(Link(label, self.editor_url(language)))
+
+            return SplitCTA(main_label, self.editor_url(), main_icon, block=True,
+                            main_tooltip=_('Click the dropdown button for more available subtitling work!'),
+                            dropdown_items = dropdown_items)
+        else:
+            return CTA(main_label, main_icon, self.editor_url(), block=True)
 
 class SimpleDashboardHistoryView(object):
     def __init__(self, team, subtitle_version):
@@ -95,8 +114,6 @@ def render_team_header(request, team):
     }, RequestContext(request))
 
 def get_dashboard_videos(team, user, main_project):
-    
-
     user_languages = user.get_languages()
     available_videos = []
     added_videos = 0
@@ -104,11 +121,12 @@ def get_dashboard_videos(team, user, main_project):
     qs = team.videos.exclude(primary_audio_language_code='').order_by('-created')
     if main_project:
         qs = qs.filter(teamvideo__project=main_project)
+
     for video in qs:
         video_subtitle_languages = video.languages_with_versions()        
         cta_languages = [l for l in user_languages if l not in video_subtitle_languages]
         if (cta_languages):
-            available_videos.append(SimpleDashboardVideoView(video, cta_languages, team))
+            available_videos.append(SimpleDashboardVideoView(video, team, cta_languages))
             added_videos += 1
         '''
         Stop looking for videos to display in the dashboard once we reach the maximum

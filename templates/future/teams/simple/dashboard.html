@@ -5,20 +5,6 @@
 <main id="dashboard" class="pageContent">
   <section class="pageSection">
     <div class="container">
-
-      <div class="btn-group">
-        <span data-toggle="tooltip" data-placement="top" title="ayyyyo"><a class="button cta">Translate [en]</a></span>
-        <button class="button cta split-button-dropdown-toggle" data-toggle="dropdown">
-          <span class="caret"></span>
-        </button>
-        <ul class="split-button-dropdown-menu collapse" role="menu">
-          <li><a href="#">Dropdown 1 item 1</a></li>
-          <li><a href="#">Dropdown 1 item 2</a></li>
-        </ul>
-      </div>
-
-      {{ dummy_split_cta }}
-
       {% if dashboard_videos %}
       <div class="row">
         <div class="col-xs-12">
@@ -29,8 +15,7 @@
       </div>   
       {% else %}
       <div class="zero-state">{% trans "This team has no videos yet" %}</div>
-      {% endif %}
-      
+      {% endif %}      
     </div>
   </section>
 
