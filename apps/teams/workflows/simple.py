@@ -57,15 +57,14 @@ class SimpleDashboardVideoView(object):
 
         '''
         Pop off the first language in the cta_languages list 
-        
-        When cta_languages is calculated based on CustomUser.get_languages(), i.e. something like...
-        `[l for l in user_languages if l not in video_subtitle_languages]`
-        ...then the first object in cta_languages is guaranteed to be the user's top language if
-        there is subtitling work available for the user's top language. This is because
-        CustomUser.get_languages() retrieves the user's spoken languages in order of priority
         '''
-        self.main_cta_language = cta_languages.pop(0)
-        self.other_cta_languages = cta_languages
+        if (video.language in cta_languages):
+            self.main_cta_language = video.language
+            cta_languages.remove(video.language)
+            self.other_cta_languages = cta_languages
+        else:
+            self.main_cta_language = cta_languages.pop(0)
+            self.other_cta_languages = cta_languages
         
     def editor_url(self, language=None):
         url = reverse('subtitles:subtitle-editor', kwargs={
@@ -118,17 +117,15 @@ def render_team_header(request, team):
     }, RequestContext(request))
 
 '''
-priority 1 -- videos with transcription work in the user's top language
-priority 2 -- videos with transcription work in the user's other languages
-priority 3 -- videos with translation work
+priority 1 -- videos with transcription work
+priority 2 -- videos with translation work
 '''
 def _calc_dashboard_video_priority(video_view):
-    if video_view.video.language == video_view.main_cta_language:
+    if (video_view.video.language == video_view.main_cta_language or
+        video_view.video.language in video_view.other_cta_languages):
         return 1
-    elif video_view.video.language in video_view.other_cta_languages:
-        return 2
     else:
-        return 3
+        return 2    
 
 def get_dashboard_videos(team, user, main_project):
     user_languages = user.get_languages()
