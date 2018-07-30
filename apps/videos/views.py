@@ -75,7 +75,7 @@ from videos.decorators import (get_video_revision, get_video_from_code,
 from videos.forms import (
     VideoForm,
     CreateVideoUrlForm, NewCreateVideoUrlForm, AddFromFeedForm,
-    ChangeVideoOriginalLanguageForm, CreateSubtitlesForm,
+    ChangeVideoOriginalLanguageForm, CreateSubtitlesForm, TeamCreateSubtitlesForm
 )
 from videos.models import (
     Video, VideoUrl, AlreadyEditingException
@@ -298,7 +298,11 @@ def video(request, video_id, video_url=None, title=None):
 
     workflow = video.get_workflow()
     if workflow.user_can_edit_video(request.user):
-        create_subtitles_form = CreateSubtitlesForm(request, video)
+        team_slug = request.GET.get('team', None)
+        if team_slug:
+            create_subtitles_form = TeamCreateSubtitlesForm(request, video, team_slug)
+        else:
+            create_subtitles_form = CreateSubtitlesForm(request, video)
     else:
         create_subtitles_form = None
     if request.user.is_authenticated():
@@ -362,7 +366,11 @@ def create_subtitles(request, video_id):
         raise PermissionDenied()
 
     if request.method == 'POST':
-        form = CreateSubtitlesForm(request, video, request.POST)
+        team_slug = request.GET.get('team', None)
+        if team_slug:
+            form = TeamCreateSubtitlesForm(request, video, team_slug, request.POST)
+        else:
+            form = CreateSubtitlesForm(request, video, request.POST)
         if form.is_valid():
             return form.handle_post()
 

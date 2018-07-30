@@ -387,9 +387,6 @@ class CreateSubtitlesForm(CreateSubtitlesFormBase):
         super(CreateSubtitlesForm, self).__init__(request, data=data)
         if not self.needs_primary_audio_language:
             del self.fields['primary_audio_language_code']
-        self.action_url = reverse('videos:create_subtitles', kwargs={
-                'video_id': self.video.video_id
-            })
 
     def get_language_choices(self):
         # remove languages that already have subtitles
@@ -415,6 +412,19 @@ class CreateSubtitlesForm(CreateSubtitlesFormBase):
 
     def get_video(self):
         return self.video
+
+class TeamCreateSubtitlesForm(CreateSubtitlesForm):
+
+    def __init__(self, request, video, team_slug, data=None):
+        super(TeamCreateSubtitlesForm, self).__init__(request, video, data=data)
+
+        self.team_url_arg = '?team={}'.format(team_slug)
+        self.action_url = reverse('videos:create_subtitles', kwargs={
+                'video_id': self.video.video_id
+            }) + self.team_url_arg
+
+    def editor_url(self):
+        return super(TeamCreateSubtitlesForm, self).editor_url() + self.team_url_arg
 
 class MultiVideoCreateSubtitlesForm(CreateSubtitlesFormBase):
     """Form to create subtitles for pages that display multiple videos.
