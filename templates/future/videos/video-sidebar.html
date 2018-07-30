@@ -1,5 +1,5 @@
 {% load i18n %}
-{% with complete_languages=video.complete_languages incomplete_languages=video.incomplete_languages %}
+{% with complete_languages=video.complete_languages_sorted incomplete_languages=video.incomplete_languages_sorted %}
 
 {% if create_subtitles_form %}
 <div class="content videoSubtitleList">
