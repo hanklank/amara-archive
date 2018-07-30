@@ -42,6 +42,7 @@ import itertools
 
 from celery.task import Task
 import mock
+import dateutil.parser
 
 from subtitles.workflows import SaveDraft
 import externalsites.google
@@ -81,8 +82,15 @@ class MockNow(mock.Mock):
         return self.current
 
     def set(self, *args, **kwargs):
-        """Set the now() value to a specific time."""
-        self.current = datetime(*args, **kwargs)
+        """Set the now() value to a specific time.
+
+        Pass in either the arguments for datetime() or an iso8601 string
+        """
+
+        if(len(args) == 1 and isinstance(args[0], basestring)):
+            self.current = dateutil.parser.parse(args[0])
+        else:
+            self.current = datetime(*args, **kwargs)
 
     def __call__(self):
         self.last_returned = rv = self.current

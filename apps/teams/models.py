@@ -992,7 +992,7 @@ class Team(models.Model):
     def get_writable_langs(self):
         """Return a list of language code strings that are writable for this team.
 
-        This value may come from memcache.
+        This value may come from the cache.
 
         """
         return TeamLanguagePreference.objects.get_writable(self)
@@ -1000,7 +1000,7 @@ class Team(models.Model):
     def get_readable_langs(self):
         """Return a list of language code strings that are readable for this team.
 
-        This value may come from memcache.
+        This value may come from the cache.
 
         """
         return TeamLanguagePreference.objects.get_readable(self)
@@ -3205,7 +3205,7 @@ class TeamLanguagePreferenceManager(models.Manager):
     def get_readable(self, team):
         """Return the set of language codes that are readable for this team.
 
-        This value may come from memcache if possible.
+        This value may come from the cache if possible.
 
         """
         from teams.cache import get_readable_langs
@@ -3214,7 +3214,7 @@ class TeamLanguagePreferenceManager(models.Manager):
     def get_writable(self, team):
         """Return the set of language codes that are writeable for this team.
 
-        This value may come from memcache if possible.
+        This value may come from the cache if possible.
 
         """
         from teams.cache import get_writable_langs
@@ -3223,7 +3223,7 @@ class TeamLanguagePreferenceManager(models.Manager):
     def get_blacklisted(self, team):
         """Return the set of blacklisted language codes.
 
-        Note: we don't use memcache like the other functions, mostly because I
+        Note: we don't use the cache like the other functions, mostly because I
         want to avoid touching that code (BDK).
         """
         qs = self.for_team(team).filter(preferred=False, allow_reads=False,
@@ -3233,7 +3233,7 @@ class TeamLanguagePreferenceManager(models.Manager):
     def get_preferred(self, team):
         """Return the set of language codes that are preferred for this team.
 
-        This value may come from memcache if possible.
+        This value may come from the cache if possible.
 
         """
         from teams.cache import get_preferred_langs

@@ -30,12 +30,7 @@ DATABASES = {
     }
 }
 
-
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-    }
-}
+CACHES['default']['OPTIONS']['REDIS_CLIENT_CLASS'] = "mockredis.client.mock_strict_redis_client"
 CACHE_PREFIX = "testcache"
 CACHE_TIMEOUT = 60
 

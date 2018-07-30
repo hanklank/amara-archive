@@ -14,7 +14,7 @@ services:
     depends_on:
       - db
       - queue
-      - cache
+      - redis
     ports:
       - "8000"
 
@@ -31,7 +31,7 @@ services:
     links:
       - db
       - queue
-      - cache
+      - redis
 
   feed-worker:
     image: amara-app
@@ -45,7 +45,7 @@ services:
     depends_on:
       - db
       - queue
-      - cache
+      - redis
 
   db:
     image: mysql:5.7
@@ -65,10 +65,8 @@ services:
       - "5672"
       - "15672"
 
-  cache:
-    image: memcached
-    ports:
-      - "11211"
+  redis:
+    image: redis:4.0.10
 
   varnish:
     image: amara/amara-cache

@@ -15,8 +15,8 @@ services:
       - "8000:8000"
     depends_on:
       - db
+      - redis
       - queue
-      - cache
       - asset-builder
 
   worker:
@@ -32,8 +32,8 @@ services:
       - .:/opt/apps/amara:z
     links:
       - db
+      - redis
       - queue
-      - cache
 
   feed-worker:
     image: amara-app
@@ -46,8 +46,8 @@ services:
       - .:/opt/apps/amara:z
     depends_on:
       - db
+      - redis
       - queue
-      - cache
 
   db:
     image: mysql:5.7
@@ -61,6 +61,9 @@ services:
     ports:
       - "3306"
 
+  redis:
+    image: redis:4.0.10
+
   asset-builder:
     image: node:9.0.0
     volumes:
@@ -73,11 +76,6 @@ services:
     ports:
       - "5672"
       - "15672"
-
-  cache:
-    image: memcached
-    ports:
-      - "11211"
 
   varnish:
     image: amara/amara-cache
