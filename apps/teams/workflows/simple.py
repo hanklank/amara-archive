@@ -44,6 +44,10 @@ from collections import OrderedDict
 NEWEST_MEMBERS_PER_PAGE = 10
 NEWEST_VIDEOS_PER_PAGE = 7
 MAX_DASHBOARD_VIDEOS = 3
+# maximum number of videos we want to check to determine
+# which videos to display in the dashboard
+# this gets the n most recent videos that have available subtitling work for a team member
+MAX_DASHBOARD_VIDEOS_TO_CHECK = 10 
 MAX_DASHBOARD_HISTORY = 20
 
 class SimpleDashboardVideoView(object):
@@ -113,6 +117,19 @@ def render_team_header(request, team):
         'primarynav': 'future/teams/primarynav.html',
     }, RequestContext(request))
 
+'''
+priority 1 -- videos with transcription work in the user's top language
+priority 2 -- videos with transcription work in the user's other languages
+priority 3 -- videos with translation work
+'''
+def _calc_dashboard_video_priority(video_view):
+    if video_view.video.language == video_view.main_cta_language:
+        return 1
+    elif video_view.video.language in video_view.other_cta_languages:
+        return 2
+    else:
+        return 3
+
 def get_dashboard_videos(team, user, main_project):
     user_languages = user.get_languages()
     available_videos = []
@@ -131,10 +148,11 @@ def get_dashboard_videos(team, user, main_project):
         '''
         Stop looking for videos to display in the dashboard once we reach the maximum
         '''        
-        if added_videos == MAX_DASHBOARD_VIDEOS:
+        if added_videos == MAX_DASHBOARD_VIDEOS_TO_CHECK:
             break
 
-    return available_videos
+    available_videos.sort(key=lambda v: _calc_dashboard_video_priority(v))
+    return available_videos[:MAX_DASHBOARD_VIDEOS]
 
 '''
 gets the latest subtitle revision made by <user> per subtitle language
