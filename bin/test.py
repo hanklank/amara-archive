@@ -36,7 +36,6 @@ class AmaraPyTest(object):
         'docs',
         'templates',
         'pykss',
-        'guitests',
     ])
 
     def pytest_addoption(self, parser):
@@ -84,7 +83,7 @@ class AmaraPyTest(object):
                 return path not in self.allow_dirs
             else:
                 relpath = path.relto(settings.PROJECT_ROOT)
-                return relpath in self.IGNORE_DIRS
+                return 'guitests' in relpath or relpath in self.IGNORE_DIRS
         return False
 
     def guitests_ignore_directory(self, path, relpath, config):
