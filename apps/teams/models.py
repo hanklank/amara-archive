@@ -50,6 +50,7 @@ from teams.permissions_const import (
     TEAM_PERMISSIONS, PROJECT_PERMISSIONS, ROLE_OWNER, ROLE_ADMIN, ROLE_MANAGER,
     ROLE_CONTRIBUTOR, ROLE_PROJ_LANG_MANAGER
 )
+from teams import stats
 from teams import tasks
 from teams import workflows
 from teams.exceptions import ApplicationInvalidException
@@ -1309,6 +1310,9 @@ class TeamVideo(models.Model):
                                                old_team=__old_team,
                                                video=self.video)
 
+        if not within_team:
+            stats.increment(self.team, 'videos-added')
+
     def is_checked_out(self, ignore_user=None):
         '''Return whether this video is checked out in a task.
 
@@ -1604,8 +1608,11 @@ class TeamMember(models.Model):
         return u'%s' % self.user
 
     def save(self, *args, **kwargs):
+        creating = self.pk is None
         super(TeamMember, self).save(*args, **kwargs)
         Team.cache.invalidate_by_pk(self.team_id)
+        if creating:
+            stats.increment(self.team, 'members-added')
 
     def delete(self):
         super(TeamMember, self).delete()
