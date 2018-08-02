@@ -15,7 +15,6 @@ from utils.test_utils import monkeypatch, before_tests, restframeworkcompat
 
 patcher = None
 
-@pytest.mark.trylast
 def pytest_configure(config):
     global patcher
     patcher = monkeypatch.MonkeyPatcher()

@@ -55,8 +55,12 @@ if __name__ == '__main__':
     # The first arg is the test directory to run.  Use that for
     # setup_test_directories, then remove it from the command line that pytest
     # sees
-    setup_test_directories(sys.argv[1])
+    testdir = sys.argv[1]
+    setup_test_directories(testdir)
     pytest_args = sys.argv[0:1] + sys.argv[2:]
     if no_tests_specified(pytest_args):
-        pytest_args.extend(['.', 'babelsubs.tests', 'unilangs.tests'])
+        if testdir == 'tests':
+            pytest_args.extend(['.', 'babelsubs.tests', 'unilangs.tests'])
+        else:
+            pytest_args.extend(['.'])
     sys.exit(pytest.main(pytest_args))
