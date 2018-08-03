@@ -591,7 +591,7 @@ def add_members(request, team):
 
 @team_view
 def invite(request, team):
-    if not permissions.can_invite(team, request.user) and not permissions.can_add_members(team, user):
+    if not permissions.can_invite(team, request.user) and not permissions.can_add_members(team, request.user):
         return HttpResponseForbidden(_(u'You cannot invite people to this team.'))
 
     form_add_member = None
