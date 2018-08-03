@@ -850,11 +850,7 @@ def manage_videos(request, team, project_id=None):
                                                         'teamvideo__video')
     if (project_id):
         header = Project.objects.get(id=int(project_id)).name
-        exclude_video_ids = []
-        for video in videos:
-            if video.get_team_video().project.id != int(project_id):
-                exclude_video_ids.append(video.id)
-        videos = videos.exclude(id__in=exclude_video_ids)
+        videos = videos.filter(teamvideo__project=project_id)
 
     enabled_forms = all_video_management_forms(team, request.user)
     paginator = AmaraPaginatorFuture(videos, VIDEOS_PER_PAGE_MANAGEMENT)
