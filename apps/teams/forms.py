@@ -773,7 +773,7 @@ class GuidelinesMessagesForm(forms.Form):
     messages_invite = MessageTextField(
         label=_('When a member is invited to join the team'))
     messages_application = MessageTextField(
-        label=_('When a member applies to join the team'), max_length=15000)
+        label=_('Custom message to display at the top of the application form'), max_length=15000)
     messages_joins = MessageTextField(
         label=_('When a member joins the team'))
     messages_manager = MessageTextField(
