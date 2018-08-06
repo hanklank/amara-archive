@@ -25,6 +25,7 @@ from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
 
+from collab.views import dashboard_set_languages
 from subtitles.models import SubtitleVersion
 from teams import views as old_views
 from teams import forms
