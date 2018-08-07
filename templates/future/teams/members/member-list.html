@@ -5,8 +5,7 @@
     <a href="{% url 'teams:applications' slug=team.slug %}" title="Review applications">Review applications</a>
     {% endif %}
     {% if show_invite_link or user.is_staff %}
-    <form style="display:inline" class="ajaxForm copyQuery" method="GET" action="{% url 'teams:invite' slug=team.slug %}">
-      <button class="cta" type="submit" value="username" name="form">
+      <a data-href="invite" class="ajaxLink" title="Invite members">
         {% if user.is_staff and not show_invite_link %}
           {% trans 'Add members' %}
         {% elif user.is_staff %}
@@ -14,8 +13,7 @@
         {% else %}
           {% trans 'Invite members' %}
         {% endif %}
-      </button>
-    </form>
+      </a>
     {% endif %}
 
   </span>
