@@ -18,32 +18,43 @@
 
 import logging
 
-from celery import current_task
-from celery.task import task
+from django_rq import job
+from rq import get_current_job
 
 logger = logging.getLogger(__name__)
 
-@task(queue='priority')
+@job('high')
 def process_management_form(FormClass, pickle_state):
+    current_job = get_current_job()
+
+    def update_job_meta(data):
+        current_job.meta.update(data)
+        current_job.save_meta()
+
     def progress_callback(current, total):
-        current_task.update_state(state='PROGRESS', meta={
+        update_job_meta({
+            'form_status': 'PROGRESS',
             'current': current,
             'total': total,
         })
     try:
         form = FormClass.restore_from_pickle_state(pickle_state)
         if not form.is_valid():
-            current_task.update_state(state='FAILURE', meta={
+            update_job_meta({
+                'form_status': 'FAILURE',
                 'error_messages': [
                     unicode(e) for e in form.errors
                 ]
             })
             return
         form.submit(progress_callback)
-        current_task.update_state(state='SUCCESS', meta={
+        update_job_meta({
+            'form_status': 'SUCCESS',
             'message': form.message(),
             'error_messages': form.error_messages(),
         })
     except:
         logger.warn("Error processing form", exc_info=True)
-        current_task.update_state(state='FAILURE')
+        update_job_meta({
+            'form_status': 'FAILURE',
+        })

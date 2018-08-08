@@ -18,7 +18,6 @@
 
 import logging
 
-from celery.task import task
 from django.conf import settings
 from django_rq import job
 
@@ -33,7 +32,7 @@ BLOCKED_USER_NOTIFICATION_TEMPLATE = "auth/blocked_user_notification.html"
 def expire_login_tokens():
     LoginToken.objects.get_expired().delete()
 
-@task
+@job
 def notify_blocked_user(user):
     if hasattr(settings, 'BLOCKED_USER_NOTIFICATION_ADDRESS'):
         subject = "Attacking user detected and de-activated"
