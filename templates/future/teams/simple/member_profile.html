@@ -1,0 +1,15 @@
+{% extends "future/teams/member_profile.html" %}
+{% load i18n forms %}
+
+{% block main_content %}
+
+<div class="content">
+{% if subtitling_history_to_show %}
+  {% include "future/teams/simple/dashboard_history.html" with dashboard_history=subtitling_history_to_show hide_member_profile_link=1 %}
+  {% include "future/paginator.html" %}
+{% else %}
+    <div class="zero-state">{% trans "No subtitling history yet!" %}</div>
+{% endif %}
+</div>
+
+{% endblock %}

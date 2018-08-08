@@ -36,6 +36,7 @@ from teams.workflows import TeamWorkflow
 from ui import CTA, SplitCTA, Link
 from utils.memoize import memoize
 from utils.breadcrumbs import BreadCrumb
+from utils.pagination import AmaraPaginatorFuture
 from utils.translation import get_language_label
 from .subtitleworkflows import TeamVideoWorkflow
 from videos.behaviors import VideoPageCustomization, SubtitlesPageCustomization
@@ -45,11 +46,15 @@ from collections import OrderedDict
 NEWEST_MEMBERS_PER_PAGE = 10
 NEWEST_VIDEOS_PER_PAGE = 7
 MAX_DASHBOARD_VIDEOS = 3
+MAX_DASHBOARD_HISTORY = 10
+MAX_SUBTITLING_HISTORY_PER_PAGE = 20
+
 # maximum number of videos we want to check to determine
 # which videos to display in the dashboard
 # this gets the n most recent videos that have available subtitling work for a team member
 MAX_DASHBOARD_VIDEOS_TO_CHECK = 10 
-MAX_DASHBOARD_HISTORY = 20
+
+
 
 class SimpleDashboardVideoView(object):
     def __init__(self, video, team, cta_languages):
@@ -108,6 +113,35 @@ class SimpleDashboardHistoryView(object):
         self.date = subtitle_version.created
         self.video_page_url = subtitle_version.video.get_absolute_url() + '?team={}'.format(team.slug)
         self.language_page_url = subtitle_version.subtitle_language.get_absolute_url() + '?team={}'.format(team.slug)
+
+
+    '''
+    get the subtitling history of <user> for videos in <team>
+    this gets the latest SubtitleVersion for each SubtitleLanguage of all team videos
+    '''
+    @classmethod
+    def subtitling_history(cls, team, user, main_project=None, limit=None):
+        history = OrderedDict()
+    
+        added_videos = 0
+        # hack since I can't do .distinct() by field 
+        qs = (SubtitleVersion.objects.filter(video__in=team.videos.all(),
+                                             author=user)
+                                     .order_by('-created'))
+        if main_project:
+            qs = qs.filter(video__teamvideo__project=main_project)
+        for sv in qs:
+            if (sv.video.pk, sv.language_code) in history:
+                continue
+            else:
+                history[(sv.video.pk, sv.language_code)] = SimpleDashboardHistoryView(team, sv)
+                added_videos += 1
+
+            if limit and added_videos == limit:
+                break
+
+        # return the subtitling history as a list
+        return [history[k] for k in history]
     
 def render_team_header(request, team):
     return render_to_string('future/header.html', {
@@ -156,26 +190,27 @@ def get_dashboard_videos(team, user, main_project):
 gets the latest subtitle revision made by <user> per subtitle language
 '''
 def get_dashboard_history(team, user, main_project):
-    history = OrderedDict()
+    return SimpleDashboardHistoryView.subtitling_history(team, user, main_project, limit=MAX_DASHBOARD_HISTORY)
+    # history = OrderedDict()
     
-    added_videos = 0
-    # hack since I can't do .distinct() by field 
-    qs = (SubtitleVersion.objects.filter(video__in=team.videos.all(),
-                                         author=user)
-                                 .order_by('-created'))
-    if main_project:
-        qs = qs.filter(video__teamvideo__project=main_project)
-    for sv in qs:
-        if (sv.video.pk, sv.language_code) in history:
-            continue
-        else:
-            history[(sv.video.pk, sv.language_code)] = SimpleDashboardHistoryView(team, sv)
-            added_videos += 1
+    # added_videos = 0
+    # # hack since I can't do .distinct() by field 
+    # qs = (SubtitleVersion.objects.filter(video__in=team.videos.all(),
+    #                                      author=user)
+    #                              .order_by('-created'))
+    # if main_project:
+    #     qs = qs.filter(video__teamvideo__project=main_project)
+    # for sv in qs:
+    #     if (sv.video.pk, sv.language_code) in history:
+    #         continue
+    #     else:
+    #         history[(sv.video.pk, sv.language_code)] = SimpleDashboardHistoryView(team, sv)
+    #         added_videos += 1
 
-        if added_videos == MAX_DASHBOARD_HISTORY:
-            break
+    #     if added_videos == MAX_DASHBOARD_HISTORY:
+    #         break
 
-    return [history[k] for k in history]
+    # return [history[k] for k in history]
 
 def dashboard(request, team):
     member = team.get_member(request.user)
@@ -225,6 +260,27 @@ def dashboard(request, team):
     
     return render(request, 'future/teams/simple/dashboard.html', context)
 
+def member_profile(request, team, member):
+    user = member.user
+    subtitling_history = SimpleDashboardHistoryView.subtitling_history(team, user)
+    paginator = AmaraPaginatorFuture(subtitling_history, MAX_SUBTITLING_HISTORY_PER_PAGE)
+    page = paginator.get_page(request)
+    next_page, prev_page = paginator.make_next_previous_page_links(page, request)
+    context = {
+        'team': team,
+        'member': member,
+        'member_user': user,
+        'breadcrumbs': [
+            BreadCrumb(team),
+        ],
+        'paginator': paginator,
+        'page': page,
+        'next': next_page,
+        'previous': prev_page,
+        'subtitling_history_to_show': [sh for sh in page]
+    }
+    return render(request, 'future/teams/simple/member_profile.html', context)
+
 class SimpleVideoPageCustomization(VideoPageCustomization):
     def __init__(self, team, request, video):
         self.team = team
@@ -263,7 +319,7 @@ class SimpleTeamWorkflow(TeamWorkflow):
     api_slug = 'simple'
     
     dashboard_view = staticmethod(dashboard)
-    member_view = NotImplemented
+    member_view = staticmethod(member_profile)
 
     def get_subtitle_workflow(self, team_video):
         """Get the SubtitleWorkflow for a video with this workflow.  """

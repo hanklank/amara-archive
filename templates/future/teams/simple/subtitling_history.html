@@ -1,0 +1,48 @@
+{% load i18n videos_tags %}
+
+<header class="borderless">
+  <h2>{% trans "Assignments History" %}</h2>
+</header>
+{% if assignment_history_pending or assignment_history_complete %}
+
+<table class="assignmentHistoryTable">
+  <thead></thead>
+  <tbody>
+    {% if assignment_history_pending %}
+    <tr>
+      <th>{% trans "Pending" %}</th>
+      <th></th>
+      <th></th>
+    </tr>
+    {% for collab in assignment_history_pending %}
+    <tr>
+      <td><a href="{{ collab.language_page_url }}?team={{ team.slug }}">{{ collab.video.title_display }}</a></td>
+      <td><a href="{{ collab.language_page_url }}?team={{ team.slug }}">{{ collab.subtitle_language }}</a></td>
+      <td>
+        <ul class="stepList tight">{% include "collab/steps.html" with steps=collab.steps_for_team %}</ul>
+      </td>
+    </tr>
+    {% endfor %}
+    {% endif %}
+    {% if assignment_history_complete %}
+    <tr>
+      <th>{% trans "Completed" %}</th>
+      <th></th>
+      <th></th>
+    </tr>
+    {% for collab in assignment_history_complete %}
+    <tr>
+      <td><a href="{{ collab.language_page_url }}?team={{ team.slug }}">{{ collab.video.title_display }}</a></td>
+      <td><a href="{{ collab.language_page_url }}?team={{ team.slug }}">{{ collab.subtitle_language }}</a></td>
+      <td>
+        <ul class="stepList tight">{% include "collab/steps.html" with steps=collab.steps_for_team %}</ul>
+      </td>
+    </tr>
+    {% endfor %}
+    {% endif %}
+  </tbody>
+</table>
+{% include "future/paginator.html" %}
+{% else %}
+<div class="zero-state">{% trans "No assignments." %}</div>
+{% endif %}
