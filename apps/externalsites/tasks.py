@@ -20,6 +20,7 @@ import logging
 
 from celery.task import task
 from django.core.exceptions import ObjectDoesNotExist
+from django_rq import job
 
 from externalsites import credit
 from externalsites import google
@@ -148,7 +149,7 @@ def fetch_subs(video_url_id, user_id=None,  team_id=None):
     except google.OAuthError:
         logger.exception("Error fetching sutitles")
 
-@task
+@job
 def retry_failed_sync():
     sh = SyncHistory.objects.get_attempt_to_resync()
     if sh is None:

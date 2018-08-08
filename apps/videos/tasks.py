@@ -23,6 +23,7 @@ from celery.task import task
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.db.models import ObjectDoesNotExist
+from django_rq import job
 import requests
 
 from babelsubs.storage import diff as diff_subtitles
@@ -41,7 +42,7 @@ from videos.types import VideoTypeError
 
 celery_logger = logging.getLogger('celery.task')
 
-@task
+@job
 def cleanup():
     import datetime
     from django.db import transaction

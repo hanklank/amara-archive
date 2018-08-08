@@ -16,16 +16,20 @@
 # along with this program.  If not, see
 # http://www.gnu.org/licenses/agpl-3.0.html.
 
-from auth.models import LoginToken
+import logging
+
 from celery.task import task
 from django.conf import settings
+from django_rq import job
+
+from auth.models import LoginToken
 from utils import send_templated_email
-import logging
+
 logger = logging.getLogger(__name__)
 
 BLOCKED_USER_NOTIFICATION_TEMPLATE = "auth/blocked_user_notification.html"
 
-@task
+@job
 def expire_login_tokens():
     LoginToken.objects.get_expired().delete()
 
