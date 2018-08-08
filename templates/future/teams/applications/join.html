@@ -7,9 +7,9 @@
     <div class="col-xs-12">
       <div class="content">
 
-        <div class="row">
+        <div class="row bg-snow">
           <div class="col-sm-9 col-sm-offset-1">
-            <header>
+            <header class="bg-snow">
               <h1>{% trans "Apply to" %} {{ team }}</h1>
               </br>
               <div class="application-form-message">
@@ -33,12 +33,7 @@
             </header>
           </div>
         </div>
-        <div class="row">
-          <div class="col-sm-9 col-sm-offset-1">
-            {% include "future/teams/applications/forms/apply.html" %}
-          </div>
-        </div>
-        
+        {% include "future/teams/applications/forms/apply.html" %}
       </div>
     </div>
   </div>
