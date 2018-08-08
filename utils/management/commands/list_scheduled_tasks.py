@@ -1,6 +1,4 @@
-# Amara, universalsubtitles.org
-#
-# Copyright (C) 2013 Participatory Culture Foundation
+# Copyright (C) 2018 Participatory Culture Foundation
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -16,22 +14,15 @@
 # along with this program.  If not, see
 # http://www.gnu.org/licenses/agpl-3.0.html.
 
-import logging
+from optparse import make_option
 
-from django_rq import job
+from django.core.management.base import BaseCommand
+import django_rq
 
-from utils import send_templated_email
-
-logger = logging.getLogger(__name__)
-
-@job
-def send_templated_email_async(to, subject, body_template, body_dict,
-                               from_email=None, ct="html", fail_silently=False,
-                               check_user_preference=True):
-    return send_templated_email(
-        to,subject, body_template, body_dict, from_email=None, ct="html",
-        fail_silently=False, check_user_preference=check_user_preference)
-
-@job
-def test():
-    logger.info('in test task')
+class Command(BaseCommand):
+    help = u'List upcoming scheduled tasks'
+    def handle(self, **options):
+        scheduler = django_rq.get_scheduler('default')
+        print 'scheduled tasks:'
+        for job, dt in scheduler.get_jobs(with_times=True):
+            print '{}: {}'.format(dt.isoformat(), job.func)

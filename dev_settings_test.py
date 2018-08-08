@@ -34,6 +34,9 @@ CACHES['default']['OPTIONS']['REDIS_CLIENT_CLASS'] = "mockredis.client.mock_stri
 CACHE_PREFIX = "testcache"
 CACHE_TIMEOUT = 60
 
+for queue in RQ_QUEUES.values():
+    queue['ASYNC'] = False
+
 CELERY_ALWAYS_EAGER = True
 
 GOOGLE_CLIENT_ID = 'test-youtube-id'

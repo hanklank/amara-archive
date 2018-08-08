@@ -47,8 +47,17 @@ def patch_mockredis():
             return 1
         else:
             return 0
-
     MockRedis.exists = exists
+
+    # Emulate PERSIST
+    def persist(self, key):
+        key = self._encode(key)
+        if key in self.redis and key in self.timeouts:
+            del self.timeouts[key]
+            return 1
+        else:
+            return 0
+    MockRedis.persist = persist
 
 def pytest_unconfigure(config):
     patcher.unpatch_functions()

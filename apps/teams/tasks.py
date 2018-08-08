@@ -8,7 +8,9 @@ from celery.task import task
 from django.conf import settings
 from django.db.models import F
 from django.utils.translation import ugettext_lazy as _
+from django_rq import job
 import requests
+
 from utils import send_templated_email
 from utils.panslugify import pan_slugify
 from utils.translation import SUPPORTED_LANGUAGE_CODES
@@ -60,7 +62,7 @@ def update_video_public_field(team_id):
         video.save()
         video_changed_tasks(video.id)
 
-@task
+@job
 def expire_tasks():
     """Find any tasks that are past their expiration date and unassign them.
 

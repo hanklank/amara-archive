@@ -197,6 +197,7 @@ INSTALLED_APPS = (
     # third party apps
     'djcelery',
     'rest_framework',
+    'django_rq',
     # third party apps forked on our repo
     'localeurl',
     'openid_consumer',
@@ -236,7 +237,18 @@ STARTUP_MODULES = [
     'externalsites.signalhandlers',
 ]
 
-# Celery settings
+# Queue settings
+RQ_QUEUES = {
+    'default': {
+        'USE_REDIS_CACHE': 'default',
+    },
+    'high': {
+        'USE_REDIS_CACHE': 'default',
+    },
+    'low': {
+        'USE_REDIS_CACHE': 'default',
+    }
+}
 
 # import djcelery
 # djcelery.setup_loader()
@@ -753,7 +765,7 @@ def log_handler_info():
 
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': True,
+    'disable_existing_loggers': False,
     'root': {
         'level': 'INFO',
         'handlers': ['main'],
@@ -773,6 +785,9 @@ LOGGING = {
     'loggers': {
         'celery': {
             'level': 'WARNING',
+        },
+        "rq.worker": {
+            "level": "INFO"
         },
         'requests.packages.urllib3.connectionpool': {
             'level': 'WARNING',

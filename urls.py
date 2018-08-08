@@ -157,6 +157,7 @@ urlpatterns = patterns('',
     url(r'^captcha/', include('captcha.urls')),
     url(r'^commit$', RedirectView.as_view(
         url='https://github.com/pculture/unisubs/commit/{}'.format(settings.LAST_COMMIT_GUID))),
+    url(r'^django-rq/', include('django_rq.urls')),
     url(r'^$', settings.HOMEPAGE_VIEW, name="home"),
 )
 

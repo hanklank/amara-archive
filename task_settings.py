@@ -32,10 +32,6 @@ CELERY_QUEUES = (
 CELERY_DEFAULT_QUEUE = "default"
 
 CELERYBEAT_SCHEDULE = {
-    'expire-tasks': {
-        'task': 'teams.tasks.expire_tasks',
-        'schedule': crontab(minute=0, hour=7),
-    },
     'expire-login-tokens': {
         'task': 'auth.tasks.expire_login_tokens',
         'schedule': crontab(minute=10, hour=23),
@@ -66,4 +62,12 @@ CELERYBEAT_SCHEDULE = {
     },
 }
 
-__all__ = ['CELERYBEAT_SCHEDULE', 'CELERY_QUEUES', 'CELERY_DEFAULT_QUEUE', ]
+# Tasks that we schedule using rq-schedule
+REPEATING_JOBS = [
+    {
+        'job': 'teams.tasks.expire_tasks',
+        'cron': dict(minute=0, hour=7),
+    },
+]
+
+__all__ = ['REPEATING_JOBS', 'CELERYBEAT_SCHEDULE', 'CELERY_QUEUES', 'CELERY_DEFAULT_QUEUE', ]

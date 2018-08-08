@@ -1,4 +1,3 @@
-# Amara, universalsubtitles.org
 #
 # Copyright (C) 2017 Participatory Culture Foundation
 #
@@ -19,6 +18,7 @@
 from optparse import make_option
 
 from django.core.management.base import BaseCommand
+import django_rq
 
 from utils import tasks
 
@@ -33,4 +33,8 @@ class Command(BaseCommand):
     )
     def handle(self, **options):
         for i in range(options['number']):
-            tasks.test.apply_async(queue=options['queue'])
+            if options['queue'] == 'default':
+                tasks.test.delay()
+            else:
+                queue = django_rq.get_queue(options['queue'])
+                queue.enqueue(tasks.test)
