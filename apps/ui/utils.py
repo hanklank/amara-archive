@@ -188,8 +188,9 @@ class SplitCTA(CTA):
         return mark_safe(container.format(css_class, main_cta, dropdown_toggle, dropdown_menu))
 
     def __eq__(self, other):
-        #TODO override this and compare the dropdowns as well
-        pass
+        return (super(SplitCTA, self).__eq__(other) and
+                self.dropdown_tooltip == other.dropdown_tooltip and
+                self.dropdown_items == other.dropdown_items)
 
 class Tab(Link):
     def __init__(self, name, label, view_name, *args, **kwargs):

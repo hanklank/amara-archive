@@ -56,8 +56,6 @@ MAX_SUBTITLING_HISTORY_PER_PAGE = 10
 # this gets the n most recent videos that have available subtitling work for a team member
 MAX_DASHBOARD_VIDEOS_TO_CHECK = 10 
 
-
-
 class SimpleDashboardVideoView(object):
     def __init__(self, video, team, cta_languages):
         self.video = video
@@ -193,26 +191,6 @@ gets the latest subtitle revision made by <user> per subtitle language
 '''
 def get_dashboard_history(team, user, main_project):
     return SimpleDashboardHistoryView.subtitling_history(team, user, main_project, limit=MAX_DASHBOARD_HISTORY)
-    # history = OrderedDict()
-    
-    # added_videos = 0
-    # # hack since I can't do .distinct() by field 
-    # qs = (SubtitleVersion.objects.filter(video__in=team.videos.all(),
-    #                                      author=user)
-    #                              .order_by('-created'))
-    # if main_project:
-    #     qs = qs.filter(video__teamvideo__project=main_project)
-    # for sv in qs:
-    #     if (sv.video.pk, sv.language_code) in history:
-    #         continue
-    #     else:
-    #         history[(sv.video.pk, sv.language_code)] = SimpleDashboardHistoryView(team, sv)
-    #         added_videos += 1
-
-    #     if added_videos == MAX_DASHBOARD_HISTORY:
-    #         break
-
-    # return [history[k] for k in history]
 
 def dashboard(request, team):
     member = team.get_member(request.user)
@@ -254,10 +232,6 @@ def dashboard(request, team):
 
         'dashboard_videos': get_dashboard_videos(team, request.user, main_project),
         'dashboard_history': get_dashboard_history(team, request.user, main_project),
-
-        'dummy_split_cta': SplitCTA('gg', '#', 'icon-transcribe', 
-                                main_tooltip="Main tooltip",
-                                dropdown_items=[ 'Translate [en]', 'Translate [fr]' ])
     }
     
     return render(request, 'future/teams/simple/dashboard.html', context)
