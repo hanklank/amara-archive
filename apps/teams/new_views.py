@@ -538,21 +538,39 @@ def add_members(request, team):
     successes = []
     if not permissions.can_add_members(team, request.user):
         return HttpResponseForbidden(_(u'You cannot invite people to this team.'))
-    if request.POST:
+    if request.method == "POST":
         form = forms.AddMembersForm(team, request.user, request.POST)
         if form.is_valid():
             summary = form.save()
             if not team.is_old_style():
                 if summary['added']:
-                    successes.append(_('{} member(s) added').format(summary['added']))
+                    msg = ungettext(u'{} member added to the team!',
+                                    u'{} members added to the team!',
+                                    summary['added'])
+                    successes.append(msg.format(summary['added']))
                 if summary['unknown']:
-                    errors.append(
-                        _('The following user(s) do not exist: {}')
-                            .format(", ".join(summary['unknown'])))
+                    msg = ungettext(u'The following user does not exist: {}',
+                                    u'The following users do not exist: {}',
+                                    len(summary['unknown']))
+                    errors.append(msg.format(", ".join(summary['unknown'])))
                 if summary['already']:
-                    errors.append(
-                        _('The following is already a member: {}')
-                            .format(", ".join(summary['already'])))
+                    msg = ungettext(u'The following is already a member: {}',
+                                    u'The following are already members: {}',
+                                    len(summary['already']))
+                    errors.append(msg.format(", ".join(summary['already'])))
+
+                # if every username was succesfully added, close the modal and refresh
+                # the member directory
+                if (summary['added'] and
+                    not summary['unknown'] and
+                    not summary['already']):
+                    success_msg = ungettext(u'{} member added to the team!',
+                                            u'{} members added to the team!',
+                                            summary['added'])
+                    messages.success(request, success_msg.format(summary['added']))
+                    response_renderer = AJAXResponseRenderer(request)
+                    response_renderer.reload_page()
+                    return response_renderer.render()
     else:
         form = forms.AddMembersForm(team, request.user)
 
@@ -613,7 +631,7 @@ def invite(request, team):
             if form.usernames:
                 usernames =  "".join(["{}<br>".format(e) for e in form.usernames])
                 messages.success(request, _(u'An invite has been sent to the following:<br>{}').format(usernames))
-            if form.cleaned_data['username']:
+            if team.is_old_style() and form.cleaned_data['username']:
                 messages.success(request, _(u'An invite has been sent to {}').format(form.cleaned_data['username']))
 
             if team.is_old_style():

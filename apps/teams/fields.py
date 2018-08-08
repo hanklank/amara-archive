@@ -142,14 +142,9 @@ set_ajax_autocomplete_url() and set_ajax_multiple_username_url()
 are called in InviteForm's __init__ method
 '''
 class MultipleUsernameInviteField(MultipleAutoCompleteField):
-    def __init__(self, *args, **kwargs):
-        super(MultipleUsernameInviteField, self).__init__(*args, **kwargs)
-
-        # Used for PowerUserUsernameSelect to enable parsing of multiple entries
-        # self.set_select_data('ajax-username-multiple', 1)
-
     '''
-    Validation is done at teams.forms.InviteForm
+    Override MultipleAutoCompleteField's validation since it's not useful
+    Instead do validation at the form using this field (e.g. teams.forms.InviteForm)
     '''
     def clean(self, values):
         return values
