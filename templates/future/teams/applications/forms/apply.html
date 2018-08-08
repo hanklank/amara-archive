@@ -1,11 +1,10 @@
 {% load i18n %}
 <form action="" method="POST" class="team-application">
   {% csrf_token %}
-  <div class="form-group">
-    <label for="">{% trans "About You" %}</label>
-    <p class="helpBlock">{{ form.about_you.help_text }}</p>
-    {{ form.about_you }}
-    <!--{% include "_field.html" with field=form.about_you %}-->
+  {% include "future/forms/non-field-errors.html" %}
+  <div class="form-group{% if form.about_you.errors %} has-error{% endif %}">
+    <label for="" >{% trans "About You" %}</label>
+    {% include "future/forms/field-toptext.html" with field=form.about_you %}
   </div>
   <div class="form-group">
     <label for="">{% trans "Languages" %}</label>
