@@ -1,48 +1,30 @@
 {% load i18n videos_tags %}
-
-<header class="borderless">
-  <h2>{% trans "Assignments History" %}</h2>
+<header class="dashboardHeader">
+  <h2>{% trans "Subtitling history" %}</h2>
+  {% if hide_member_profile_link %}{%else%}
+  <a class="small" href="{{ member_profile_url }}">See all</a>
+  {% endif %}
 </header>
-{% if assignment_history_pending or assignment_history_complete %}
 
-<table class="assignmentHistoryTable">
-  <thead></thead>
-  <tbody>
-    {% if assignment_history_pending %}
-    <tr>
-      <th>{% trans "Pending" %}</th>
-      <th></th>
-      <th></th>
-    </tr>
-    {% for collab in assignment_history_pending %}
-    <tr>
-      <td><a href="{{ collab.language_page_url }}?team={{ team.slug }}">{{ collab.video.title_display }}</a></td>
-      <td><a href="{{ collab.language_page_url }}?team={{ team.slug }}">{{ collab.subtitle_language }}</a></td>
-      <td>
-        <ul class="stepList tight">{% include "collab/steps.html" with steps=collab.steps_for_team %}</ul>
-      </td>
-    </tr>
-    {% endfor %}
-    {% endif %}
-    {% if assignment_history_complete %}
-    <tr>
-      <th>{% trans "Completed" %}</th>
-      <th></th>
-      <th></th>
-    </tr>
-    {% for collab in assignment_history_complete %}
-    <tr>
-      <td><a href="{{ collab.language_page_url }}?team={{ team.slug }}">{{ collab.video.title_display }}</a></td>
-      <td><a href="{{ collab.language_page_url }}?team={{ team.slug }}">{{ collab.subtitle_language }}</a></td>
-      <td>
-        <ul class="stepList tight">{% include "collab/steps.html" with steps=collab.steps_for_team %}</ul>
-      </td>
-    </tr>
-    {% endfor %}
-    {% endif %}
-  </tbody>
-</table>
-{% include "future/paginator.html" %}
+{% if histories %}
+  <table class="assignmentHistoryTable">
+    <thead></thead>
+    <tbody>
+      {% for history in histories %}
+      <tr>
+        <td><a href="{{ history.video_page_url }}">{{ history.video.title_display }}</a></td>
+        <td class="text-center"><a href="{{ history.language_page_url }}">{{ history.language }}</a></td>
+        <td class="text-center hidden-md visible-lg">{{ history.video.duration|format_duration }}</td>
+        <td style="width:200px">{{ history.date }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if paginated %}
+    {% include "future/paginator.html" %}
+  {% endif %}
+
 {% else %}
-<div class="zero-state">{% trans "No assignments." %}</div>
+<div class="zero-state">{% trans "No subtitling history yet!" %}</div>
 {% endif %}

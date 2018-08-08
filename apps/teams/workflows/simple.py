@@ -47,7 +47,9 @@ NEWEST_MEMBERS_PER_PAGE = 10
 NEWEST_VIDEOS_PER_PAGE = 7
 MAX_DASHBOARD_VIDEOS = 3
 MAX_DASHBOARD_HISTORY = 10
-MAX_SUBTITLING_HISTORY_PER_PAGE = 20
+
+# 10 subtitle history entries in the member profile page fits nicely in a 768px height browser
+MAX_SUBTITLING_HISTORY_PER_PAGE = 10
 
 # maximum number of videos we want to check to determine
 # which videos to display in the dashboard
