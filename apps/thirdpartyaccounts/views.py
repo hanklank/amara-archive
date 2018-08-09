@@ -54,7 +54,7 @@ def twitter_login(request, next=None, confirmed=True, email=''):
 
     try:
         credentials = twitter.fetch_request_token(callback_url=callback_url)
-    except URLError:
+    except:
         messages.error(request, 'Problem connecting to Twitter. Try again.')
         return redirect('auth:login')
 
