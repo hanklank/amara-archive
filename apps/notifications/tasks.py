@@ -3,11 +3,11 @@ import logging
 
 logger = logging.getLogger('notifications.tasks')
 
-from django_rq import job
 from django.db.models import Q, Max
 
 from notifications.models import TeamNotification
 from teams.models import Team
+from utils.taskqueue import job
 import utils.dates
 
 REMOVE_AFTER = 90

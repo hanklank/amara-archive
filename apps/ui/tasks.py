@@ -16,23 +16,20 @@
 # along with this program.  If not, see
 # http://www.gnu.org/licenses/agpl-3.0.html.
 
+from __future__ import absolute_import
+
 import logging
 
-from django_rq import job
-from rq import get_current_job
+from utils.taskqueue import job, Job
 
 logger = logging.getLogger(__name__)
 
-@job('high')
+@job(queue='high')
 def process_management_form(FormClass, pickle_state):
-    current_job = get_current_job()
-
-    def update_job_meta(data):
-        current_job.meta.update(data)
-        current_job.save_meta()
+    current_job = Job.get_current()
 
     def progress_callback(current, total):
-        update_job_meta({
+        current_job.update_meta({
             'form_status': 'PROGRESS',
             'current': current,
             'total': total,
@@ -40,7 +37,7 @@ def process_management_form(FormClass, pickle_state):
     try:
         form = FormClass.restore_from_pickle_state(pickle_state)
         if not form.is_valid():
-            update_job_meta({
+            current_job.update_meta({
                 'form_status': 'FAILURE',
                 'error_messages': [
                     unicode(e) for e in form.errors
@@ -48,13 +45,13 @@ def process_management_form(FormClass, pickle_state):
             })
             return
         form.submit(progress_callback)
-        update_job_meta({
+        current_job.update_meta({
             'form_status': 'SUCCESS',
             'message': form.message(),
             'error_messages': form.error_messages(),
         })
     except:
         logger.warn("Error processing form", exc_info=True)
-        update_job_meta({
+        current_job.update_meta({
             'form_status': 'FAILURE',
         })

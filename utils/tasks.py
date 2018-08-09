@@ -18,9 +18,8 @@
 
 import logging
 
-from django_rq import job
-
 from utils import send_templated_email
+from utils.taskqueue import job
 
 logger = logging.getLogger(__name__)
 

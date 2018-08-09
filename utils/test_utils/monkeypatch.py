@@ -40,7 +40,6 @@ import contextlib
 import functools
 import itertools
 
-from celery.task import Task
 import mock
 import dateutil.parser
 
@@ -197,12 +196,10 @@ class MonkeyPatcher(object):
     def run_original(self, mock_obj):
         rv = [mock_obj.original_func(*args, **kwargs)
                 for args, kwargs in mock_obj.call_args_list]
-        if isinstance(mock_obj.original_func, Task):
-            # for celery tasks, also run the delay() and apply() methods
+        if hasattr(mock_obj.original_func, 'delay'):
+            # for rq jobs, also run the delay() method
             rv.extend(mock_obj.original_func.delay(*args, **kwargs)
                       for args, kwargs in mock_obj.delay.call_args_list)
-            rv.extend(mock_obj.original_func.apply(*args, **kwargs)
-                      for args, kwargs in mock_obj.apply.call_args_list)
 
         return rv
 

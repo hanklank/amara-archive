@@ -32,7 +32,6 @@ from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _, ugettext
 from django.template.loader import render_to_string
 from django.contrib.contenttypes.models import ContentType
-from django_rq import job
 
 from auth.models import CustomUser as User, UserLanguage
 from localeurl.utils import universal_url
@@ -40,6 +39,7 @@ from teams.moderation_const import REVIEWED_AND_PUBLISHED, \
      REVIEWED_AND_PENDING_APPROVAL, REVIEWED_AND_SENT_BACK
 from messages.models import Message, SYSTEM_NOTIFICATION
 from utils import send_templated_email
+from utils.taskqueue import job
 from utils.text import fmt
 from utils.translation import get_language_label
 

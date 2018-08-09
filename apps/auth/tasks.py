@@ -19,10 +19,10 @@
 import logging
 
 from django.conf import settings
-from django_rq import job
 
 from auth.models import LoginToken
 from utils import send_templated_email
+from utils.taskqueue import job
 
 logger = logging.getLogger(__name__)
 

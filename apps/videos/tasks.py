@@ -21,7 +21,6 @@ import logging
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.db.models import ObjectDoesNotExist
-from django_rq import job
 import requests
 
 from babelsubs.storage import diff as diff_subtitles
@@ -34,6 +33,7 @@ from subtitles.models import (
     SubtitleLanguage, SubtitleVersion
 )
 from auth.models import CustomUser as User
+from utils.taskqueue import job
 from videos.types import video_type_registrar
 from videos.types import UPDATE_VERSION_ACTION, DELETE_LANGUAGE_ACTION
 from videos.types import VideoTypeError
@@ -54,7 +54,7 @@ def cleanup():
 
     transaction.commit_unless_managed()
 
-@job('default', timeout=20)
+@job(timeout=20)
 def save_thumbnail_in_s3(video_id):
     try:
         video = Video.objects.get(pk=video_id)

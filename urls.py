@@ -32,16 +32,6 @@ from auth.views import login as user_login
 admin.autodiscover()
 admin.site.login = user_login
 
-# Monkeypatch the Celery admin to show a column for task run time in the list view.
-from djcelery.admin import TaskMonitor
-from djcelery.models import TaskState
-
-
-admin.site.unregister([TaskState])
-TaskMonitor.list_display += ('runtime',)
-admin.site.register(TaskState, TaskMonitor)
-
-# run monkey patch django
 from utils import urlvalidator
 urlpatterns = patterns('',
     url('^500/$', TemplateView.as_view(template_name='500.html')),

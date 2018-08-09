@@ -6,7 +6,6 @@ logger = logging.getLogger('teams.tasks')
 from django.conf import settings
 from django.db.models import F
 from django.utils.translation import ugettext_lazy as _
-from django_rq import job
 import requests
 
 from utils import send_templated_email
@@ -18,6 +17,7 @@ from widget.video_cache import (
     invalidate_video_visibility
 )
 
+from utils.taskqueue import job
 from utils.text import fmt
 from videos.tasks import video_changed_tasks
 

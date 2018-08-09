@@ -19,7 +19,6 @@
 import logging
 
 from django.core.exceptions import ObjectDoesNotExist
-from django_rq import job
 
 from externalsites import credit
 from externalsites import google
@@ -30,6 +29,7 @@ from subtitles.models import SubtitleLanguage, SubtitleVersion
 from videos.models import VideoUrl
 from auth.models import CustomUser as User
 from teams.models import Team
+from utils.taskqueue import job
 logger = logging.getLogger(__name__)
 
 @job

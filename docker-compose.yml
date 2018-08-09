@@ -16,7 +16,6 @@ services:
     depends_on:
       - db
       - redis
-      - queue
       - asset-builder
 
   worker:
@@ -31,7 +30,6 @@ services:
     depends_on:
       - db
       - redis
-      - queue
 
   scheduler:
     image: amara-app
@@ -45,7 +43,6 @@ services:
     depends_on:
       - db
       - redis
-      - queue
 
   db:
     image: mysql:5.7
@@ -68,12 +65,6 @@ services:
       - .:/mnt
     working_dir: /mnt/amara-assets
     command: ['node', 'node_modules/gulp/bin/gulp.js']
-
-  queue:
-    image: rabbitmq
-    ports:
-      - "5672"
-      - "15672"
 
   varnish:
     image: amara/amara-cache

@@ -13,7 +13,6 @@ services:
       - ..:/opt/apps/amara:z
     depends_on:
       - db
-      - queue
       - redis
     ports:
       - "8000"
@@ -22,15 +21,12 @@ services:
     image: amara-app
     command: worker
     environment:
-      CELERY_OPTS: -B
-      CELERY_QUEUES: default,priority
       DJANGO_SETTINGS_MODULE: dev_settings
       LANG: en_US.UTF-8
     volumes:
       - ..:/opt/apps/amara:z
     links:
       - db
-      - queue
       - redis
 
   feed-worker:
@@ -44,7 +40,6 @@ services:
       - ..:/opt/apps/amara:z
     depends_on:
       - db
-      - queue
       - redis
 
   db:
@@ -58,12 +53,6 @@ services:
       - ../docker-dev/mysql/conf.d/:/etc/mysql/conf.d:z
     ports:
       - "3306"
-
-  queue:
-    image: rabbitmq
-    ports:
-      - "5672"
-      - "15672"
 
   redis:
     image: redis:4.0.10

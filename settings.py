@@ -195,7 +195,6 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.webdesign',
     # third party apps
-    'djcelery',
     'rest_framework',
     'django_rq',
     # third party apps forked on our repo
@@ -205,7 +204,6 @@ INSTALLED_APPS = (
     'accountlinker',
     'activity',
     'amaradotorg',
-    'amaracelery',
     'api',
     'caching',
     'codefield',
@@ -249,19 +247,7 @@ RQ_QUEUES = {
         'USE_REDIS_CACHE': 'default',
     }
 }
-
-# import djcelery
-# djcelery.setup_loader()
-
-# For running worker use: python manage.py celeryd -E --concurrency=10 -n worker1.localhost
-# Run event cather for monitoring workers: python manage.py celerycam --frequency=5.0
-# This allow know are workers online or not: python manage.py celerybeat
-
-CELERY_IGNORE_RESULT = True
-CELERY_SEND_EVENTS = False
-CELERY_SEND_TASK_ERROR_EMAILS = True
-CELERYD_HIJACK_ROOT_LOGGER = False
-BROKER_POOL_LIMIT = 10
+RUN_JOBS_EAGERLY = False
 
 # feedworker management command setup
 FEEDWORKER_PASS_DURATION=3600
@@ -783,9 +769,6 @@ LOGGING = {
         'main': log_handler_info(),
     },
     'loggers': {
-        'celery': {
-            'level': 'WARNING',
-        },
         "rq.worker": {
             "level": "INFO"
         },

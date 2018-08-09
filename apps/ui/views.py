@@ -23,10 +23,10 @@ from django.contrib import messages
 from django.http import Http404
 from django.core.urlresolvers import reverse
 from django.utils.translation import to_locale, ugettext as _
-from django_rq import get_queue
 
 from ui import tasks
 from ui.ajax import AJAXResponseRenderer
+from utils.taskqueue import Job
 from utils.text import fmt
 from utils.translation import get_language_choices
 
@@ -35,24 +35,24 @@ TASK_UPDATE_INTERVAL = 0.5
 def task_progress(request, job_id):
     if not request.is_ajax():
         raise Http404
-    queue = get_queue('high')
-    job = queue.fetch_job(job_id)
+    job = Job.fetch(job_id, queue='high')
+    job_meta = job.get_meta() if job else {}
+    status = job_meta.get('form_status')
     response_renderer = AJAXResponseRenderer(request)
-    status = job.meta.get('form_status') if job else None
     if status == 'PROGRESS':
-        progress = float(job.meta['current']) / job.meta['total']
+        progress = float(job_meta['current']) / job_meta['total']
         response_renderer.show_modal_progress(progress, fmt(
             _("Processing: %(current)s / %(total)s"),
-            current=job.meta['current'],
-            total=job.meta['total']))
+            current=job_meta['current'],
+            total=job_meta['total']))
         response_renderer.perform_request(TASK_UPDATE_INTERVAL,
                                           "ui:task-progress", job.id)
     elif status == 'SUCCESS':
         response_renderer.show_modal_progress(1.0, _("Complete"))
-        add_job_messages(request, job)
+        add_job_messages(request, job_meta)
         response_renderer.reload_page()
     elif status == 'FAILURE':
-        add_job_messages(request, job)
+        add_job_messages(request, job_meta)
         response_renderer.reload_page()
     else:
         response_renderer.show_modal_progress(0.0, _("Processing"))
@@ -60,10 +60,10 @@ def task_progress(request, job_id):
                                           "ui:task-progress", job_id)
     return response_renderer.render()
 
-def add_job_messages(request, job):
-    for message in job.meta.get('messages', []):
+def add_job_messages(request, job_meta):
+    for message in job_meta.get('messages', []):
         messages.success(request, message)
-    for message in job.meta.get('error_messages', []):
+    for message in job_meta.get('error_messages', []):
         messages.error(request, message)
 
 def render_management_form_submit(request, form):

@@ -15,17 +15,21 @@ class Command(BaseCommand):
     args = '<queue>'
 
     def handle(self, *args, **options):
-        scheduler = django_rq.get_scheduler('default', interval=60)
+        scheduler = django_rq.get_scheduler('default', interval=5)
         self.setup_schedule(scheduler)
         scheduler.run()
 
     def setup_schedule(self, scheduler):
         now = dates.utcnow()
-        for job in list(scheduler.get_jobs()):
-            scheduler.cancel(job)
+        self.cancel_old_periodic_jobs(scheduler)
 
         for job_info in settings.REPEATING_JOBS:
             self.schedule_job(now, scheduler, job_info)
+
+    def cancel_old_periodic_jobs(self, scheduler):
+        for job in list(scheduler.get_jobs()):
+            if 'cron_string' in job.meta or 'interval' in job.meta:
+                scheduler.cancel(job)
 
     def schedule_job(self, now, scheduler, job_info):
         try:

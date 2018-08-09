@@ -77,7 +77,6 @@ from subtitles import pipeline
 from functools import partial
 
 logger = logging.getLogger(__name__)
-celery_logger = logging.getLogger('celery.task')
 
 BILLING_CUTOFF = getattr(settings, 'BILLING_CUTOFF', None)
 
@@ -3782,22 +3781,22 @@ class BillingRecordManager(models.Manager):
         """
         from teams.models import BillingRecord
 
-        celery_logger.debug('insert billing record')
+        logger.debug('insert billing record')
 
         language = version.subtitle_language
         video = language.video
         tv = video.get_team_video()
 
         if not tv:
-            celery_logger.debug('not a team video')
+            logger.debug('not a team video')
             return
 
         if tv.team.deleted:
-            celery_logger.debug('Cannot create billing record for deleted team')
+            logger.debug('Cannot create billing record for deleted team')
             return
 
         if not language.is_complete_and_synced(public=False):
-            celery_logger.debug('language not complete')
+            logger.debug('language not complete')
             return
 
 
@@ -3806,7 +3805,7 @@ class BillingRecordManager(models.Manager):
             previous_record = BillingRecord.objects.get(video=video,
                             new_subtitle_language=language)
             # make sure we update it
-            celery_logger.debug('a billing record for this language exists')
+            logger.debug('a billing record for this language exists')
             previous_record.is_original = \
                 video.primary_audio_language_code == language.language_code
             previous_record.save()
@@ -3819,7 +3818,7 @@ class BillingRecordManager(models.Manager):
                 subtitle_language=language,
                 created__lt=BILLING_CUTOFF).exclude(
                 pk=version.pk).exists():
-            celery_logger.debug('an older version exists')
+            logger.debug('an older version exists')
             return
 
         is_original = language.is_primary_audio_language()

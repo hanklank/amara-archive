@@ -16,22 +16,9 @@
 # along with this program.  If not, see 
 # http://www.gnu.org/licenses/agpl-3.0.html.
 
-"""periodic_task_settings -- settings for celery periodic tasks."""
+"""periodic_task_settings -- settings for periodic tasks."""
 
 from datetime import timedelta
-
-from kombu import Exchange, Queue
-
-CELERY_QUEUES = (
-    Queue('default', routing_key='default'),
-    Queue('priority', routing_key='priority'),
-    Queue('feeds', routing_key='feeds'),
-)
-
-CELERY_DEFAULT_QUEUE = "default"
-
-CELERYBEAT_SCHEDULE = {
-}
 
 # Tasks that we schedule using rq-schedule
 REPEATING_JOBS = [
@@ -65,4 +52,4 @@ REPEATING_JOBS = [
     },
 ]
 
-__all__ = ['REPEATING_JOBS', 'CELERYBEAT_SCHEDULE', 'CELERY_QUEUES', 'CELERY_DEFAULT_QUEUE', ]
+__all__ = ['REPEATING_JOBS']

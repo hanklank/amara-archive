@@ -18,23 +18,21 @@
 from optparse import make_option
 
 from django.core.management.base import BaseCommand
-import django_rq
 
 from utils import tasks
-
 
 class Command(BaseCommand):
     help = u'Run a test task'
     option_list = BaseCommand.option_list + (
         make_option('-n', '--number', default=1,
                     type=int, help='Number of tasks to run'),
-        make_option('-q', '--queue', dest='queue', default='default',
-                    help='Choose queue to run it in'),
+        make_option('-d', '--delay', default=None,
+                    type=int, help='Seconds to delay the execution')
     )
     def handle(self, **options):
         for i in range(options['number']):
-            if options['queue'] == 'default':
-                tasks.test.delay()
+            if options['delay'] is None:
+                job = tasks.test.delay()
             else:
-                queue = django_rq.get_queue(options['queue'])
-                queue.enqueue(tasks.test)
+                job = tasks.test.enqueue_in(options['delay'])
+            print 'Job: {}'.format(job.id)
