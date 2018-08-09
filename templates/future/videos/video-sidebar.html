@@ -1,12 +1,12 @@
-{% load i18n %}
+{% load i18n forms %}
 {% with complete_languages=video.complete_languages_sorted incomplete_languages=video.incomplete_languages_sorted %}
 
 {% if create_subtitles_form %}
 <div class="content videoSubtitleList">
     <h2 class="videoSubtitlesList-item">{% trans 'Contribute' %}</h2>
-    <button type="button" class="button block cta videoSubtitlesList-item" data-toggle="modal" data-target="#create-subtitles">
-      <i class="icon icon-edit"></i>{% trans 'Create new subtitles' %}
-    </button>
+
+    <a class="ajaxLink button block cta videoSubtitlesList-item"
+       data-href="?form=create-subtitles{%if team %}&team={{team.slug}}{%endif%}">{% trans "Create new subtitles" %}</a>
 </div>
 {% endif %}
 

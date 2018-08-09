@@ -298,11 +298,12 @@ def video(request, video_id, video_url=None, title=None):
 
     workflow = video.get_workflow()
     if workflow.user_can_edit_video(request.user):
-        team_slug = request.GET.get('team', None)
-        if team_slug:
-            create_subtitles_form = TeamCreateSubtitlesForm(request, video, team_slug)
+        form_name = request.GET.get('form', '')
+        if form_name == 'create-subtitles':
+            return create_subtitles(request, video_id)
         else:
-            create_subtitles_form = CreateSubtitlesForm(request, video)
+            # this is the old code for creating the CreateSubtitlesForm
+            create_subtitles_form = CreateSubtitlesForm(request,video)
     else:
         create_subtitles_form = None
     if request.user.is_authenticated():
@@ -365,14 +366,30 @@ def create_subtitles(request, video_id):
     if not workflow.user_can_edit_video(request.user):
         raise PermissionDenied()
 
+    team_slug = request.GET.get('team', None)
     if request.method == 'POST':
-        team_slug = request.GET.get('team', None)
         if team_slug:
             form = TeamCreateSubtitlesForm(request, video, team_slug, request.POST)
         else:
             form = CreateSubtitlesForm(request, video, request.POST)
+
         if form.is_valid():
-            return form.handle_post()
+            form.set_primary_audio_language()
+            response_renderer = AJAXResponseRenderer(request)
+            response_renderer.redirect(form.editor_url())
+            return response_renderer.render()
+    else:
+        if team_slug:
+            form = TeamCreateSubtitlesForm(request, video, team_slug)
+        else:
+            form = CreateSubtitlesForm(request, video)
+
+    response_renderer = AJAXResponseRenderer(request)
+    response_renderer.show_modal('future/videos/create-subtitles-modal.html', {
+        'form': form,
+        'video': video,
+    })
+    return response_renderer.render()
 
 def video_ajax_form(request, video_id):
     form = request.POST.get('form')

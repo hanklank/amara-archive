@@ -112,6 +112,9 @@ class AJAXResponseRenderer(object):
     def reload_page(self):
         self.add_change('reloadPage')
 
+    def redirect(self, url):
+        self.add_change('redirect', url)
+
     def render(self):
         response = HttpResponse(json.dumps(self.changes),
                                 content_type='application/json')

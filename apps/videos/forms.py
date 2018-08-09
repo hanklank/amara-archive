@@ -36,7 +36,8 @@ from django.utils.translation import ugettext
 from videos.feed_parser import FeedParser
 from videos.models import Video, VideoFeed, VideoUrl
 from videos.permissions import can_user_edit_video_urls
-from teams.permissions import can_create_and_edit_subtitles
+from teams.permissions import can_create_and_edit_subtitles, can_edit_videos
+from teams.models import Team
 from videos.tasks import import_videos_from_feed
 from videos.types import video_type_registrar, VideoTypeError
 from utils.forms import AjaxForm, EmailListField, UsernameListField, StripRegexField, FeedURLField
@@ -414,9 +415,14 @@ class CreateSubtitlesForm(CreateSubtitlesFormBase):
         return self.video
 
 class TeamCreateSubtitlesForm(CreateSubtitlesForm):
-
     def __init__(self, request, video, team_slug, data=None):
         super(TeamCreateSubtitlesForm, self).__init__(request, video, data=data)
+        team = Team.objects.get(slug=team_slug)
+
+        if not (can_edit_videos(team, request.user)):
+            self.fields['primary_audio_language_code'].help_text = 'Please double check the primary spoken language.'
+        else:
+            self.fields['primary_audio_language_code'].help_text = ''
 
         self.team_url_arg = '?team={}'.format(team_slug)
         self.action_url = reverse('videos:create_subtitles', kwargs={
