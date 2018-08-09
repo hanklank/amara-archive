@@ -297,7 +297,7 @@ def video(request, video_id, video_url=None, title=None):
         video_url = video.get_primary_videourl_obj()
 
     workflow = video.get_workflow()
-    if workflow.user_can_edit_video(request.user):
+    if workflow.user_can_subtitle_video(request.user):
         form_name = request.GET.get('form', '')
         if form_name == 'create-subtitles':
             return create_subtitles(request, video_id)
@@ -363,7 +363,7 @@ def create_subtitles(request, video_id):
         raise Http404
 
     workflow = video.get_workflow()
-    if not workflow.user_can_edit_video(request.user):
+    if not workflow.user_can_subtitle_video(request.user):
         raise PermissionDenied()
 
     team_slug = request.GET.get('team', None)
