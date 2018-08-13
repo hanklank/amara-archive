@@ -814,7 +814,7 @@ def resources(request, team):
 
 def dashboard(request, slug):
     team = get_object_or_404(
-        Team.objects.for_user(request.user, allow_unlisted=True, allow_private=True), slug=slug)
+        Team.objects.for_user(request.user, allow_unlisted=True), slug=slug)
     if not team.is_old_style() and not team.user_is_member(request.user):
         return welcome(request, team)
     else:
@@ -836,7 +836,6 @@ def welcome(request, team):
 
     return render(request, 'future/teams/welcome.html', {
         'team': team,
-        'banner': team.logo.thumb_url(1920, 240),
         'join_mode': team.get_join_mode(request.user),
         'team_messages': team.get_messages([
             'pagetext_welcome_heading',

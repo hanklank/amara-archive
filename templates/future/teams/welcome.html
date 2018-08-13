@@ -2,24 +2,18 @@
 {% load i18n %}
 
 {% block content %}
-
-{% if banner %}
-  <!-- best scale is 8:1 (width:height) -->
-  <!-- TODODAN work on the banner scaling -->
-  <!-- <div style="width: 100%; max-height:240px; overflow:hidden; text-align:center">
-    <img style="display:inline-block" src=""></img>
-  </div> -->
-
-  <div class="banner-container">
-    <img class="banner-image" src="{{banner}}"></img>
+<div class="container">
+{% if team.logo %}
+  <div class="block-center">
+    <div class="banner-container hidden-sm hidden-xs">
+      <img class="banner-image" src="{{ MEDIA_URL }}{{ team.logo }}"></img>
+    </div>
   </div>
 {% endif %}
 
 <div class="content text-center">
   <h1>{{ team.name }}</h1>
-  <p style="max-width:30em; display:inline-block">{{ team.description }}</p>
-  <br><!-- force the next element to the next line -->
-  
+  <p style="max-width:30em; display:inline-block">{{ team.description }}</p>  
 </div>
 
 <div class="content text-center">
@@ -35,18 +29,15 @@
 </div>
 
 {% if videos %}
-<div class="container">
   <div class="content">
     <hr>
     <h2 class="text-center">{% trans 'Newest videos' %}</h2>
 
     {% include "collab/newest-videos-inner.html" with grid_centered=1%}
   </div>
-</div>
 {% endif %}
 
 {% if projects %}
-<div class="container">
   <div class="content">
     <hr>
     <h2 class="text-center">{% trans 'Projects' %}</h2>
@@ -61,7 +52,7 @@
       {% endfor %}
     </div>
   </div>
-</div>
 {% endif %}
+</div>
 
 {% endblock %}

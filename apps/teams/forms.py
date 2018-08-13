@@ -862,7 +862,7 @@ class LegacyRenameableSettingsForm(LegacySettingsForm):
 class GeneralSettingsForm(forms.ModelForm):
     logo = forms.ImageField(
         validators=[MaxFileSizeValidator(settings.AVATAR_MAX_SIZE)],
-        help_text=_('Max 940 x 235'),
+        help_text=_('Max size: 940px x 235px. Over-sized images will be clipped at the center'),
         widget=AmaraClearableFileInput,
         required=False)
     square_logo = forms.ImageField(

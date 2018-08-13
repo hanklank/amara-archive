@@ -126,17 +126,14 @@ class TeamQuerySet(query.QuerySet):
         }
         return self.extra(select=select, select_params=[user.id])
 
-    def for_user(self, user, allow_unlisted=False, allow_private=False):
+    def for_user(self, user, allow_unlisted=False):
         """Return the teams visible for the given user.  """
         if user.is_superuser:
             return self
-
-        q = models.Q(team_visibility=TeamVisibility.PUBLIC)
         if allow_unlisted:
-            q |= models.Q(team_visibility=TeamVisibility.UNLISTED)
-        if allow_private: # add only private teams that have open and by-application membership policy
-            q |= models.Q(team_visibility=TeamVisibility.PRIVATE,
-                          membership_policy__in=[Team.OPEN,Team.APPLICATION])
+            q = ~models.Q(team_visibility=TeamVisibility.PRIVATE)
+        else:
+            q = models.Q(team_visibility=TeamVisibility.PUBLIC)
         if user.is_authenticated():
             user_teams = TeamMember.objects.filter(user=user)
             q |= models.Q(id__in=user_teams.values('team_id'))
