@@ -680,6 +680,10 @@ class Team(models.Model):
             - "login" -- user needs to login first
             - None -- user can't join the team
         """
+        if (self.is_ted_team() and 
+            not user.is_authenticated() or not user.is_ted_account()):
+            return 'login-ted'
+
         if not user.is_authenticated():
             return 'login'
         elif self.user_is_member(user):
@@ -697,6 +701,9 @@ class Team(models.Model):
                 if application.status == Application.STATUS_PENDING:
                     return 'pending-application'
         return None
+
+    def is_ted_team(self):
+        return self.slug.startswith('ted')
 
     def user_is_member(self, user):
         members = self.cache.get('members')

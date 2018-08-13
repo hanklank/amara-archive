@@ -22,9 +22,17 @@
   {% elif join_mode == "application" %}
     <a class="button cta" href="{% url "teams:join" slug=team.slug %}">{% trans "Apply to join the team" %} <span class="fa fa-angle-double-right"></span></a>
   {% elif join_mode == "invitation" %}
-    <p>This team is invitation only. If you're interested in helping out, <a href="{% url "teams:admin-list" slug=team.slug %}">contact a team admin</a>.</p>
+    {% url "teams:admin-list" slug=team.slug as admin_list_url %}
+    <p>
+      {% blocktrans}
+      This team is by invitation only. If you're interested in helping out, 
+      <a href="{{admin_list_url}}">contact a team admin</a>.
+      {% endblocktrans %}
+    </p>    
   {% elif join_mode == "login" %}
     <a class="button cta" href="{% url 'auth:login' %}?next={% if next %}{{ next|urlencode }}{% else %}{{ request.path_info|urlencode }}{% endif %}">{% trans "Login to join the team" %} <span class="fa fa-angle-double-right"></span></a>
+  {% elif join_mode == "login-ted" %}
+    <a class="button cta" href="{% url 'servicesauth:ted_login' %}?next={% if next %}{{ next|urlencode }}{% else %}{{ request.path_info|urlencode }}{% endif %}">{% trans "Login via TED to join the team" %} <span class="fa fa-angle-double-right"></span></a>
   {% endif %}
 </div>
 
