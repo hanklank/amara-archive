@@ -61,6 +61,7 @@ from auth.models import CustomUser as User
 from auth.forms import CustomUserCreationForm
 from messages import tasks as messages_tasks
 from subtitles.models import SubtitleLanguage
+from teams.models import Project
 from teams.workflows import TeamWorkflow
 from ui import (
     AJAXResponseRenderer, ManagementFormList, render_management_form_submit,
@@ -81,6 +82,9 @@ ACTIONS_PER_PAGE = 20
 VIDEOS_PER_PAGE = 12
 VIDEOS_PER_PAGE_MANAGEMENT = 20
 MEMBERS_PER_PAGE = 10
+
+# maximum number of videos in the welcome page
+WELCOME_MAX_NEWEST_VIDEOS = 7
 
 def team_view(view_func):
     @functools.wraps(view_func)
@@ -810,7 +814,7 @@ def resources(request, team):
 
 def dashboard(request, slug):
     team = get_object_or_404(
-        Team.objects.for_user(request.user, allow_unlisted=True), slug=slug)
+        Team.objects.for_user(request.user, allow_unlisted=True, allow_private=True), slug=slug)
     if not team.is_old_style() and not team.user_is_member(request.user):
         return welcome(request, team)
     else:
@@ -818,9 +822,11 @@ def dashboard(request, slug):
 
 def welcome(request, team):
     if team.videos_public():
-        videos = team.videos.order_by('-id')[:2]
+        videos = team.videos.order_by('-id')
+        projects = Project.objects.for_team(team)
     else:
         videos = None
+        project = None
 
     if Application.objects.open(team, request.user):
         messages.info(request,
@@ -828,13 +834,16 @@ def welcome(request, team):
                         u"You will be notified of the team "
                         "administrator's response"))
 
-    return render(request, 'new-teams/welcome.html', {
+    return render(request, 'future/teams/welcome.html', {
         'team': team,
+        'banner': team.logo.thumb_url(1920, 240),
         'join_mode': team.get_join_mode(request.user),
         'team_messages': team.get_messages([
             'pagetext_welcome_heading',
         ]),
-        'videos': videos,
+        'videos': videos[:WELCOME_MAX_NEWEST_VIDEOS],
+        'more_video_count': max(0, videos.count() - WELCOME_MAX_NEWEST_VIDEOS),
+        'projects': projects,
     })
 
 @team_view

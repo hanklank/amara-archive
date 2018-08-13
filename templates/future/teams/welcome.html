@@ -1,0 +1,67 @@
+{% extends "future/base.html" %}
+{% load i18n %}
+
+{% block content %}
+
+{% if banner %}
+  <!-- best scale is 8:1 (width:height) -->
+  <!-- TODODAN work on the banner scaling -->
+  <!-- <div style="width: 100%; max-height:240px; overflow:hidden; text-align:center">
+    <img style="display:inline-block" src=""></img>
+  </div> -->
+
+  <div class="banner-container">
+    <img class="banner-image" src="{{banner}}"></img>
+  </div>
+{% endif %}
+
+<div class="content text-center">
+  <h1>{{ team.name }}</h1>
+  <p style="max-width:30em; display:inline-block">{{ team.description }}</p>
+  <br><!-- force the next element to the next line -->
+  
+</div>
+
+<div class="content text-center">
+  {% if join_mode == "open" %}
+    <a class="button cta" href="{% url "teams:join" slug=team.slug %}">{% trans "Join the team" %} <span class="fa fa-angle-double-right"></span></a>
+  {% elif join_mode == "application" %}
+    <a class="button cta" href="{% url "teams:join" slug=team.slug %}">{% trans "Apply to join the team" %} <span class="fa fa-angle-double-right"></span></a>
+  {% elif join_mode == "invitation" %}
+    <p>This team is invitation only. If you're interested in helping out, <a href="{% url "teams:admin-list" slug=team.slug %}">contact a team admin</a>.</p>
+  {% elif join_mode == "login" %}
+    <a class="button cta" href="{% url 'auth:login' %}?next={% if next %}{{ next|urlencode }}{% else %}{{ request.path_info|urlencode }}{% endif %}">{% trans "Login to join the team" %} <span class="fa fa-angle-double-right"></span></a>
+  {% endif %}
+</div>
+
+{% if videos %}
+<div class="container">
+  <div class="content">
+    <hr>
+    <h2 class="text-center">{% trans 'Newest videos' %}</h2>
+
+    {% include "collab/newest-videos-inner.html" with grid_centered=1%}
+  </div>
+</div>
+{% endif %}
+
+{% if projects %}
+<div class="container">
+  <div class="content">
+    <hr>
+    <h2 class="text-center">{% trans 'Projects' %}</h2>
+
+    <div class="grid grid-centered">
+      {% for project in projects %}
+      <div class="content">
+        <h3 class="text-center">{{project}}</h3> 
+        <span class="text-small" style="max-width:30em; display: inline-block">{{project.description}}</span>
+
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
