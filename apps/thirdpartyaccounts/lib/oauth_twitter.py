@@ -43,7 +43,7 @@ class TwitterOAuth1(object):
         session = self._get_session(callback_url=callback_url)
         try:
             r = requests.post(url=REQUEST_TOKEN_URL, auth=session)
-        except URLError, requests.exceptions.RequestException as e:
+        except (URLError, requests.exceptions.RequestException) as e:
             raise e
         credentials = urlparse.parse_qs(r.content)
         return credentials
@@ -55,7 +55,7 @@ class TwitterOAuth1(object):
         session = self._get_session()
         try:
             r = requests.post(url=ACCESS_TOKEN_URL, auth=session)
-        except URLError, requests.exception.RequestException as e:
+        except (URLError, requests.exception.RequestException) as e:
             raise e
 
         credentials = urlparse.parse_qs(r.content)
