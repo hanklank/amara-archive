@@ -246,6 +246,39 @@ def members(request, team):
 
     return render(request, 'future/teams/members/members.html', context)
 
+# implementaion of members() view for public consumption 
+# used in the non-member team landing page 
+def members_public(request, slug):
+    try:
+        team = Team.objects.get(slug=slug)
+    except Team.DoesNotExist:
+        raise Http404
+    # do not show the member list for private teams
+    if team.team_private():
+        raise Http404
+
+    # TODODAN there must be a better way to do this 
+    # (e.g. accessing the undecorated members() function)
+
+    filters_form = forms.MemberFiltersForm(request.GET)
+    members = filters_form.update_qs(
+        team.members.prefetch_related('user__userlanguage_set',
+                          'projects_managed',
+                          'languages_managed'))
+    paginator = AmaraPaginatorFuture(members, MEMBERS_PER_PAGE)
+    page = paginator.get_page(request)
+    next_page, prev_page = paginator.make_next_previous_page_links(page, request)
+    context = {
+        'team': team,
+        'paginator': paginator,
+        'page': page,
+        'next': next_page,
+        'previous': prev_page,
+        'filters_form': filters_form,
+        'team_nav': 'member_directory',
+    }
+    return render(request, 'future/teams/members/members.html', context)
+
 def manage_members_form(request, team, form_name, members, page):
 
     try:
@@ -843,6 +876,7 @@ def welcome(request, team):
         'videos': videos[:WELCOME_MAX_NEWEST_VIDEOS],
         'more_video_count': max(0, videos.count() - WELCOME_MAX_NEWEST_VIDEOS),
         'projects': projects,
+        'is_welcome_page': True, # used for adjusting the URL targets of the nav links in the non-member team landing page
     })
 
 @team_view
