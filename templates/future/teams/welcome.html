@@ -1,8 +1,8 @@
-{% extends "future/base.html" %}
+{% extends "future/teams/base.html" %}
 {% load i18n %}
 
 {% block content %}
-<div class="container">
+
 {% if team.logo %}
   <div class="block-center">
     <div class="banner-container hidden-sm hidden-xs">
@@ -10,57 +10,55 @@
     </div>
   </div>
 {% endif %}
+<main id="dashboard" class="pageContent">
+  <section class="pageSection">
+    <div class="container">
 
-<div class="content text-center">
-  <h1>{{ team.name }}</h1>
-  <p style="max-width:30em; display:inline-block">{{ team.description }}</p>  
-</div>
+      <div class="content text-center">
+        <h1>{{ team.name }}</h1>
+        <p style="max-width:30em; display:inline-block">{{ team.description }}</p>  
+      </div>
 
-<div class="content text-center">
-  {% if join_mode == "open" %}
-    <a class="button cta" href="{% url "teams:join" slug=team.slug %}">{% trans "Join the team" %} <span class="fa fa-angle-double-right"></span></a>
-  {% elif join_mode == "application" %}
-    <a class="button cta" href="{% url "teams:join" slug=team.slug %}">{% trans "Apply to join the team" %} <span class="fa fa-angle-double-right"></span></a>
-  {% elif join_mode == "invitation" %}
-    {% url "teams:admin-list" slug=team.slug as admin_list_url %}
-    <p>
-      {% blocktrans}
-      This team is by invitation only. If you're interested in helping out, 
-      <a href="{{admin_list_url}}">contact a team admin</a>.
-      {% endblocktrans %}
-    </p>    
-  {% elif join_mode == "login" %}
-    <a class="button cta" href="{% url 'auth:login' %}?next={% if next %}{{ next|urlencode }}{% else %}{{ request.path_info|urlencode }}{% endif %}">{% trans "Login to join the team" %} <span class="fa fa-angle-double-right"></span></a>
-  {% elif join_mode == "login-ted" %}
-    <a class="button cta" href="{% url 'servicesauth:ted_login' %}?next={% if next %}{{ next|urlencode }}{% else %}{{ request.path_info|urlencode }}{% endif %}">{% trans "Login via TED to join the team" %} <span class="fa fa-angle-double-right"></span></a>
-  {% endif %}
-</div>
+      <div class="content text-center">
+        {% if join_mode == "open" %}
+          <a class="button cta" href="{% url "teams:join" slug=team.slug %}">{% trans "Join the team" %} <span class="fa fa-angle-double-right"></span></a>
+        {% elif join_mode == "application" %}
+          <a class="button cta" href="{% url "teams:join" slug=team.slug %}">{% trans "Apply to join the team" %} <span class="fa fa-angle-double-right"></span></a>
+        {% elif join_mode == "invitation" %}
+          {% url "teams:admin-list" slug=team.slug as admin_list_url %}
+          <p>
+            {% blocktrans %}
+            This team is by invitation only. If you're interested in helping out, 
+            <a href="{{admin_list_url}}">contact a team admin</a>.
+            {% endblocktrans %}
+          </p>    
+        {% elif join_mode == "login" %}
+          <a class="button cta" href="{% url 'auth:login' %}?next={% if next %}{{ next|urlencode }}{% else %}{{ request.path_info|urlencode }}{% endif %}">{% trans "Login to join the team" %} <span class="fa fa-angle-double-right"></span></a>
+        {% elif join_mode == "login-ted" %}
+          <a class="button cta" href="{% url 'servicesauth:ted_login' %}?next={% if next %}{{ next|urlencode }}{% else %}{{ request.path_info|urlencode }}{% endif %}">{% trans "Login via TED to join the team" %} <span class="fa fa-angle-double-right"></span></a>
+        {% endif %}
+      </div>
+
+    </div>
+  </section>
 
 {% if videos %}
-  <div class="content">
-    <hr>
-    <h2 class="text-center">{% trans 'Newest videos' %}</h2>
-
-    {% include "collab/newest-videos-inner.html" with grid_centered=1%}
-  </div>
-{% endif %}
-
-{% if projects %}
-  <div class="content">
-    <hr>
-    <h2 class="text-center">{% trans 'Projects' %}</h2>
-
-    <div class="grid grid-centered">
-      {% for project in projects %}
+ <section class="pageSection">
+    <div class="container">
       <div class="content">
-        <h3 class="text-center">{{project}}</h3> 
-        <span class="text-small" style="max-width:30em; display: inline-block">{{project.description}}</span>
+        {% comment %}
+        <hr>
+        <h2 class="text-center">{% trans 'Newest videos' %}</h2>
 
+        {% include "collab/newest-videos-inner.html" with grid_centered=1%}
+        {% endcomment %}
+
+        {% include "collab/newest-videos.html" %}
       </div>
-      {% endfor %}
     </div>
-  </div>
+  </section>
 {% endif %}
-</div>
+
+</main>
 
 {% endblock %}
