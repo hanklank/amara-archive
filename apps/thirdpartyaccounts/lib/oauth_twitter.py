@@ -7,7 +7,7 @@ import urllib
 import urlparse
 
 from requests_oauthlib import OAuth1
-from urllib2 import URLError
+from urllib2 import URLError, HTTPError
 
 from django.conf import settings
 
@@ -43,8 +43,10 @@ class TwitterOAuth1(object):
         session = self._get_session(callback_url=callback_url)
         try:
             r = requests.post(url=REQUEST_TOKEN_URL, auth=session)
-        except (URLError, requests.exceptions.RequestException) as e:
+            r.raise_for_status()
+        except (URLError, HTTPError, requests.exceptions.RequestException) as e:
             raise e
+
         credentials = urlparse.parse_qs(r.content)
         return credentials
     
@@ -55,7 +57,8 @@ class TwitterOAuth1(object):
         session = self._get_session()
         try:
             r = requests.post(url=ACCESS_TOKEN_URL, auth=session)
-        except (URLError, requests.exception.RequestException) as e:
+            r.raise_for_status()
+        except (URLError, HTTPError, requests.exception.RequestException) as e:
             raise e
 
         credentials = urlparse.parse_qs(r.content)
@@ -67,7 +70,8 @@ class TwitterOAuth1(object):
 
         try:
             r = requests.get(url=VERIFY_CREDENTIALS_URL, auth=session, params=params)
-        except Exception as e:
+            r.raise_for_status()
+        except (HTTPError, Exception) as e:
             raise e
         return json.loads(r.content)
 
