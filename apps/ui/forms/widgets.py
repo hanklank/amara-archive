@@ -22,7 +22,7 @@ from django.forms import widgets
 from django.forms.util import flatatt
 from django.template.loader import render_to_string
 from django.utils.encoding import force_unicode, force_text
-from django.utils.html import conditional_escape
+from django.utils.html import conditional_escape, format_html
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 
@@ -149,7 +149,27 @@ class AmaraClearableFileInput(widgets.ClearableFileInput):
 
         return mark_safe(render_to_string(self.template_name, dictionary=context))
 
+class AmaraImageInput(widgets.Widget):
+    template_name = "future/forms/file-input.html"
+
+    def __init__(self):
+        super(AmaraImageInput, self).__init__()
+        # default size, overwritten by AmaraImageField
+        self.preview_size = (100, 100)
+
+    def render(self, name, value, attrs=None):
+        if value:
+            thumb_url = value.thumb_url(*self.preview_size)
+        else:
+            thumb_url = None
+        return mark_safe(render_to_string('future/forms/widgets/image-input.html', {
+            'thumb_url': thumb_url,
+            'name': name,
+            'preview_width': self.preview_size[0],
+            'preview_height': self.preview_size[1],
+        }))
+
 __all__ = [
     'AmaraRadioSelect', 'SearchBar', 'AmaraFileInput',
-    'AmaraClearableFileInput', 'UploadOrPasteWidget',
+    'AmaraClearableFileInput', 'UploadOrPasteWidget', 'AmaraImageInput',
 ]

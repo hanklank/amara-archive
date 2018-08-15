@@ -16,11 +16,51 @@
 # along with this program.  If not, see
 # http://www.gnu.org/licenses/agpl-3.0.html.
 
+from __future__ import absolute_import
+
 from django import forms
 
-class DependentCheckboxes(forms.Form):
+from styleguide.models import StyleguideData
+from ui.forms import AmaraImageField
+
+class StyleguideForm(forms.Form):
+    def __init__(self, request, **kwargs):
+        self.user = request.user
+        super(StyleguideForm, self).__init__(**kwargs)
+        self.setup_form()
+
+    # override these in the subclasses to customize form handling
+    def setup_form(self):
+        pass
+
+    def save(self):
+        pass
+
+    def get_styleguide_data(self):
+        try:
+            return StyleguideData.objects.get(user=self.user)
+        except StyleguideData.DoesNotExist:
+            return StyleguideData(user=self.user)
+
+class DependentCheckboxes(StyleguideForm):
     role = forms.ChoiceField(choices=(
         ('admin', 'Admin'),
         ('manager', 'Manager'),
         ('any-team-member', 'Any Team Member'),
     ))
+
+class ImageUpload(StyleguideForm):
+    thumbnail = AmaraImageField(label='Image', preview_size=(169, 100),
+                                help_text=('upload an image to test'))
+
+    def setup_form(self):
+        styleguide_data = self.get_styleguide_data()
+        if styleguide_data.thumbnail:
+            self.initial = {
+                'thumbnail': styleguide_data.thumbnail
+            }
+
+    def save(self):
+        styleguide_data = self.get_styleguide_data()
+        styleguide_data.thumbnail = self.cleaned_data['thumbnail']
+        styleguide_data.save()
