@@ -56,7 +56,6 @@ class Command(BaseCommand):
     def handle(self, **options):
         call_command('migrate', 'videos', fake=True)
         cursor = connection.cursor()
-        cursor.execute('ALTER TABLE videos_videoindex ENGINE=InnoDB')
         cursor.execute(
             'ALTER TABLE videos_videoindex ADD CONSTRAINT '
             'videos_videoindex_video_id_3142f0647972eaeb_fk_videos_video_id '
