@@ -18,8 +18,10 @@
 
 from django import forms
 
+from ui.forms import DependentCheckboxField
+
 class DependentCheckboxes(forms.Form):
-    role = forms.ChoiceField(choices=(
+    role = DependentCheckboxField(choices=(
         ('admin', 'Admin'),
         ('manager', 'Manager'),
         ('any-team-member', 'Any Team Member'),
