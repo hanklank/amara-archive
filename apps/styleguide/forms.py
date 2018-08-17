@@ -20,12 +20,15 @@ from __future__ import absolute_import
 
 from django import forms
 
+from auth.models import get_amara_anonymous_user
 from styleguide.models import StyleguideData
 from ui.forms import AmaraImageField
 
 class StyleguideForm(forms.Form):
     def __init__(self, request, **kwargs):
         self.user = request.user
+        if self.user.is_anonymous():
+            self.user = get_amara_anonymous_user()
         super(StyleguideForm, self).__init__(**kwargs)
         self.setup_form()
 
