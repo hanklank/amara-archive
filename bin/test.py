@@ -28,9 +28,27 @@ import optionalapps
 import startup
 
 def setup_test_directories(testdir):
+    """
+    Merge together the various test/ directories
+
+    We allow each subrepository to create its own test directory, which then get
+    merged together to create a virtual test package with some magic from
+    tests/__init__.py.  However, this doesn't work with py.test, since it
+    expects to be able to walk through the filesystem paths to find files like
+    conftest.py.  To work around this, symlink all the actual files into an
+    actual directory
+    """
     setup_test_links(optionalapps.project_root, testdir)
     for repo_path in optionalapps.get_repository_paths():
         setup_test_links(repo_path, testdir)
+    # create the __init__.py file
+    with open('__init__.py', 'w'):
+        pass
+    # We now have a bunch of potential packages named "tests".  Mess with the
+    # path/module registry to ensure that it's the one we just created the
+    # symlinks with.
+    sys.path.insert(0, '')
+    import tests
 
 def setup_test_links(repo_path, testdir):
     source_test_dir = os.path.join(repo_path, testdir)
@@ -39,10 +57,14 @@ def setup_test_links(repo_path, testdir):
     for filename in os.listdir(source_test_dir):
         if filename.endswith('.pyc'):
             continue
+        if filename == '__init__.py':
+            # Don't copy the __init__.py files.  For one thing, there's
+            # multiple of them.  For another, we don't want the code inside
+            # them that messes with the python path
+            continue
         src_path = os.path.join(source_test_dir, filename)
-        dest_path = os.path.join(filename)
         try:
-            os.symlink(src_path, dest_path)
+            os.symlink(src_path, filename)
         except OSError:
             print 'Error symlinking {}.  Is it duplicated?'.format(src_path)
             sys.exit(1)
