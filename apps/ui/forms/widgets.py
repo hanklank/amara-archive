@@ -190,8 +190,28 @@ class DependentCheckboxes(widgets.Widget):
                 return value
         return None
 
+class AmaraImageInput(widgets.Widget):
+    template_name = "future/forms/file-input.html"
+
+    def __init__(self):
+        super(AmaraImageInput, self).__init__()
+        # default size, overwritten by AmaraImageField
+        self.preview_size = (100, 100)
+
+    def render(self, name, value, attrs=None):
+        if value:
+            thumb_url = value.thumb_url(*self.preview_size)
+        else:
+            thumb_url = None
+        return mark_safe(render_to_string('future/forms/widgets/image-input.html', {
+            'thumb_url': thumb_url,
+            'name': name,
+            'preview_width': self.preview_size[0],
+            'preview_height': self.preview_size[1],
+        }))
+
 __all__ = [
     'AmaraRadioSelect', 'SearchBar', 'AmaraFileInput',
     'AmaraClearableFileInput', 'UploadOrPasteWidget',
-    'DependentCheckboxes',
+    'DependentCheckboxes', 'AmaraImageInput',
 ]
