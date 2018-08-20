@@ -195,6 +195,9 @@ class LanguageField(LanguageFieldMixin, forms.ChoiceField):
 class MultipleLanguageField(LanguageFieldMixin, forms.MultipleChoiceField):
     widget = widgets.AmaraLanguageSelectMultiple
 
+class DependentCheckboxField(forms.ChoiceField):
+    widget = widgets.DependentCheckboxes
+
 class SearchField(forms.CharField):
     widget = widgets.SearchBar
 
@@ -210,5 +213,5 @@ class UploadOrPasteField(forms.Field):
 __all__ = [
     'AmaraChoiceField', 'AmaraMultipleChoiceField', 'LanguageField',
     'MultipleLanguageField', 'SearchField', 'HelpTextList',
-    'UploadOrPasteField',
+    'UploadOrPasteField', 'DependentCheckboxField',
 ]
