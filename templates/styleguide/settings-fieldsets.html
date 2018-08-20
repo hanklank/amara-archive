@@ -7,7 +7,7 @@
 <p>
 The settings pages have a different submit button and a link at the bottom of the form to scroll back up to the top. The Save Changes button appear whenever a change is made to any of the
 form fields, it does not disappear when the changes made are still the same with the original form data since it would be weird if you had the submit button appearing and disappearing. Important
-to note are the `.saveChangesButton` and `.fieldset-backtotop-container` classes to make those two elements work.
+to note are the `.saveChangesButton` and `.fieldset-backtotop-container` classes to make those two elements work. The `.fieldset-footer-shadow` class is used for a footer that has some background shadow.
 </p>
 
 <form>
@@ -72,11 +72,11 @@ to note are the `.saveChangesButton` and `.fieldset-backtotop-container` classes
     </div>
     <div class="form-group">
       <label for="password1">Password</label>
-      <input type="text" id="password1" name="password1">
+      <input type="password" id="password1" name="password1">
     </div>
     <div class="form-group">
       <label for="password2">Confirm password</label>
-      <input type="text" id="password2" name="password2">
+      <input type="password" id="password2" name="password2">
     </div>
   </fieldset>
   <div class="fieldset-footer-shadow">
