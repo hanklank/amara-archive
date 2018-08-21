@@ -18,6 +18,7 @@
 
 from itertools import chain
 
+from django.core.files import File
 from django.forms import widgets
 from django.forms.util import flatatt
 from django.template.loader import render_to_string
@@ -27,6 +28,9 @@ from django.utils.html import (conditional_escape, format_html,
                                format_html_join)
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
+
+from utils import datauri
+from utils.amazon.fields import S3ImageFieldFile
 
 class AmaraLanguageSelectMixin(object):
     def render(self, name, value, attrs=None, choices=()):
@@ -190,8 +194,28 @@ class DependentCheckboxes(widgets.Widget):
                 return value
         return None
 
+class AmaraImageInput(widgets.FileInput):
+    def __init__(self):
+        super(AmaraImageInput, self).__init__()
+        # default size, overwritten by AmaraImageField
+        self.preview_size = (100, 100)
+
+    def render(self, name, value, attrs=None):
+        if isinstance(value, S3ImageFieldFile):
+            thumb_url = value.thumb_url(*self.preview_size)
+        elif isinstance(value, File):
+            thumb_url = datauri.from_django_file(value)
+        else:
+            thumb_url = None
+        return mark_safe(render_to_string('future/forms/widgets/image-input.html', {
+            'thumb_url': thumb_url,
+            'name': name,
+            'preview_width': self.preview_size[0],
+            'preview_height': self.preview_size[1],
+        }))
+
 __all__ = [
     'AmaraRadioSelect', 'SearchBar', 'AmaraFileInput',
     'AmaraClearableFileInput', 'UploadOrPasteWidget',
-    'DependentCheckboxes',
+    'DependentCheckboxes', 'AmaraImageInput',
 ]
