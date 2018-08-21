@@ -29,31 +29,38 @@ from utils.text import fmt
 
 register = template.Library()
 
-@register.filter
-def render_field(field):
+@register.simple_tag
+def render_field(field, reverse_required=False):
     return render_to_string('future/forms/field.html', {
         'field': field,
+        'field_id': field.auto_id,
         'widget_type': calc_widget_type(field),
+        'label': field.label,
+        'help_text': field.help_text,
+        'errors': field.errors,
         'no_help_block': isinstance(field.help_text, HelpTextList),
-        'label': calc_label(field),
+        'label': calc_label(field, reverse_required),
     })
 
-@register.filter
-def render_field_reverse_required(field):
-    return render_to_string('future/forms/field.html', {
-        'field': field,
-        'widget_type': calc_widget_type(field),
-        'no_help_block': isinstance(field.help_text, HelpTextList),
-        'label': calc_label(field, reverse_required=True),
-    })
-
-@register.filter
+@register.simple_tag
 def render_filter_field(field):
     return render_to_string('future/forms/filter-field.html', {
         'field': field,
+        'label': field.label,
+        'help_text': field.help_text,
+        'errors': field.errors,
         'widget_type': calc_widget_type(field),
         'label': field.label,
     })
+
+# Deprecated ways to render form fields
+@register.filter('render_field')
+def render_field_filter_version(field):
+    return render_field(field)
+
+@register.filter('render_filter_field')
+def render_filter_field_filter_version(field):
+    return render_filter_field(field)
 
 @register.inclusion_tag('future/forms/button-field.html')
 def button_field(field, button_label, button_class="cta"):
