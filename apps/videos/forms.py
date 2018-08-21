@@ -419,10 +419,11 @@ class TeamCreateSubtitlesForm(CreateSubtitlesForm):
         super(TeamCreateSubtitlesForm, self).__init__(request, video, data=data)
         team = Team.objects.get(slug=team_slug)
 
-        if not (can_edit_videos(team, request.user)):
-            self.fields['primary_audio_language_code'].help_text = 'Please double check the primary spoken language.'
-        else:
-            self.fields['primary_audio_language_code'].help_text = ''
+        if self.needs_primary_audio_language:
+            if can_edit_videos(team, request.user):
+                self.fields['primary_audio_language_code'].help_text = ''
+            else:
+                self.fields['primary_audio_language_code'].help_text = 'Please double check the primary spoken language.'
 
         self.team_url_arg = '?team={}'.format(team_slug)
         self.action_url = reverse('videos:create_subtitles', kwargs={
