@@ -1,6 +1,6 @@
 # Amara, universalsubtitles.org
 #
-# Copyright (C) 2015 Participatory Culture Foundation
+# Copyright (C) 2018 Participatory Culture Foundation
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -9,19 +9,28 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
 #
 # You should have received a copy of the GNU Affero General Public License
-# along with this program. If not, see
+# along with this program.  If not, see
 # http://www.gnu.org/licenses/agpl-3.0.html.
 
-"""utils.test_utils -- Testing functions/classes """
+"""
+datauri -- Create a data URI from a file
+"""
 
-from __future__ import absolute_import
+import base64
+import magic
 
-from .api import *
-from .monkeypatch import *
-from .requests import *
-from .tools import *
-from .video_types import *
+def from_django_file(f):
+    parts = ['data:']
+    f.seek(0)
+    content = f.read()
+    content_type = magic.from_buffer(content, mime=True)
+    if content_type:
+        parts.append(content_type)
+    parts.append(';base64,')
+    for chunk in f.chunks():
+        parts.append(base64.b64encode(chunk))
+    return ''.join(parts)
