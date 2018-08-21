@@ -38,7 +38,7 @@
     title: Dependent Checkboxes
   - fieldsets
   - id: settings-fieldsets
-    title: Fieldsets for Settings pages
+    title: Settings page forms
   - fieldErrors
   - fileUpload
   - compoundField
