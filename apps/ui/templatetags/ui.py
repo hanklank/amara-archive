@@ -64,6 +64,8 @@ def dropdown_item(label, view_name, *args, **kwargs):
     extra_class = kwargs.pop('class', None)
     disabled = kwargs.pop('disabled', None)
     icon = kwargs.pop('icon', None)
+    count = kwargs.pop('count', None)
+    raw_url = kwargs.pop('raw_url', None)
 
     classes = ['dropdownMenu-item']
     if separator:
@@ -71,10 +73,16 @@ def dropdown_item(label, view_name, *args, **kwargs):
     if extra_class:
         classes.append(extra_class)
 
-    url = reverse(view_name, args=args, kwargs=kwargs)
+    if raw_url:
+        url = view_name
+    else:
+        url = reverse(view_name, args=args, kwargs=kwargs)
     if icon:
-        label_html = format_html('<span class="dropdownMenu-text">{}</span> <span class="icon icon-{} dropdownMenu-icon"></span>',
+        label_html = format_html('<span class="dropdownMenu-text">{}</span> <span class="icon icon-{} dropdownMenu-extra"></span>',
                                  unicode(label), icon)
+    elif count:
+        label_html = format_html('<span class="dropdownMenu-text">{}</span> <span class="dropdownMenu-extra">{}</span>',
+                                 unicode(label), count)
     else:
         label_html = format_html('<span class="dropdownMenu-text">{}</span>',
                                  unicode(label))
