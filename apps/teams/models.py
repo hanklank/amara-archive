@@ -681,7 +681,7 @@ class Team(models.Model):
             - None -- user can't join the team
         """
         if (self.is_ted_team() and 
-            not user.is_authenticated() or not user.is_ted_account()):
+            (not user.is_authenticated() or not user.is_ted_account())):
             return 'login-ted'
 
         if not user.is_authenticated():

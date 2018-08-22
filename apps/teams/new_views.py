@@ -247,7 +247,7 @@ def members(request, team):
     return render(request, 'future/teams/members/members.html', context)
 
 # implementaion of members() view for public consumption 
-# used in the non-member team landing page 
+# supposed to be used in the non-member team landing page 
 def members_public(request, slug):
     try:
         team = Team.objects.get(slug=slug)
@@ -257,7 +257,7 @@ def members_public(request, slug):
     if team.team_private():
         raise Http404
 
-    # TODODAN there must be a better way to do this 
+    # TODO there must be a better way to do this 
     # (e.g. accessing the undecorated members() function)
 
     filters_form = forms.MemberFiltersForm(request.GET)
@@ -856,10 +856,16 @@ def dashboard(request, slug):
 def welcome(request, team):
     if team.videos_public():
         videos = team.videos.order_by('-id')
+        videos_count = videos.count()
         projects = Project.objects.for_team(team)
+        newest_videos = videos[:WELCOME_MAX_NEWEST_VIDEOS]
+        more_video_count = max(0, videos.count() - WELCOME_MAX_NEWEST_VIDEOS)
     else:
         videos = None
-        project = None
+        videos_count = 0
+        projects = None
+        newest_videos = None
+        more_video_count = 0
 
     if Application.objects.open(team, request.user):
         messages.info(request,
@@ -873,8 +879,10 @@ def welcome(request, team):
         'team_messages': team.get_messages([
             'pagetext_welcome_heading',
         ]),
-        'videos': videos[:WELCOME_MAX_NEWEST_VIDEOS],
-        'more_video_count': max(0, videos.count() - WELCOME_MAX_NEWEST_VIDEOS),
+        'videos': newest_videos,
+        'videos_count': videos_count,
+        'members_count': team.members.count(),
+        'more_video_count': more_video_count,
         'projects': projects,
         'is_welcome_page': True, # used for adjusting the URL targets of the nav links in the non-member team landing page
     })

@@ -10,20 +10,48 @@
     </div>
   </div>
 {% endif %}
+
 <main id="dashboard" class="pageContent">
   <section class="pageSection">
     <div class="container">
 
       <div class="content text-center">
         <h1>{{ team.name }}</h1>
+        {% if team.description %}
         <p style="max-width:30em; display:inline-block">{{ team.description }}</p>  
+        {% endif %}
+
+        <div class="grid grid-centered">
+          <div class="team-stat-container">
+            <h1 class="text-center team-stat-value">{{members_count}}</h1>
+            <h3 class="text-center">
+              {% if members_count < 1 %}
+                {% trans 'members' %}
+              {% else %}
+                {% trans 'member' %}
+              {% endif %}
+            </h3>
+          </div>
+
+          {% if videos_count %}
+          <div class="team-stat-container">
+            <h1 class="text-center team-stat-value">{{videos_count}}</h1>
+            <h3 class="text-center">{% trans 'videos' %}</h3>
+          </div>
+          {% endif %}
+        </div>
       </div>
 
+      {% if join_mode %}
       <div class="content text-center">
         {% if join_mode == "open" %}
-          <a class="button cta" href="{% url "teams:join" slug=team.slug %}">{% trans "Join the team" %} <span class="fa fa-angle-double-right"></span></a>
+          <a class="button cta" href="{% url "teams:join" slug=team.slug %}">{% trans "Join the team" %}</a>
         {% elif join_mode == "application" %}
-          <a class="button cta" href="{% url "teams:join" slug=team.slug %}">{% trans "Apply to join the team" %} <span class="fa fa-angle-double-right"></span></a>
+          <a class="button cta" href="{% url "teams:join" slug=team.slug %}">{% trans "Apply to join the team" %}</a>
+        {% elif join_mode == "pending-application" %}
+          <p>
+            {% trans "You already have an on-going aplication for this team." %}
+          </p>
         {% elif join_mode == "invitation" %}
           {% url "teams:admin-list" slug=team.slug as admin_list_url %}
           <p>
@@ -33,31 +61,23 @@
             {% endblocktrans %}
           </p>    
         {% elif join_mode == "login" %}
-          <a class="button cta" href="{% url 'auth:login' %}?next={% if next %}{{ next|urlencode }}{% else %}{{ request.path_info|urlencode }}{% endif %}">{% trans "Login to join the team" %} <span class="fa fa-angle-double-right"></span></a>
+          <a class="button cta" href="{% url 'auth:login' %}?next={% if next %}{{ next|urlencode }}{% else %}{{ request.path_info|urlencode }}{% endif %}">{% trans "Login to join the team" %}</a>
         {% elif join_mode == "login-ted" %}
-          <a class="button cta" href="{% url 'servicesauth:ted_login' %}?next={% if next %}{{ next|urlencode }}{% else %}{{ request.path_info|urlencode }}{% endif %}">{% trans "Login via TED to join the team" %} <span class="fa fa-angle-double-right"></span></a>
+          <a class="button cta" href="{% url 'servicesauth:ted_login' %}?next={% if next %}{{ next|urlencode }}{% else %}{{ request.path_info|urlencode }}{% endif %}">{% trans "Login via TED to join the team" %}</a>
         {% endif %}
       </div>
-
+      {% endif %}      
     </div>
   </section>
 
-{% if videos %}
- <section class="pageSection">
-    <div class="container">
-      <div class="content">
-        {% comment %}
-        <hr>
-        <h2 class="text-center">{% trans 'Newest videos' %}</h2>
 
-        {% include "collab/newest-videos-inner.html" with grid_centered=1%}
-        {% endcomment %}
-
-        {% include "collab/newest-videos.html" %}
-      </div>
+<section class="pageSection">
+  <div class="container">
+    <div class="content">
+      {% include "collab/newest-videos.html" %}
     </div>
-  </section>
-{% endif %}
+  </div>
+</section>
 
 </main>
 
