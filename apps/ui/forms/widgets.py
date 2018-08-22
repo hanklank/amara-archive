@@ -155,46 +155,7 @@ class AmaraClearableFileInput(widgets.ClearableFileInput):
 
         return mark_safe(render_to_string(self.template_name, dictionary=context))
 
-class DependentCheckboxes(widgets.Widget):
-    def render(self, name, value, attrs=None, choices=()):
-        choices = list(chain(self.choices, choices))
-
-        checked = self.calc_checked(choices, value)
-        choices_html = format_html_join(
-            '\n',
-            '<input type="checkbox" id="{0}-{3}" name="{0}" value="{1}" '
-            '{4}><label for="{0}-{3}"> '
-            '<span class="checkbox-icon"></span> {2}</label>',
-            [
-                (name, choice_value, choice_label, i,
-                 ' checked' if choice_value in checked else '')
-                for i, (choice_value, choice_label) in enumerate(choices)
-            ])
-        return format_html('<div class="dependentCheckboxes">{}</div>',
-                           choices_html)
-
-    def calc_checked(self, choices, value):
-        # calculate which checkboxes should be checked
-        checked = set()
-        saw_checked = False
-        for (choice_value, choice_label) in reversed(choices):
-            if choice_value == value:
-                saw_checked = True
-            if saw_checked:
-                checked.add(choice_value)
-        return checked
-
-    def value_from_datadict(self, data, files, name):
-        if not isinstance(data, MultiValueDict):
-            return data.get(name)
-        selected_values = set(data.getlist(name))
-        # find the first selected choice, going from right to left
-        for value, label in reversed(self.choices):
-            if value in selected_values:
-                return value
-        return None
-
-class AmaraImageInput(widgets.FileInput):
+class AmaraImageInput(widgets.ClearableFileInput):
     def __init__(self):
         super(AmaraImageInput, self).__init__()
         # default size, overwritten by AmaraImageField
@@ -210,12 +171,34 @@ class AmaraImageInput(widgets.FileInput):
         return mark_safe(render_to_string('future/forms/widgets/image-input.html', {
             'thumb_url': thumb_url,
             'name': name,
+            'clear_name': self.clear_checkbox_name(name),
             'preview_width': self.preview_size[0],
             'preview_height': self.preview_size[1],
+        }))
+
+class SwitchInput(widgets.CheckboxInput):
+    def __init__(self, on_label, off_label, inline=False, **kwargs):
+        self.on_label = on_label
+        self.off_label = off_label
+        self.inline = inline
+        super(SwitchInput, self).__init__(**kwargs)
+
+    def render(self, name, value, attrs=None):
+        if attrs is None:
+            attrs = {}
+        if 'class' not in attrs:
+            attrs['class'] = 'switch inline' if self.inline else 'switch'
+        return mark_safe(render_to_string('future/forms/widgets/switch.html', {
+            'name': name,
+            'value': value,
+            'off_label': self.off_label,
+            'on_label': self.on_label,
+            'inline': self.inline,
+            'attrs': flatatt(attrs),
         }))
 
 __all__ = [
     'AmaraRadioSelect', 'SearchBar', 'AmaraFileInput',
     'AmaraClearableFileInput', 'UploadOrPasteWidget',
-    'DependentCheckboxes', 'AmaraImageInput',
+    'AmaraImageInput', 'SwitchInput',
 ]
