@@ -19,6 +19,8 @@
 from __future__ import absolute_import
 
 from django import template
+from django.core.urlresolvers import reverse
+from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
 import ui.siteheader
@@ -50,3 +52,44 @@ def header_links(context):
             parts.append(u'<li>{}</li>'.format(tab))
     parts.append(u'</ul>')
     return u'\n'.join(parts)
+
+@register.simple_tag
+def dropdown(button_id):
+    return format_html(
+        '<ul class="dropdownMenu" role="menu" aria-labeledby="{}">', button_id)
+
+@register.simple_tag(name='dropdown-item')
+def dropdown_item(label, view_name, *args, **kwargs):
+    separator = kwargs.pop('separator', None)
+    extra_class = kwargs.pop('class', None)
+    disabled = kwargs.pop('disabled', None)
+    icon = kwargs.pop('icon', None)
+
+    classes = ['dropdownMenu-item']
+    if separator:
+        classes.append('separator')
+    if extra_class:
+        classes.append(extra_class)
+
+    url = reverse(view_name, args=args, kwargs=kwargs)
+    if icon:
+        label_html = format_html('<span class="dropdownMenu-text">{}</span> <span class="icon icon-{} dropdownMenu-icon"></span>',
+                                 unicode(label), icon)
+    else:
+        label_html = format_html('<span class="dropdownMenu-text">{}</span>',
+                                 unicode(label))
+    if disabled:
+        link_html = format_html(
+            '<span class="dropdownMenu-link disabled">{}</span>', label_html)
+    else:
+        link_html = format_html(
+            '<a tabindex="-1" role="menuitem" class="dropdownMenu-link" '
+            'href="{}">{}</a>', url, label_html)
+
+
+    return format_html('<li role="none" class="{}">{}</li>',
+                       ' '.join(classes), link_html)
+
+@register.simple_tag
+def enddropdown():
+    return format_html('</ul>')
