@@ -1,7 +1,7 @@
-<h2>{{ title }}</h2>
-{{ description|safe }}
-{% if examples %}
-{% for example in examples %}
+{% extends "styleguide/base.html" %}
+{% block "content" %}
+{{ section.description|safe }}
+{% for example in section.examples %}
 <h2>Example:</h2>
 <div class="styleGuide-exampleBox">
   <h4 class="styleGuide-exampleTitle">Example</h4>
@@ -20,4 +20,4 @@
   </div>
 </div>
 {% endfor %}
-{% endif %}
+{% endblock %}

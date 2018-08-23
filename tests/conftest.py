@@ -10,8 +10,9 @@ import django.utils.encoding
 import py.path
 import pytest
 
+from amara.signals import before_tests
 from auth.models import CustomUser
-from utils.test_utils import monkeypatch, before_tests, restframeworkcompat
+from utils.test_utils import monkeypatch, restframeworkcompat
 
 patcher = None
 
@@ -24,7 +25,7 @@ def pytest_configure(config):
     settings.MEDIA_ROOT = tempfile.mkdtemp(prefix='amara-test-media-root')
 
     reporter = config.pluginmanager.getplugin('terminalreporter')
-    reporter.startdir = py.path.local('/run/pytest/amara/')
+    reporter.startdir = py.path.local('/run/pytest/')
 
     before_tests.send(config)
 
