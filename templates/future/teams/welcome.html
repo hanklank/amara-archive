@@ -22,8 +22,8 @@
         {% endif %}
 
         <div class="grid grid-centered">
-          <div class="team-stat-container">
-            <h1 class="text-center team-stat-value">{{members_count}}</h1>
+          <div class="stat-container">
+            <h1 class="text-center stat-value">{{members_count}}</h1>
             <h3 class="text-center">
               {% if members_count < 1 %}
                 {% trans 'members' %}
@@ -34,8 +34,8 @@
           </div>
 
           {% if videos_count %}
-          <div class="team-stat-container">
-            <h1 class="text-center team-stat-value">{{videos_count}}</h1>
+          <div class="stat-container">
+            <h1 class="text-center stat-value">{{videos_count}}</h1>
             <h3 class="text-center">{% trans 'videos' %}</h3>
           </div>
           {% endif %}
