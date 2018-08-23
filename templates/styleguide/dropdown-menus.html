@@ -23,7 +23,22 @@
 {% dropdown-item _('Subtitle video') "videos:create" separator=True %}
 {# you can also pass kwargs to the view  #}
 {% dropdown-item _('This page') "styleguide:section" section_id="dropdown-menus" %}
+{# Use dropdown-js-item to create an item that, when activated, triggers the "activate-item" event on the dropdown instead of opening a link.  Extra arguments are passed as event data #}
+{% dropdown-js-item _('Trigger Event 1') "event-1" %}
+{% dropdown-js-item _('Trigger Event 2') "event-2" %}
 {# End it all with the enddropdown tag #}
 {% enddropdown %}
+
+<p id="event-console"></p>
+
+{% endblock %}
+
+{% block "scripts" %}
+<script>
+$('.dropdownMenu').on('link-activate', function(evt, data) {
+  console.log(data);
+  $('#event-console').text('activate-item triggered: ' + data);
+});
+</script>
 
 {% endblock %}

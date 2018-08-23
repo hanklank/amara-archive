@@ -17,12 +17,15 @@
 # http://www.gnu.org/licenses/agpl-3.0.html.
 
 from __future__ import absolute_import
+import json
 
 from django import template
 from django.core.urlresolvers import reverse
+from django.forms.utils import flatatt
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
+from utils.bunch import Bunch
 import ui.siteheader
 import ui.dates
 
@@ -60,43 +63,72 @@ def dropdown(button_id):
 
 @register.simple_tag(name='dropdown-item')
 def dropdown_item(label, view_name, *args, **kwargs):
-    separator = kwargs.pop('separator', None)
-    extra_class = kwargs.pop('class', None)
-    disabled = kwargs.pop('disabled', None)
-    icon = kwargs.pop('icon', None)
-    count = kwargs.pop('count', None)
-    raw_url = kwargs.pop('raw_url', None)
+    options = extra_dropdown_item_options(kwargs)
 
-    classes = ['dropdownMenu-item']
-    if separator:
-        classes.append('separator')
-    if extra_class:
-        classes.append(extra_class)
-
-    if raw_url:
+    if options.raw_url:
         url = view_name
     else:
         url = reverse(view_name, args=args, kwargs=kwargs)
-    if icon:
+
+    return make_dropdown_item(label, options, {
+        'href': url
+    })
+
+@register.simple_tag(name='dropdown-js-item')
+def dropdown_item(label, *data, **kwargs):
+    options = extra_dropdown_item_options(kwargs)
+
+    return make_dropdown_item(label, options, {
+        'href': '#',
+        'data-activate-args': json.dumps(data),
+    })
+
+
+def make_dropdown_item(label, options, link_attrs):
+    link_attrs.update({
+        'tabindex': -1,
+        'role': 'menuitem',
+        'class': 'dropdownMenu-link',
+    })
+
+    classes = ['dropdownMenu-item']
+    if options.separator:
+        classes.append('separator')
+    if options.extra_class:
+        classes.append(options.extra_class)
+
+    if options.icon:
         label_html = format_html('<span class="dropdownMenu-text">{}</span> <span class="icon icon-{} dropdownMenu-extra"></span>',
-                                 unicode(label), icon)
-    elif count:
+                                 unicode(label), options.icon)
+    elif options.count:
         label_html = format_html('<span class="dropdownMenu-text">{}</span> <span class="dropdownMenu-extra">{}</span>',
-                                 unicode(label), count)
+                                 unicode(label), options.count)
     else:
         label_html = format_html('<span class="dropdownMenu-text">{}</span>',
                                  unicode(label))
-    if disabled:
+    if options.disabled:
         link_html = format_html(
             '<span class="dropdownMenu-link disabled">{}</span>', label_html)
     else:
-        link_html = format_html(
-            '<a tabindex="-1" role="menuitem" class="dropdownMenu-link" '
-            'href="{}">{}</a>', url, label_html)
-
+        link_html = format_html('<a{}>{}</a>', flatatt(link_attrs), label_html)
 
     return format_html('<li role="none" class="{}">{}</li>',
                        ' '.join(classes), link_html)
+
+def extra_dropdown_item_options(kwargs):
+    """
+    Extract dropdown-item arguments from kwargs, leaving the rest to use for
+    the reverse() call.
+
+    This is basically a workaround for the fact that you can't have named args
+    after *args, in python2.
+    """
+    return Bunch(separator=kwargs.pop('separator', None),
+                 extra_class=kwargs.pop('class', None),
+                 disabled=kwargs.pop('disabled', None),
+                 icon=kwargs.pop('icon', None),
+                 count=kwargs.pop('count', None),
+                 raw_url=kwargs.pop('raw_url', None))
 
 @register.simple_tag
 def enddropdown():
