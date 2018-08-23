@@ -979,7 +979,7 @@ class LanguagesForm(forms.Form):
         return self.cleaned_data
 
 class AddMembersForm(forms.Form):
-    role = forms.ChoiceField(choices=TeamMember.ROLES[::-1],
+    role = AmaraChoiceField(choices=TeamMember.ROLES[::-1],
                              initial='contributor',
                              label=_("Assign a role"))
 
@@ -1073,7 +1073,7 @@ class InviteForm(forms.Form):
     message = forms.CharField(required=False,
                               widget=forms.Textarea(attrs={'rows': 4}),
                               label=_("Message to user"))
-    role = forms.ChoiceField(choices=TeamMember.ROLES[1:][::-1],
+    role = AmaraChoiceField(choices=TeamMember.ROLES[1:][::-1],
                              initial='contributor',
                              label=_("Assign a role"))
 
