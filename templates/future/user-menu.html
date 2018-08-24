@@ -2,7 +2,7 @@
 <ul>
   {% cache-by-user futureui-top-panel %}
   <li>
-    <button id="user-menu" class="topnav-button amaranth bold" data-toggle="dropdown" data-username="{{ user.username}}" role="button" aria-haspopup="true" aria-expanded="false">{{ user.username }}</button>
+    <button id="user-menu" class="topnav-button user-menu amaranth bold" data-toggle="dropdown" data-username="{{ user.username}}" role="button" aria-haspopup="true" aria-expanded="false">{{ user.username }}</button>
 
     {% dropdown "user-menu" %}
     {% dropdown-item _('Dashboard') "profiles:dashboard" %}
