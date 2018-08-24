@@ -14,7 +14,7 @@
     {% dropdown-item _('Logout') "logout" %}
 
     {% if user.teams.all %}
-    {% dropdown-item _('Your Teams') "teams:user_teams" %}
+    {% dropdown-item _('Your Teams') "teams:user_teams" separator=True %}
     {% for team in user.teams.all %}
     {% dropdown-item team "teams:dashboard" team.slug %}
     {% endfor %}
