@@ -106,3 +106,12 @@ class ImageUpload(StyleguideForm):
         else:
             styleguide_data.thumbnail = self.cleaned_data['thumbnail']
         styleguide_data.save()
+
+class FilterBox(StyleguideForm):
+    color = AmaraChoiceField(
+        label="Select color", choices=(
+            ('plum', 'Plum'),
+            ('amaranth', 'Amaranth'),
+            ('lime', 'Lime'),
+        ))
+    shape = forms.CharField(label="Search for shapes")

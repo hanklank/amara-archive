@@ -68,6 +68,8 @@
   - videoCards
   - videoSubtitlesList
   - filterList
+  - id: filter-box
+    title: Filter Box
   - actionBar
   - selectList
   - pagination

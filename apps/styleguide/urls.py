@@ -22,5 +22,6 @@ urlpatterns = patterns(
     'styleguide.views',
     url(r'^$', 'home', name='home'),
     url(r'^member-search$', 'member_search', name='member_search'),
+    url(r'^filter-box$', 'filter_box', name='filter-box'),
     url(r'^(?P<section_id>[\w-]+)$', 'section', name='section'),
 )
