@@ -1,6 +1,6 @@
 {% load i18n ui %}
 {% if page %}
-<table class="table lined">
+<table class="table lined align-middle">
   {% for record in page %}
     <tr>
       <td>{% include "future/users/icon-link.html" with user=record.user %}</td>

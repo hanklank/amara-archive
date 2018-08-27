@@ -13,7 +13,8 @@
   - progressbars
   - indicators
   - tabs
-  - tables
+  - id: tables
+    title: Tables
   - id: dropdown-menus
     title: Dropdown menus
 
