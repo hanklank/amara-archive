@@ -1461,16 +1461,16 @@ class ActivityFiltersForm(forms.Form):
         ('created', _('date, oldest')),
     ]
     type = forms.ChoiceField(
-        label=_('Activity Type'), required=False,
+        label=_('Select Type'), required=False,
         choices=[])
     video_language = forms.ChoiceField(
-        label=_('Video Language'), required=False,
+        label=_('Select Video Language'), required=False,
         choices=[])
     subtitle_language = forms.ChoiceField(
-        label=_('Subtitle Language'), required=False,
+        label=_('Select Subtitle Language'), required=False,
         choices=[])
     sort = forms.ChoiceField(
-        label=_('Sorted by'), required=True,
+        label=_('Sorted by'), required=False,
         choices=SORT_CHOICES)
 
     def __init__(self, team, get_data):
@@ -1487,6 +1487,11 @@ class ActivityFiltersForm(forms.Form):
             language_choices.extend(get_language_choices())
         self.fields['video_language'].choices = language_choices
         self.fields['subtitle_language'].choices = language_choices
+
+    def use_old_labels(self):
+        self.fields['type'].label = _('Activity Type')
+        self.fields['video_language'].label = _('Video Language')
+        self.fields['subtitle_language'].label =_('Subtitle Language')
 
     def calc_activity_choices(self):
         choices = [
@@ -1523,7 +1528,9 @@ class ActivityFiltersForm(forms.Form):
             qs = qs.filter(language_code=subtitle_language)
         if video_language:
             qs = qs.filter(video_language_code=video_language)
-        return qs.order_by(sort)
+        if sort:
+            qs = qs.order_by(sort)
+        return qs
 
 class MemberFiltersForm(forms.Form):
     LANGUAGE_CHOICES = [
