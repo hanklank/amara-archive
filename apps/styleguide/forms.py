@@ -71,10 +71,10 @@ class MultiFieldForm(StyleguideForm):
 
     subtitles_public = forms.BooleanField(
         label='Completed', required=False, initial=True,
-        widget=SwitchInput('Private', 'Public'))
+        widget=SwitchInput('Public', 'Private'))
     drafts_public = forms.BooleanField(
         label='Drafts', required=False,
-        widget=SwitchInput('Private', 'Public'))
+        widget=SwitchInput('Public', 'Private'))
 
     translate_time_limit = forms.CharField(label='Translate', initial=2,
                                            widget=forms.NumberInput)
