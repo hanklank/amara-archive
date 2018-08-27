@@ -1457,6 +1457,10 @@ class ManagementVideoFiltersForm(VideoFiltersForm):
 
 class ActivityFiltersForm(forms.Form):
     SORT_CHOICES = [
+        ('-created', _('newest first')),
+        ('created', _('oldest first')),
+    ]
+    SORT_CHOICES_OLD = [
         ('-created', _('date, newest')),
         ('created', _('date, oldest')),
     ]
@@ -1470,7 +1474,7 @@ class ActivityFiltersForm(forms.Form):
         label=_('Select Subtitle Language'), required=False,
         choices=[])
     sort = forms.ChoiceField(
-        label=_('Sorted by'), required=False,
+        label=_('Select sort'), required=False,
         choices=SORT_CHOICES)
 
     def __init__(self, team, get_data):
@@ -1492,6 +1496,8 @@ class ActivityFiltersForm(forms.Form):
         self.fields['type'].label = _('Activity Type')
         self.fields['video_language'].label = _('Video Language')
         self.fields['subtitle_language'].label =_('Subtitle Language')
+        self.fields['sort'].label = _('Sorted by')
+        self.fields['sort'].choices = self.SORT_CHOICES_OLD
 
     def calc_activity_choices(self):
         choices = [
