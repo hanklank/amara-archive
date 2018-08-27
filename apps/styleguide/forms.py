@@ -20,10 +20,9 @@ from __future__ import absolute_import
 
 from django import forms
 
-
 from auth.models import get_amara_anonymous_user
 from styleguide.models import StyleguideData
-from ui.forms import AmaraImageField, DependentCheckboxField
+from ui.forms import AmaraImageField, AmaraChoiceField, SwitchInput
 
 class StyleguideForm(forms.Form):
     def __init__(self, request, **kwargs):
@@ -46,17 +45,53 @@ class StyleguideForm(forms.Form):
         except StyleguideData.DoesNotExist:
             return StyleguideData(user=self.user)
 
-class DependentCheckboxes(StyleguideForm):
-    role = DependentCheckboxField(choices=(
-        ('admin', 'Admin'),
-        ('manager', 'Manager'),
-        ('any-team-member', 'Any Team Member'),
-    ))
+class SwitchForm(StyleguideForm):
+    choice = forms.BooleanField(label='Visibility', required=False,
+                                widget=SwitchInput('Public', 'Private'))
+    inline_choice = forms.BooleanField(
+        label='Inline Example', required=False,
+        widget=SwitchInput('ON', 'OFF', inline=True))
+
+class MultiFieldForm(StyleguideForm):
+    animal_color = AmaraChoiceField(choices=[
+        ('blue', 'Blue'),
+        ('green', 'Green'),
+        ('yellow', 'Yellow'),
+    ], label='Color')
+    animal_species = AmaraChoiceField(choices=[
+        ('dog', 'Dog'),
+        ('cat', 'Cat'),
+        ('horse', 'Horse'),
+    ], label='Species')
+
+    role_admin = forms.BooleanField(label='Admin', required=False,
+                                    initial=True)
+    role_manager = forms.BooleanField(label='Manager', required=False)
+    role_any = forms.BooleanField(label='Any Team Member', required=False)
+
+    subtitles_public = forms.BooleanField(
+        label='Completed', required=False, initial=True,
+        widget=SwitchInput('Public', 'Private'))
+    drafts_public = forms.BooleanField(
+        label='Drafts', required=False,
+        widget=SwitchInput('Public', 'Private'))
+
+    translate_time_limit = forms.CharField(label='Translate', initial=2,
+                                           widget=forms.NumberInput)
+    review_time_limit = forms.CharField(label='Review', initial=1,
+                                        widget=forms.NumberInput)
+    approval_time_limit = forms.CharField(label='Approval', initial=1,
+                                          widget=forms.NumberInput)
+
+    def clean(self):
+        if (self.cleaned_data.get('animal_color') == 'yellow' and
+                self.cleaned_data.get('animal_species') == 'dog'):
+            self.add_error('animal_species', "Dog's can't be yellow!")
 
 class ImageUpload(StyleguideForm):
     thumbnail = AmaraImageField(label='Image', preview_size=(169, 100),
-                                help_text=('upload an image to test'))
-
+                                help_text=('upload an image to test'),
+                                required=False)
     def setup_form(self):
         styleguide_data = self.get_styleguide_data()
         if styleguide_data.thumbnail:
@@ -66,5 +101,8 @@ class ImageUpload(StyleguideForm):
 
     def save(self):
         styleguide_data = self.get_styleguide_data()
-        styleguide_data.thumbnail = self.cleaned_data['thumbnail']
+        if self.cleaned_data['thumbnail'] == False:
+            styleguide_data.thumbnail = None
+        else:
+            styleguide_data.thumbnail = self.cleaned_data['thumbnail']
         styleguide_data.save()
