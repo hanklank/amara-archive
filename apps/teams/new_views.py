@@ -226,7 +226,6 @@ def members(request, team):
         'show_invite_link': permissions.can_invite(team, request.user),
         'show_add_link': permissions.can_add_members(team, request.user),
         'show_application_link': show_application_link,
-        'team_nav': 'member_directory',
     }
 
     if form_name and is_team_admin:
@@ -747,7 +746,7 @@ def activity(request, team):
         'filters_form': filters_form,
         'team': team,
         'user': request.user,
-        'team_tab': 'activity',
+        'team_nav': 'activity',
         'tab': 'stream',
     }
     context.update(paginator.get_context(request))
