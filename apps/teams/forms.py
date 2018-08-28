@@ -1136,6 +1136,20 @@ class InviteForm(forms.Form):
             except User.DoesNotExist:
                 self.add_error('usernames', _(u'The user {} does not exist.').format(username))
 
+    def clean_username(self):
+        username = self.data['username']
+        if username:
+            try:
+                user = User.objects.get(username=username)
+                if self.team.is_member(user):
+                    self.add_error('username', _(u'The user {} already belongs to this team!').format(username))
+                elif Invite.objects.filter(user=user, team=self.team, approved=None).exists():
+                    self.add_error('username', _(u'The user {} already has an invite for this team!').format(username))
+                else:
+                    return username
+            except User.DoesNotExist:
+                self.add_error('usernames', _(u'The user {} does not exist.').format(username))
+
     def clean(self):
         cleaned_data = super(InviteForm, self).clean()
 
