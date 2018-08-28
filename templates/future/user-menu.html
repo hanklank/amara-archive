@@ -1,10 +1,10 @@
 {% load i18n amara_cache ui %}
 <ul>
-  {% cache-by-user futureui-top-panel %}
   <li>
-    <button id="user-menu" class="topnav-button user-menu amaranth bold" data-toggle="dropdown" data-username="{{ user.username}}" role="button" aria-haspopup="true" aria-expanded="false">{{ user.username }}</button>
+    <button id="{{ user_menu_id }}" class="topnav-button user-menu amaranth bold" data-toggle="dropdown" data-username="{{ user.username}}" role="button" aria-haspopup="true" aria-expanded="false">{{ user.username }}</button>
 
-    {% dropdown "user-menu" %}
+    {% dropdown user_menu_id %}
+
     {% dropdown-item _('Dashboard') "profiles:dashboard" %}
     {% dropdown-item _('Profile') "profiles:edit" %}
     {% dropdown-item _('Videos') "profiles:videos" user.username %}
@@ -13,14 +13,15 @@
     {% dropdown-item _('Subtitle video') "videos:create" %}
     {% dropdown-item _('Logout') "logout" %}
 
+    {% cache-by-user futureui-top-panel %}
     {% if user.teams.all %}
     {% dropdown-item _('Your Teams') "teams:user_teams" separator=True %}
     {% for team in user.teams.all %}
     {% dropdown-item team "teams:dashboard" team.slug %}
     {% endfor %}
     {% endif %}
+    {% endcache %}
 
     {% enddropdown %}
   </li>
-  {% endcache %}
 </ul>
