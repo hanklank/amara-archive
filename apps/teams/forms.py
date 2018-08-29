@@ -65,7 +65,8 @@ from teams.signals import member_remove
 from teams.workflows import TeamWorkflow
 from ui.forms import (FiltersForm, ManagementForm, AmaraChoiceField,
                       AmaraRadioSelect, SearchField, AmaraClearableFileInput,
-                      AmaraFileInput, HelpTextList, MultipleLanguageField)
+                      AmaraFileInput, HelpTextList, MultipleLanguageField,
+                      AmaraImageField)
 from ui.forms import LanguageField as NewLanguageField
 from utils.html import clean_html
 from utils import send_templated_email
@@ -2113,8 +2114,8 @@ class EditVideosForm(VideoManagementForm):
     language = NewLanguageField(label=_("Language"), options="null popular all")
     project = ProjectField(label=_('Project'), required=False,
                            null_label=_('No change'))
-    thumbnail = forms.ImageField(widget=AmaraClearableFileInput,
-                                 label=_('Thumbnail'), required=False)
+    thumbnail = AmaraImageField(label=_('Thumbnail'), preview_size=(220, 123),
+                                required=False)
 
     '''
     don't allow project managers to change the project of a video
@@ -2175,7 +2176,10 @@ class EditVideosForm(VideoManagementForm):
                 video.primary_audio_language_code = language
                 video.save()
             if thumbnail:
-                team_video.video.s3_thumbnail.save(thumbnail.name, thumbnail)
+                video.s3_thumbnail.save(thumbnail.name, thumbnail)
+            elif thumbnail == False:
+                video.s3_thumbnail = None
+                video.save()
 
     def message(self):
         msg = ungettext('Video has been edited',

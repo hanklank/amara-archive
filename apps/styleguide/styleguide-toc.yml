@@ -54,12 +54,10 @@
   - selects
 
 - - Modals / Dialogs
-  - modalbaseline
-  - dialogconfirmation
-  - modalvalidation
-  - modaltabbed
-  - dialogchoices
-  - removevideo
+  - id: modals
+    title: Modal dialogs
+  - id: language-switcher
+    title: Language Switcher
 
 - - Utility Classes
   - thumbWrapper
