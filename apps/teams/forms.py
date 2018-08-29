@@ -65,7 +65,8 @@ from teams.signals import member_remove
 from teams.workflows import TeamWorkflow
 from ui.forms import (FiltersForm, ManagementForm, AmaraChoiceField,
                       AmaraRadioSelect, SearchField, AmaraClearableFileInput,
-                      AmaraFileInput, HelpTextList, MultipleLanguageField)
+                      AmaraFileInput, HelpTextList, MultipleLanguageField, AmaraImageField,
+                      SwitchInput)
 from ui.forms import LanguageField as NewLanguageField
 from utils.html import clean_html
 from utils import send_templated_email
@@ -860,17 +861,53 @@ class LegacyRenameableSettingsForm(LegacySettingsForm):
             fields = LegacySettingsForm.Meta.fields + ('name',)
 
 class GeneralSettingsForm(forms.ModelForm):
-    logo = forms.ImageField(
-        validators=[MaxFileSizeValidator(settings.AVATAR_MAX_SIZE)],
-        help_text=_('Max 940 x 235'),
-        widget=AmaraClearableFileInput,
-        required=False)
-    square_logo = forms.ImageField(
-        validators=[MaxFileSizeValidator(settings.AVATAR_MAX_SIZE)],
-        help_text=_('Recommended size: 100 x 100'),
-        widget=AmaraClearableFileInput,
-        required=False)
-    is_visible = forms.BooleanField(required=False)
+    # logo = forms.ImageField(
+    #     validators=[MaxFileSizeValidator(settings.AVATAR_MAX_SIZE)],
+    #     help_text=_('Max 940 x 235'),
+    #     widget=AmaraClearableFileInput,
+    #     required=False)
+    # square_logo = forms.ImageField(
+    #     validators=[MaxFileSizeValidator(settings.AVATAR_MAX_SIZE)],
+    #     help_text=_('Recommended size: 100 x 100'),
+    #     widget=AmaraClearableFileInput,
+    #     required=False)
+    
+    INVITATION = 1
+    APPLICATION = 2
+    OPEN_MEMBERSHIP = 3
+
+    MEMBERSHIP_POLICY_CHOICES = [
+        (INVITATION, _(u'Invitation')),
+        (APPLICATION, _(u'Application')),
+        (OPEN_MEMBERSHIP, _(u'Open Admission')),
+    ]
+
+    profile_image = AmaraImageField(label=_('Team Profile Image'),
+                                    preview_size=(160, 90),
+                                    help_text=_('Type and size limitations'),
+                                    required=False)
+    banner = AmaraImageField(label=_('Team Banner Image'),
+                             preview_size=(160, 90),
+                             help_text=_('Type and size limitations'),
+                             required=False)
+    admission = AmaraChoiceField(label=_('Access settings'), 
+        choices=MEMBERSHIP_POLICY_CHOICES,
+        widget=AmaraRadioSelect(inline=True))
+
+    # checkboxes for multi-field when Invitation radio choice is selected
+    role_admin = forms.BooleanField(label='Admin', required=False,
+                                    initial=True)
+    role_manager = forms.BooleanField(label='Manager', required=False)
+    role_any = forms.BooleanField(label='Any Team Member', required=False)
+
+    # switches for multi-field for subtitle visibility
+    subtitles_public = forms.BooleanField(
+        label='Completed', required=False, initial=True,
+        widget=SwitchInput('Public', 'Private'))
+    drafts_public = forms.BooleanField(
+        label='Drafts', required=False,
+        widget=SwitchInput('Public', 'Private'))
+
     team_visibility = forms.ChoiceField(
         choices=TeamVisibility.choices(),
         label=_('Team visibility'),
@@ -916,6 +953,13 @@ class GeneralSettingsForm(forms.ModelForm):
         fields = ('name', 'description', 'logo', 'square_logo',
                   'team_visibility', 'video_visibility', 'sync_metadata',
                   'prevent_duplicate_public_videos')
+        labels = {
+            'name': _('Team Name'),
+            'description': _('Team Description'),
+        }
+        widgets = {
+          'description': forms.Textarea(attrs={'rows':5}),
+        }
 
 
 class WorkflowForm(forms.ModelForm):

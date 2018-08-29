@@ -62,7 +62,17 @@ class AmaraProjectSelectMultiple(widgets.SelectMultiple):
     pass
 
 class AmaraRadioSelect(widgets.RadioSelect):
+    def __init__(self, inline=False, *args, **kwargs):
+        super(AmaraRadioSelect, self).__init__(*args, **kwargs)
+        self.inline = inline
+
     def render(self, name, value, attrs=None, choices=()):
+        div_class = 'radio'
+        li_class = ''
+        if self.inline:
+            div_class += ' radio-inline'
+            li_class = 'li-radio-inline'
+
         if value is None:
             value = ''
         choices = list(chain(self.choices, choices))
@@ -70,7 +80,7 @@ class AmaraRadioSelect(widgets.RadioSelect):
         for i, choice in enumerate(choices):
             input_id = '{}_{}'.format(attrs['id'], i)
             output.extend([
-                u'<li><div class="radio">',
+                u'<li class="{}"><div class="{}">'.format(li_class, div_class),
                 self.render_input(name, value, choice, input_id),
                 self.render_label(name, value, choice, input_id),
                 u'</div></li>',
