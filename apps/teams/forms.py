@@ -1457,7 +1457,7 @@ class ManagementVideoFiltersForm(VideoFiltersForm):
 
 class ActivityFiltersForm(forms.Form):
     SORT_CHOICES = [
-        ('-created', _('newest first')),
+        ('-created', _('newest first (default)')),
         ('created', _('oldest first')),
     ]
     SORT_CHOICES_OLD = [

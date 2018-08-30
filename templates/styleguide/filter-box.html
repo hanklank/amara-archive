@@ -7,6 +7,8 @@
 
 <p>Use the data-singleton-filters attribute to specify filters that can only accept 1 value at a time (like the shape filter in this example).</p>
 
+<p>If a sort has a default value, use data-[name]-default to specify it.  Then if a user chooses that value, we won't display the filter.</p>
+
 <div class="filterBox" data-singleton-filters="shape">
   <button id="filter-box-dropdown-button" class="filterBox-button"><span class="filterBox-buttonIcon fa fa-filter"></span> <span class="filterBox-buttonText">Add a filter &hellip;</span></button>
   {% dropdown "filter-box-dropdown-button" %}
