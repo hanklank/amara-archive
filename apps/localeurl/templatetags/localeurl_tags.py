@@ -4,8 +4,9 @@
 from django.conf import settings
 from django.core.urlresolvers import get_script_prefix
 from django import template
-from django.template import Node, Token, TemplateSyntaxError
-from django.template import resolve_variable, defaulttags
+from django.template import (Node, TemplateSyntaxError, resolve_variable,
+                             defaulttags)
+from django.template.base import Token
 from django.template.defaultfilters import stringfilter
 from django.utils import translation
 import localeurl.settings

@@ -1262,7 +1262,7 @@ subtitles_subtitleversion.version_number = (
         return qs.values_list('subs_total', flat=True)[0]
 
 class SubtitleVersionManager(models.Manager):
-    use_for_related_fields = True
+    use_for_related_fields = False
 
     # ---------------------------- IMPORTANT ----------------------------------
     #
