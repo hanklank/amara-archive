@@ -736,8 +736,8 @@ def admin_list(request, team):
                    .select_related('user'))
     })
 
-@team_view
 @with_old_view(old_views.activity)
+@team_view
 def activity(request, team):
     filters_form = forms.ActivityFiltersForm(team, request.GET)
     paginator = AmaraPaginatorFuture(filters_form.get_queryset(),
