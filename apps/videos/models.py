@@ -92,6 +92,8 @@ VIDEO_META_TYPE_IDS = {}
 
 MAX_VIDEO_SEARCH_TERMS = 10
 
+MAX_SEACH_TEXT_LENGTH = 10 * 1000 * 1000
+
 def url_hash(url):
     return hashlib.md5(url.encode("utf-8")).hexdigest()
 
@@ -400,10 +402,10 @@ class Video(models.Model):
     # denormalized convenience from VideoVisibility, should not be set
     # directely
     is_public = models.BooleanField(default=True)
-
     primary_audio_language_code = models.CharField(
         max_length=16, blank=True, default='',
         choices=translation.ALL_LANGUAGE_CHOICES)
+    search_text = models.TextField(default='')
 
     cache = VideoCacheManager()
 
@@ -456,6 +458,28 @@ class Video(models.Model):
         """Update this video's search index text."""
 
         VideoIndex.index_video(self)
+        self.search_text = self.calc_search_text(MAX_SEACH_TEXT_LENGTH)
+
+    def calc_search_text(self, max_length=None):
+        parts = [
+            self.title_display(),
+            self.description,
+            self.video_id,
+            self.meta_1_content,
+            self.meta_2_content,
+            self.meta_3_content,
+        ]
+        parts.extend(vurl.url for vurl in self.get_video_urls())
+        for tip in self.newsubtitleversion_set.public_tips():
+            parts.extend([
+                tip.title, tip.description,
+                tip.meta_1_content, tip.meta_2_content, tip.meta_3_content,
+            ])
+
+        text = '\n'.join(p for p in parts if p is not None)
+        if max_length is not None:
+            text = text[:max_length]
+        return text
 
     def title_display(self, use_language_title=True):
         """
