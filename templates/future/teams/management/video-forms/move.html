@@ -2,7 +2,7 @@
 {% captureas title %}{% blocktrans count count=selection_count %}Moving Video{% plural %}Moving Videos{% endblocktrans %}{% endcaptureas %}
 {% startmodal "move-dialog" title %}
 <form class="ajaxForm" action="{{ request.get_full_path }}" method="POST" enctype="multipart/form-data">
-  <h4 class="modal-subtitle">
+  <h4 class="modal-header">
     {% if single_selection %}
     {{ first_video.title_display }}
     {% else %}

@@ -2,7 +2,8 @@
 {% startmodal "delete-dialog" _("Deleting subtitles") %}
 <form action="{% query_string form=delete %}" class="ajaxForm" method="POST">
   {% csrf_token %}
-  <h4 class="modal-subtitle">{{ video.title_display }} - {{ subtitle_language.get_language_code_display }}</h4>
+  <h4 class="modal-header">{{ video.title_display }}</h4>
+  <h4 class="modal-subheader">{% blocktrans with language=subtitle_language.get_language_code_display %}Subtitle language: {{ language}}{% endblocktrans %}</h4>
   <div class="modal-content">
     <ul class="bullets">
       {% for bullet in form.bullets %}
