@@ -2,7 +2,9 @@
 {% load i18n forms %}
 
 {% block settings_form %}
-<form>
+
+<form method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
   <div class="form-actions-top">
     <button type="submit" class="button cta saveChangesButton">Save Changes</button>
   </div>
@@ -17,10 +19,10 @@
     {% render_field form.description %}
     <div class="col2-laptop">
       <div>
-        {% render_field form.profile_image %}
+        {% render_field form.square_logo %}
       </div>
       <div>
-        {% render_field form.banner %}
+        {% render_field form.logo %}
       </div>
     </div>
 
@@ -29,7 +31,7 @@
   <fieldset>
     <legend><h3>{% trans 'Access Settings' %}</h3></legend>
     {% render_field form.admission %}
-    {% multi_field _("Role") form.role_admin form.role_manager form.role_any dependent=True required=True %}
+    {% multi_field _("Role") form.inviter_role_admin form.inviter_role_manager form.inviter_role_any dependent=True required=True %}
   </fieldset>
 
   <fieldset>

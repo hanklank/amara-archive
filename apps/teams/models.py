@@ -74,6 +74,8 @@ from subtitles.models import (
 )
 from subtitles import pipeline
 
+from collab.const import TEAM_WORKFLOW_TYPE_COLLAB
+
 from functools import partial
 
 logger = logging.getLogger(__name__)
@@ -332,6 +334,9 @@ class Team(models.Model):
 
     def is_tasks_team(self):
         return self.workflow_enabled
+
+    def is_collab_team(self):
+        return self.workflow_type == TEAM_WORKFLOW_TYPE_COLLAB
 
     @property
     def new_workflow(self):

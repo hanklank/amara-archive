@@ -42,6 +42,7 @@ from django.utils.translation import ungettext
 from auth.forms import UserField
 from auth.models import CustomUser as User
 from activity.models import ActivityRecord
+from collab.models import CollaborationSettings
 from messages.models import Message, SYSTEM_NOTIFICATION
 from messages.tasks import send_new_messages_notifications
 from subtitles.forms import SubtitlesUploadForm
@@ -860,49 +861,38 @@ class LegacyRenameableSettingsForm(LegacySettingsForm):
     class Meta(LegacySettingsForm.Meta):
             fields = LegacySettingsForm.Meta.fields + ('name',)
 
-class GeneralSettingsForm(forms.ModelForm):
-    # logo = forms.ImageField(
-    #     validators=[MaxFileSizeValidator(settings.AVATAR_MAX_SIZE)],
-    #     help_text=_('Max 940 x 235'),
-    #     widget=AmaraClearableFileInput,
-    #     required=False)
-    # square_logo = forms.ImageField(
-    #     validators=[MaxFileSizeValidator(settings.AVATAR_MAX_SIZE)],
-    #     help_text=_('Recommended size: 100 x 100'),
-    #     widget=AmaraClearableFileInput,
-    #     required=False)
-    
-    INVITATION = 1
-    APPLICATION = 2
-    OPEN_MEMBERSHIP = 3
+class GeneralSettingsForm(forms.ModelForm): 
+    BY_INVITATION = 0
 
     MEMBERSHIP_POLICY_CHOICES = [
-        (INVITATION, _(u'Invitation')),
-        (APPLICATION, _(u'Application')),
-        (OPEN_MEMBERSHIP, _(u'Open Admission')),
+        (BY_INVITATION, _(u'Invitation')),
+        (Team.APPLICATION, _(u'Application')),
+        (Team.OPEN, _(u'Open Admission')),
     ]
 
-    profile_image = AmaraImageField(label=_('Team Profile Image'),
-                                    preview_size=(160, 90),
+    square_logo = AmaraImageField(label=_('Team Profile Image'),
+                                    preview_size=(90, 90),
                                     help_text=_('Type and size limitations'),
                                     required=False)
-    banner = AmaraImageField(label=_('Team Banner Image'),
+    logo = AmaraImageField(label=_('Team Banner Image'),
                              preview_size=(160, 90),
                              help_text=_('Type and size limitations'),
                              required=False)
+    
+    # need to use a different field name because the choices are a little bit
+    # different compared to teams.model.Teams.membership_policy field
     admission = AmaraChoiceField(label=_('Access settings'), 
         choices=MEMBERSHIP_POLICY_CHOICES,
         widget=AmaraRadioSelect(inline=True))
 
     # checkboxes for multi-field when Invitation radio choice is selected
-    role_admin = forms.BooleanField(label='Admin', required=False,
-                                    initial=True)
-    role_manager = forms.BooleanField(label='Manager', required=False)
-    role_any = forms.BooleanField(label='Any Team Member', required=False)
+    inviter_role_admin = forms.BooleanField(label='Admin', required=False)
+    inviter_role_manager = forms.BooleanField(label='Manager', required=False)
+    inviter_role_any = forms.BooleanField(label='Any Team Member', required=False)
 
     # switches for multi-field for subtitle visibility
     subtitles_public = forms.BooleanField(
-        label='Completed', required=False, initial=True,
+        label='Completed', required=False,
         widget=SwitchInput('Public', 'Private'))
     drafts_public = forms.BooleanField(
         label='Drafts', required=False,
@@ -930,6 +920,34 @@ class GeneralSettingsForm(forms.ModelForm):
         super(GeneralSettingsForm, self).__init__(*args, **kwargs)
         self.initial_settings = self.instance.get_settings()
         self.initial_video_visibility = self.instance.video_visibility
+
+        # we dont render this field in the page but still save it in this form
+        self.fields['membership_policy'].required = False
+
+        if self.instance.membership_policy in [Team.INVITATION_BY_ALL, Team.INVITATION_BY_MANAGER, Team.INVITATION_BY_ADMIN]:
+            self.initial['admission'] = GeneralSettingsForm.BY_INVITATION
+
+            if self.instance.membership_policy == Team.INVITATION_BY_ALL:
+                self.initial['inviter_role_any'] = True
+                self.initial['inviter_role_manager'] = True
+                self.initial['inviter_role_admin'] = True
+            elif self.instance.membership_policy == Team.INVITATION_BY_MANAGER:
+                self.initial['inviter_role_manager'] = True
+                self.initial['inviter_role_admin'] = True
+            elif self.instance.membership_policy == Team.INVITATION_BY_ADMIN:
+                self.initial['inviter_role_admin'] = True
+        else:
+            self.initial['admission'] = self.instance.membership_policy
+
+        if self.instance.is_collab_team():
+            if self.instance.collaboration_settings.subtitle_visibility == CollaborationSettings.SUBTITLES_PUBLIC:
+                self.initial['subtitles_public'] = True
+                self.initial['drafts_public'] = True
+            elif self.instance.collaboration_settings.subtitle_visibility == CollaborationSettings.SUBTITLES_PRIVATE_UNTIL_COMPLETE:
+                self.initial['subtitles_public'] = True
+        else:
+            del self.fields['subtitles_public']
+            del self.fields['drafts_public']
         if not allow_rename:
             del self.fields['name']
 
@@ -939,9 +957,35 @@ class GeneralSettingsForm(forms.ModelForm):
         else:
             return self.instance.prevent_duplicate_public_videos
 
+    def clean(self):
+        cleaned_data = super(GeneralSettingsForm, self).clean()
+
+        if int(cleaned_data['admission']) == GeneralSettingsForm.BY_INVITATION:
+            if cleaned_data['inviter_role_any']:
+                membership_policy = Team.INVITATION_BY_ALL
+            elif cleaned_data['inviter_role_manager']:
+                membership_policy = Team.INVITATION_BY_MANAGER
+            elif cleaned_data['inviter_role_admin']:
+                membership_policy = Team.INVITATION_BY_ADMIN
+        else:
+            membership_policy = cleaned_data['admission']
+        cleaned_data['membership_policy'] = membership_policy
+
+        return cleaned_data        
+
     def save(self, user):
         with transaction.atomic():
             team = super(GeneralSettingsForm, self).save()
+
+            if self.instance.is_collab_team():
+                if self.cleaned_data['drafts_public']:
+                    self.instance.collaboration_settings.subtitle_visibility = CollaborationSettings.SUBTITLES_PUBLIC
+                elif self.cleaned_data['subtitles_public']:
+                    self.instance.collaboration_settings.subtitle_visibility = CollaborationSettings.SUBTITLES_PRIVATE_UNTIL_COMPLETE
+                else:
+                    self.instance.collaboration_settings.subtitle_visibility = CollaborationSettings.SUBTITLES_PRIVATE
+                self.instance.collaboration_settings.save()
+
             self.instance.handle_settings_changes(user, self.initial_settings)
         if team.video_visibility != self.initial_video_visibility:
             tasks.update_video_public_field.delay(team.id)
@@ -950,7 +994,7 @@ class GeneralSettingsForm(forms.ModelForm):
 
     class Meta:
         model = Team
-        fields = ('name', 'description', 'logo', 'square_logo',
+        fields = ('name', 'description', 'logo', 'square_logo', 'membership_policy',
                   'team_visibility', 'video_visibility', 'sync_metadata',
                   'prevent_duplicate_public_videos')
         labels = {
