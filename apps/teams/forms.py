@@ -1467,6 +1467,7 @@ class ActivityFiltersForm(FiltersForm):
     type = forms.MultipleChoiceField(
         label=_('Select Type'), required=False,
         choices=[])
+    video = forms.CharField(label=_('Search for video'), required=False)
     video_language = forms.MultipleChoiceField(
         label=_('Select Video Language'), required=False,
         choices=[])
@@ -1515,11 +1516,14 @@ class ActivityFiltersForm(FiltersForm):
         if not (self.is_bound and self.is_valid()):
             return qs
         type = cleaned_data.get('type')
+        video = cleaned_data.get('video')
         subtitle_language = cleaned_data.get('subtitle_language')
         video_language = cleaned_data.get('video_language')
         sort = cleaned_data.get('sort', '-created')
         if type:
             qs = qs.filter(type__in=type)
+        if video:
+            qs = qs.filter(video=Video.objects.search(video))
         if subtitle_language:
             qs = qs.filter(language_code__in=subtitle_language)
         if video_language:
