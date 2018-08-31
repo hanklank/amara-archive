@@ -280,7 +280,7 @@ class Team(models.Model):
     # Policies and Permissions
     membership_policy = models.IntegerField(_(u'membership policy'),
                                             choices=MEMBERSHIP_POLICY_CHOICES,
-                                            default=OPEN)
+                                            default=INVITATION_BY_ADMIN)
     video_policy = models.IntegerField(_(u'video policy'),
                                        choices=VIDEO_POLICY_CHOICES,
                                        default=VP_MEMBER)

@@ -10,7 +10,7 @@
   </div>
 
   <fieldset>
-    <legend><h3>{% trans 'Team Profile' %}</h3></legend>
+    <legend><h3>{% trans 'Team Info' %}</h3></legend>
 
     {% if form.name %}
       {% render_field form.name %}
@@ -29,9 +29,9 @@
   </fieldset>
 
   <fieldset>
-    <legend><h3>{% trans 'Access Settings' %}</h3></legend>
+    <legend><h3>{% trans 'Adding New Team Members' %}</h3></legend>
     {% render_field form.admission %}
-    {% multi_field _("Role") form.inviter_role_admin form.inviter_role_manager form.inviter_role_any dependent=True required=True %}
+    {% multi_field _("Roles that can invite") form.inviter_role_admin form.inviter_role_manager form.inviter_role_any dependent=True required=True %}
   </fieldset>
 
   <fieldset>

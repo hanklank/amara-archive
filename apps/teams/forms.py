@@ -867,10 +867,10 @@ class GeneralSettingsForm(forms.ModelForm):
     MEMBERSHIP_POLICY_CHOICES = [
         (BY_INVITATION, _(u'Invitation')),
         (Team.APPLICATION, _(u'Application')),
-        (Team.OPEN, _(u'Open Admission')),
+        (Team.OPEN, _(u'Open admission')),
     ]
 
-    square_logo = AmaraImageField(label=_('Team Profile Image'),
+    square_logo = AmaraImageField(label=_('Team Logo'),
                                     preview_size=(90, 90),
                                     help_text=_('Type and size limitations'),
                                     required=False)
@@ -881,28 +881,28 @@ class GeneralSettingsForm(forms.ModelForm):
     
     # need to use a different field name because the choices are a little bit
     # different compared to teams.model.Teams.membership_policy field
-    admission = AmaraChoiceField(label=_('Access settings'), 
+    admission = AmaraChoiceField(label=_('Team Admission'), 
         choices=MEMBERSHIP_POLICY_CHOICES,
         widget=AmaraRadioSelect(inline=True))
 
     # checkboxes for multi-field when Invitation radio choice is selected
-    inviter_role_admin = forms.BooleanField(label='Admin', required=False)
-    inviter_role_manager = forms.BooleanField(label='Manager', required=False)
-    inviter_role_any = forms.BooleanField(label='Any Team Member', required=False)
+    inviter_role_admin = forms.BooleanField(label=_('Admin'), required=False)
+    inviter_role_manager = forms.BooleanField(label=_('Manager'), required=False)
+    inviter_role_any = forms.BooleanField(label=_('Contributor'), required=False)
 
     # switches for multi-field for subtitle visibility
     subtitles_public = forms.BooleanField(
-        label='Completed', required=False,
+        label=_('Completed subtitles'), required=False,
         widget=SwitchInput('Public', 'Private'))
     drafts_public = forms.BooleanField(
-        label='Drafts', required=False,
+        label=_('Draft subtitles'), required=False,
         widget=SwitchInput('Public', 'Private'))
 
-    team_visibility = forms.ChoiceField(
+    team_visibility = AmaraChoiceField(
         choices=TeamVisibility.choices(),
         label=_('Team visibility'),
         help_text=_("Can non-members view your team?"))
-    video_visibility = forms.ChoiceField(
+    video_visibility = AmaraChoiceField(
         choices=VideoVisibility.choices(),
         label=_('Video visibility'),
         help_text=_("Can non-members view your team videos?"))
@@ -1000,6 +1000,9 @@ class GeneralSettingsForm(forms.ModelForm):
         labels = {
             'name': _('Team Name'),
             'description': _('Team Description'),
+        }
+        help_texts = {
+            'description': '',
         }
         widgets = {
           'description': forms.Textarea(attrs={'rows':5}),
