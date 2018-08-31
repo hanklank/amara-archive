@@ -1455,7 +1455,7 @@ class ManagementVideoFiltersForm(VideoFiltersForm):
             qs = qs.missing_completed_language(needs_subtitles)
         return qs
 
-class ActivityFiltersForm(forms.Form):
+class ActivityFiltersForm(FiltersForm):
     SORT_CHOICES = [
         ('-created', _('newest first (default)')),
         ('created', _('oldest first')),
@@ -1464,13 +1464,13 @@ class ActivityFiltersForm(forms.Form):
         ('-created', _('date, newest')),
         ('created', _('date, oldest')),
     ]
-    type = forms.ChoiceField(
+    type = forms.MultipleChoiceField(
         label=_('Select Type'), required=False,
         choices=[])
-    video_language = forms.ChoiceField(
+    video_language = forms.MultipleChoiceField(
         label=_('Select Video Language'), required=False,
         choices=[])
-    subtitle_language = forms.ChoiceField(
+    subtitle_language = forms.MultipleChoiceField(
         label=_('Select Subtitle Language'), required=False,
         choices=[])
     sort = forms.ChoiceField(
@@ -1478,8 +1478,7 @@ class ActivityFiltersForm(forms.Form):
         choices=SORT_CHOICES)
 
     def __init__(self, team, get_data):
-        super(ActivityFiltersForm, self).__init__(
-                  data=self.calc_data(get_data))
+        super(ActivityFiltersForm, self).__init__(get_data)
         self.team = team
         self.fields['type'].choices = self.calc_activity_choices()
         language_choices = [
@@ -1508,32 +1507,23 @@ class ActivityFiltersForm(forms.Form):
             (value, choice_map[value])
             for value in self.team.new_workflow.activity_type_filter_options()
         )
+        choices.sort(key=lambda choice: unicode(choice[1]))
         return choices
 
-    def calc_data(self, get_data):
-        field_names = set(['type', 'video_language', 'subtitle_language',
-                           'sort'])
-        data = {
-            key: value
-            for (key, value) in get_data.items()
-            if key in field_names
-        }
-        return data if data else None
-
-    def get_queryset(self):
+    def _get_queryset(self, cleaned_data):
         qs = ActivityRecord.objects.for_team(self.team)
         if not (self.is_bound and self.is_valid()):
             return qs
-        type = self.cleaned_data.get('type')
-        subtitle_language = self.cleaned_data.get('subtitle_language')
-        video_language = self.cleaned_data.get('video_language')
-        sort = self.cleaned_data.get('sort', '-created')
+        type = cleaned_data.get('type')
+        subtitle_language = cleaned_data.get('subtitle_language')
+        video_language = cleaned_data.get('video_language')
+        sort = cleaned_data.get('sort', '-created')
         if type:
-            qs = qs.filter(type=type)
+            qs = qs.filter(type__in=type)
         if subtitle_language:
-            qs = qs.filter(language_code=subtitle_language)
+            qs = qs.filter(language_code__in=subtitle_language)
         if video_language:
-            qs = qs.filter(video_language_code=video_language)
+            qs = qs.filter(video_language_code__in=video_language)
         if sort:
             qs = qs.order_by(sort)
         return qs
