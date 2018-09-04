@@ -64,8 +64,9 @@ from teams.permissions_const import ROLE_NAMES
 from teams.signals import member_remove
 from teams.workflows import TeamWorkflow
 from ui.forms import (FiltersForm, ManagementForm, AmaraChoiceField,
-                      AmaraRadioSelect, SearchField, AmaraClearableFileInput,
-                      AmaraFileInput, HelpTextList, MultipleLanguageField)
+                      AmaraMultipleChoiceField, AmaraRadioSelect, SearchField,
+                      AmaraClearableFileInput, AmaraFileInput, HelpTextList,
+                      MultipleLanguageField)
 from ui.forms import LanguageField as NewLanguageField
 from utils.html import clean_html
 from utils import send_templated_email
@@ -1580,17 +1581,17 @@ class ActivityFiltersForm(FiltersForm):
         ('-created', _('date, newest')),
         ('created', _('date, oldest')),
     ]
-    type = forms.MultipleChoiceField(
+    type = AmaraMultipleChoiceField(
         label=_('Select Type'), required=False,
         choices=[])
     video = forms.CharField(label=_('Search for video'), required=False)
-    video_language = forms.MultipleChoiceField(
+    video_language = MultipleLanguageField(
         label=_('Select Video Language'), required=False,
         choices=[])
-    subtitle_language = forms.MultipleChoiceField(
+    subtitle_language = MultipleLanguageField(
         label=_('Select Subtitle Language'), required=False,
         choices=[])
-    sort = forms.ChoiceField(
+    sort = AmaraChoiceField(
         label=_('Select sort'), required=False,
         choices=SORT_CHOICES)
 
@@ -1601,19 +1602,9 @@ class ActivityFiltersForm(FiltersForm):
         language_choices = [
             ('', ('Any language')),
         ]
-        if team.is_old_style():
-            language_choices.extend(get_language_choices(flat=True))
-        else:
-            language_choices.extend(get_language_choices())
+        language_choices.extend(get_language_choices())
         self.fields['video_language'].choices = language_choices
         self.fields['subtitle_language'].choices = language_choices
-
-    def use_old_labels(self):
-        self.fields['type'].label = _('Activity Type')
-        self.fields['video_language'].label = _('Video Language')
-        self.fields['subtitle_language'].label =_('Subtitle Language')
-        self.fields['sort'].label = _('Sorted by')
-        self.fields['sort'].choices = self.SORT_CHOICES_OLD
 
     def calc_activity_choices(self):
         choices = [
