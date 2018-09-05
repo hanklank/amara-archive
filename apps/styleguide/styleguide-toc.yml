@@ -49,6 +49,8 @@
   - buttonField
   - searchbar
   - selects
+  - id: dynamic-help-text
+    title: Dynamic Help Text
 
 - - Modals / Dialogs
   - modalbaseline

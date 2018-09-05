@@ -78,7 +78,10 @@ class AmaraRadioSelect(widgets.RadioSelect):
             self.dynamic_choice_help_text = dict(dynamic_choice_help_text)
             self.widget_classes += ' dynamicHelpTextRadio'
         else:
-            self.dynamic_choice_help_text = {}        
+            self.dynamic_choice_help_text = {}
+
+        if dynamic_choice_help_text_initial:
+            self.dynamic_choice_help_text_initial = dynamic_choice_help_text_initial   
 
     def render(self, name, value, attrs=None, choices=()):
         div_class = 'radio'
