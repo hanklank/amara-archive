@@ -6,7 +6,7 @@
       <label class="sr-only">{% trans "Search languages" %}</label>
       <input id="languageSearchBar" class="languageSwitcher_searchBar" type="text" placeholder="{% trans "Search languages"%}">
     </div>
-    <ul class="languageSwitcher_list col3 filteredList">
+    <ul class="languageSwitcher_list filteredList">
       {% for url, code, name in languages %}
       <li><a class="languageSwitcher-item no-underline" href="{{url}}" data-language-code="{{ code }}">{{name}}</a></li>
       {% endfor %}
