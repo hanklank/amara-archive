@@ -1587,10 +1587,10 @@ class ActivityFiltersForm(FiltersForm):
     video = forms.CharField(label=_('Search for video'), required=False)
     video_language = MultipleLanguageField(
         label=_('Select Video Language'), required=False,
-        choices=[])
+        options='my popular all')
     subtitle_language = MultipleLanguageField(
         label=_('Select Subtitle Language'), required=False,
-        choices=[])
+        options='my popular all')
     sort = AmaraChoiceField(
         label=_('Select sort'), required=False,
         choices=SORT_CHOICES)
@@ -1599,12 +1599,6 @@ class ActivityFiltersForm(FiltersForm):
         super(ActivityFiltersForm, self).__init__(get_data)
         self.team = team
         self.fields['type'].choices = self.calc_activity_choices()
-        language_choices = [
-            ('', ('Any language')),
-        ]
-        language_choices.extend(get_language_choices())
-        self.fields['video_language'].choices = language_choices
-        self.fields['subtitle_language'].choices = language_choices
 
     def calc_activity_choices(self):
         choices = [
