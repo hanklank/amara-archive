@@ -31,7 +31,10 @@
   <fieldset>
     <legend><h3>{% trans 'Adding New Team Members' %}</h3></legend>
     {% render_field form.admission %}
-    {% multi_field _("Roles that can invite") form.inviter_role_admin form.inviter_role_manager form.inviter_role_any dependent=True required=True %}
+
+    <div class="teamMembershipSettingRoles" style="display:none">
+      {% multi_field _("Roles that can invite") form.inviter_role_admin form.inviter_role_manager form.inviter_role_any dependent=True required=True %}
+    </div>
   </fieldset>
 
   <fieldset>
@@ -39,7 +42,13 @@
 
     {% render_field form.team_visibility %}
     {% render_field form.video_visibility %}
-    {% multi_field _("Subtitle Visibility") form.subtitles_public form.drafts_public dependent=True %}
+
+    {% if team.is_collab_team %}
+      <div id="subtitleVisibility">
+        {% multi_field _("Subtitle Visibility") form.subtitles_public form.drafts_public dependent=True help_text=' ' %}
+      </div>
+    {% endif %}
+
     {% render_field form.prevent_duplicate_public_videos %}
   </fieldset>
 

@@ -17,6 +17,7 @@
 # http://www.gnu.org/licenses/agpl-3.0.html.
 
 from itertools import chain
+import json
 
 from django.core.files import File
 from django.forms import widgets
@@ -62,21 +63,38 @@ class AmaraProjectSelectMultiple(widgets.SelectMultiple):
     pass
 
 class AmaraRadioSelect(widgets.RadioSelect):
-    def __init__(self, inline=False, *args, **kwargs):
+    def __init__(self, inline=False, 
+                 dynamic_choice_help_text=None, dynamic_choice_help_text_initial=None, 
+                 *args, **kwargs):
         super(AmaraRadioSelect, self).__init__(*args, **kwargs)
         self.inline = inline
+
+        try:
+            self.widget_classes = kwargs['attrs']['class']
+        except KeyError:
+            self.widget_classes = ''
+
+        if dynamic_choice_help_text:
+            self.dynamic_choice_help_text = dict(dynamic_choice_help_text)
+            self.widget_classes += ' dynamicHelpTextRadio'
+        else:
+            self.dynamic_choice_help_text = {}        
 
     def render(self, name, value, attrs=None, choices=()):
         div_class = 'radio'
         li_class = ''
+        ul_class = ''
         if self.inline:
-            div_class += ' radio-inline'
+            div_class += ' div-radio-inline'
             li_class = 'li-radio-inline'
+
+        if self.dynamic_choice_help_text:
+            ul_class = 'radio-dynamic-help-text'        
 
         if value is None:
             value = ''
         choices = list(chain(self.choices, choices))
-        output = [u'<ul>']
+        output = [u'<ul class="{}">'.format(ul_class)]
         for i, choice in enumerate(choices):
             input_id = '{}_{}'.format(attrs['id'], i)
             output.extend([
@@ -86,6 +104,13 @@ class AmaraRadioSelect(widgets.RadioSelect):
                 u'</div></li>',
             ])
         output.append(u'</ul>')
+
+        if self.dynamic_choice_help_text:
+            output.append(u'<div class="helpBlock">')
+            if self.dynamic_choice_help_text_initial:
+                output.append(self.dynamic_choice_help_text_initial)
+            output.append(u'</div>')
+
         return mark_safe(u''.join(output))
 
     def render_input(self, name, value, choice, input_id):
@@ -94,9 +119,14 @@ class AmaraRadioSelect(widgets.RadioSelect):
             'type': 'radio',
             'name': name,
             'value': force_unicode(choice[0]),
+            'class': self.widget_classes
         }
         if choice[0] == value:
             attrs['checked'] = 'checked'
+
+        if self.dynamic_choice_help_text:
+            attrs['data-dynamic-help-text'] = self.dynamic_choice_help_text[choice[0]]
+
         return u'<input{}>'.format(flatatt(attrs))
 
     def render_label(self, name, value, choice, input_id):

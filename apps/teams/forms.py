@@ -70,7 +70,7 @@ from ui.forms import (FiltersForm, ManagementForm, AmaraChoiceField,
                       SwitchInput)
 from ui.forms import LanguageField as NewLanguageField
 from utils.html import clean_html
-from utils import send_templated_email
+from utils import send_templated_email, enum
 from utils.forms import (ErrorableModelForm, get_label_for_value,
                          UserAutocompleteField, LanguageField,
                          LanguageDropdown, Dropdown )
@@ -861,29 +861,53 @@ class LegacyRenameableSettingsForm(LegacySettingsForm):
     class Meta(LegacySettingsForm.Meta):
             fields = LegacySettingsForm.Meta.fields + ('name',)
 
+
+
 class GeneralSettingsForm(forms.ModelForm): 
     BY_INVITATION = 0
 
-    MEMBERSHIP_POLICY_CHOICES = [
+    ADMISSION_CHOICES = [
         (BY_INVITATION, _(u'Invitation')),
         (Team.APPLICATION, _(u'Application')),
         (Team.OPEN, _(u'Open admission')),
     ]
 
+    TeamVisibilityHelpText = enum.Enum('TeamVisibilityHelpText', [
+        ('PUBLIC', ugettext(u'The team will be listed in the public team directory.')),
+        ('UNLISTED', ugettext(u'The team landing page can be seen by anyone with the team link.')),
+        ('PRIVATE', ugettext(u'The team can only be viewed and accessed by members.')),
+    ])
+
+    VideoVisibilityHelpText = enum.Enum('VideoVisibilityHelpText', [
+        ('PUBLIC', ugettext(u'Videos on this team will be available in the public video library.')),
+        ('UNLISTED', ugettext(u'Videos on this team can be seen by anyone with the link.')),
+        ('PRIVATE', ugettext(u'Videos on this team can only be viewed and accessed by members.')),
+    ])
+
+    ADMISSION_CHOICES_HELP_TEXT = [
+        (BY_INVITATION, ugettext(u'The selected roles below can invite new users from the Member Directory page.')),
+        (Team.APPLICATION, ugettext(u'Admins can review and approve team member applications from the Member Directory page.')),
+        (Team.OPEN, ugettext(u'Users can join the team from the team landing page, and any team member can invite new members from the member directory.')),
+    ]
+
     square_logo = AmaraImageField(label=_('Team Logo'),
-                                    preview_size=(90, 90),
-                                    help_text=_('Type and size limitations'),
-                                    required=False)
+                                  preview_size=(90, 90),
+                                  help_text=_('Type and size limitations'),
+                                  required=False)
     logo = AmaraImageField(label=_('Team Banner Image'),
-                             preview_size=(160, 90),
-                             help_text=_('Type and size limitations'),
-                             required=False)
+                           preview_size=(160, 90),
+                           help_text=_('Type and size limitations'),
+                           required=False)
     
     # need to use a different field name because the choices are a little bit
     # different compared to teams.model.Teams.membership_policy field
-    admission = AmaraChoiceField(label=_('Team Admission'), 
-        choices=MEMBERSHIP_POLICY_CHOICES,
-        widget=AmaraRadioSelect(inline=True))
+    admission = AmaraChoiceField(
+        label=_('Team Admission'), 
+        choices=ADMISSION_CHOICES,
+        widget=AmaraRadioSelect(inline=True, 
+                                attrs={'class': 'teamMembershipSetting'},
+                                dynamic_choice_help_text=ADMISSION_CHOICES_HELP_TEXT)
+    )
 
     # checkboxes for multi-field when Invitation radio choice is selected
     inviter_role_admin = forms.BooleanField(label=_('Admin'), required=False)
@@ -901,11 +925,11 @@ class GeneralSettingsForm(forms.ModelForm):
     team_visibility = AmaraChoiceField(
         choices=TeamVisibility.choices(),
         label=_('Team visibility'),
-        help_text=_("Can non-members view your team?"))
+        dynamic_choice_help_text=TeamVisibilityHelpText.choices())
     video_visibility = AmaraChoiceField(
         choices=VideoVisibility.choices(),
         label=_('Video visibility'),
-        help_text=_("Can non-members view your team videos?"))
+        dynamic_choice_help_text=TeamVisibilityHelpText.choices())
     prevent_duplicate_public_videos = forms.BooleanField(
         label=_('Prevent duplicate copies of your team videos in '
                 'the Amara public area.'), required=False, 
@@ -924,6 +948,18 @@ class GeneralSettingsForm(forms.ModelForm):
         # we dont render this field in the page but still save it in this form
         self.fields['membership_policy'].required = False
 
+        self._calc_inviter_role_checkboxes()
+        self._calc_subtitle_visibility()
+
+        self.fields['admission'].widget.dynamic_choice_help_text_initial = dict(self.ADMISSION_CHOICES_HELP_TEXT)[self.instance.membership_policy]
+        self.fields['team_visibility'].help_text = self.TeamVisibilityHelpText.lookup_number(self.instance.team_visibility.number)
+        self.fields['video_visibility'].help_text = self.VideoVisibilityHelpText.lookup_number(self.instance.video_visibility.number)
+
+        if not allow_rename:
+            del self.fields['name']
+
+    # determines which role checkboxes are ticked based on the team's membership_policy
+    def _calc_inviter_role_checkboxes(self):
         if self.instance.membership_policy in [Team.INVITATION_BY_ALL, Team.INVITATION_BY_MANAGER, Team.INVITATION_BY_ADMIN]:
             self.initial['admission'] = GeneralSettingsForm.BY_INVITATION
 
@@ -939,6 +975,8 @@ class GeneralSettingsForm(forms.ModelForm):
         else:
             self.initial['admission'] = self.instance.membership_policy
 
+    # subtitle visibility setting are for collab teams only
+    def _calc_subtitle_visibility(self):
         if self.instance.is_collab_team():
             if self.instance.collaboration_settings.subtitle_visibility == CollaborationSettings.SUBTITLES_PUBLIC:
                 self.initial['subtitles_public'] = True
@@ -948,8 +986,6 @@ class GeneralSettingsForm(forms.ModelForm):
         else:
             del self.fields['subtitles_public']
             del self.fields['drafts_public']
-        if not allow_rename:
-            del self.fields['name']
 
     def prevent_duplicate_public_videos_set(self):
         if self.is_bound:
