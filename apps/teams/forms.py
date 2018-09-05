@@ -892,11 +892,11 @@ class GeneralSettingsForm(forms.ModelForm):
 
     square_logo = AmaraImageField(label=_('Team Logo'),
                                   preview_size=(90, 90),
-                                  help_text=_('Type and size limitations'),
+                                  help_text=_('Recommended size 100 x 100 px'),
                                   required=False)
     logo = AmaraImageField(label=_('Team Banner Image'),
                            preview_size=(160, 90),
-                           help_text=_('Type and size limitations'),
+                           help_text=_('Recommended size 280 x 100 px'),
                            required=False)
     
     # need to use a different field name because the choices are a little bit
