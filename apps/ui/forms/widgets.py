@@ -105,7 +105,10 @@ class AmaraFileInput(widgets.FileInput):
     def render(self, name, value, attrs=None):
         if value is None:
             value = ''
-        final_attrs = self.build_attrs(attrs, type=self.input_type, name=name)
+        final_attrs = self.build_attrs(attrs, {
+            'type': self.input_type,
+            'name': name,
+        })
         if value != '':
             final_attrs['value'] = force_text(self._format_value(value))
         return mark_safe(render_to_string(self.template_name, final_attrs))
@@ -139,7 +142,10 @@ class AmaraClearableFileInput(widgets.ClearableFileInput):
         }
         if value is None:
             value = ''
-        context.update(self.build_attrs(attrs, type=self.input_type, name=name))
+        context.update(self.build_attrs(attrs, {
+            'type': self.input_type,
+            'name': name,
+        }))
         if value != '':
             context['value'] = force_text(self._format_value(value))
 

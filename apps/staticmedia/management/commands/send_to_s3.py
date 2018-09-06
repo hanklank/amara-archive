@@ -22,7 +22,6 @@ import email
 import gzip
 import mimetypes
 import time
-import optparse
 import os
 
 from boto.s3.connection import S3Connection
@@ -43,13 +42,12 @@ from staticmedia.jslanguagedata import render_js_language_script
 class Command(BaseCommand):
     help = """Upload static media to S3 """
 
-    option_list = BaseCommand.option_list + (
-        optparse.make_option('--skip-commit-check', dest='skip_commit_check',
-                             action='store_true', default=False,
-                             help="Don't check the git commit in commit.py"),
-        optparse.make_option('--no-gzip', dest='gzip', action='store_false',
-                             default=True, help="Don't gzip files")
-    )
+    def add_arguments(self, parser):
+        parser.add_argument('--skip-commit-check', dest='skip_commit_check',
+                            action='store_true', default=False,
+                            help="Don't check the git commit in commit.py")
+        parser.add_argument('--no-gzip', dest='gzip', action='store_false',
+                            default=True, help="Don't gzip files")
 
     def handle(self, *args, **options):
         self.options = options
