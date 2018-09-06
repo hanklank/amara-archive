@@ -32,7 +32,7 @@
           {{ form.message|render_field }}
           <input type="hidden" value="username" name="modalTab"/>
           <div class="text-right">
-            <button class="button borderless" data-dismiss="modal">{% trans "Cancel" %}</button>
+            <button class="button borderless modal-close">{% trans "Cancel" %}</button>
             <button type="submit" class="button cta"> {% trans 'Invite' %}</button>
           </div>
         </form>
@@ -50,7 +50,7 @@
           {{ form.message|render_field }}
           <input type="hidden" value="email" name="modalTab"/>
           <div class="text-right">
-            <button class="button borderless" data-dismiss="modal">{% trans "Cancel" %}</button>
+            <button class="button borderless modal-close">{% trans "Cancel" %}</button>
             <button type="submit" class="button cta"> {% trans 'Invite' %}</button>
           </div>
         </form>
@@ -68,7 +68,7 @@
           {{ form_add_member.role|render_field }}                    
           <input type="hidden" value="add" name="modalTab"/>
           <div class="text-right">
-            <button class="button borderless" data-dismiss="modal">{% trans "Cancel" %}</button>
+            <button class="button borderless modal-close">{% trans "Cancel" %}</button>
             <button type="submit" class="button cta"> {% trans 'Add members' %}</button>
           </div>
         </form>

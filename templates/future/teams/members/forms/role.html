@@ -2,7 +2,7 @@
 {% captureas title %}{% blocktrans count count=selection_count %}Edit Member{% plural %}Edit Members{% endblocktrans %}{% endcaptureas %}
 {% startmodal "edit-member-dialog" title %}
 <form class="ajaxForm" method="POST" action="{{ request.get_full_path }}" enctype="multipart/form-data">
-  <h4 class="modal-header">{% if single_selection %}{% blocktrans %}Changing role for {{ user }}{% endblocktrans %}{% else %}{% blocktrans count count=selection_count %}Changing role for {{ count }}user{% plural %}Changing role for {{ count }} users{% endblocktrans %}{% endif %}</h4>
+  <h4 class="modal-header">{% if single_selection %}{% blocktrans with user=form.get_first_object %}Changing role for {{ user }}{% endblocktrans %}{% else %}{% blocktrans count count=selection_count %}Changing role for {{ count }}user{% plural %}Changing role for {{ count }} users{% endblocktrans %}{% endif %}</h4>
   <div class="modal-content">
     {% csrf_token %}
     {% include "future/forms/non-field-errors.html" %}
