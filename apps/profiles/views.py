@@ -37,7 +37,6 @@ from profiles.forms import (EditUserForm, EditAccountForm, SendMessageForm,
                             EditAvatarForm, AdminProfileForm, EditNotificationsForm)
 from profiles.rpc import ProfileApiClass
 import externalsites.models
-from utils import post_or_get_value
 from utils.objectlist import object_list
 from utils.orm import LoadRelatedQuerySet
 from utils.rpc import RpcRouter
@@ -176,7 +175,7 @@ def videos(request, user_id):
     qs = Video.objects.filter(user=user).order_by('-edited')
     if not (request.user == user or request.user.is_superuser):
         qs = qs.filter(is_public=True)
-    q = request.REQUEST.get('q')
+    q = request.GET.get('q')
 
     if q:
         qs = qs.filter(Q(title__icontains=q)|Q(description__icontains=q))
@@ -186,7 +185,7 @@ def videos(request, user_id):
         'query': q
     }
 
-    qs = qs._clone(OptimizedQuerySet)
+    qs = qs._clone()
 
     return object_list(request, queryset=qs,
                        paginate_by=VIDEOS_ON_PAGE,

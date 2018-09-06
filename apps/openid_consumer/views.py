@@ -1,5 +1,5 @@
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render_to_response as render
+from django.shortcuts import render
 from django.template import RequestContext
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
@@ -92,9 +92,9 @@ def begin(request, confirmed=True, redirect_to=None, on_failure=None, user_url=N
             request_path += '?' + urlencode({
                 'next': request.GET['next']
             })
-        return render(template_name, {
+        return render(request, template_name, {
             'action': request_path,
-        }, RequestContext(request))
+        })
     
     if xri.identifierScheme(user_url) == 'XRI' and getattr(
         settings, 'OPENID_DISALLOW_INAMES', False
@@ -210,9 +210,9 @@ def default_on_success(request, identity_url, openid_response, confirmed=True, e
     return HttpResponseRedirect(next)
 
 def default_on_failure(request, message, template_name='openid_consumer/failure.html'):
-    return render(template_name, {
+    return render(request, template_name, {
         'message': message
-    }, 		RequestContext(request))
+    })
 
 def signout(request):
     request.session['openids'] = []

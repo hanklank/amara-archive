@@ -225,3 +225,10 @@ class EnumField(models.PositiveSmallIntegerField):
             return self.enum.lookup_slug(value).number
         else:
             return value.number
+
+    def deconstruct(self):
+        name, path, args, kwargs = super(EnumField, self).deconstruct()
+        if 'choices' in kwargs:
+            del kwargs['choices']
+        args = [self.enum]
+        return (name, path, args, kwargs)

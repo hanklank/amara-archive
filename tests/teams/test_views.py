@@ -361,9 +361,16 @@ class EmailInviteViewTest(TransactionTestCase):
         self.email_invite.created = self.email_invite.created - datetime.timedelta(days=3, minutes=1)
         self.email_invite.save()
         response = self.client.get(self.email_invite.get_url())
-        self.assertRedirects(response, reverse('teams:email_invite_invalid'))
+        self.assertRedirects(
+            response,
+            reverse('teams:email_invite_invalid', no_locale=True),
+            fetch_redirect_response=False)
 
     def test_invite_has_been_used(self):
         self.email_invite.link_to_account(self.user)
+        self.client.force_login(self.user)
         response = self.client.get(self.email_invite.get_url())
-        self.assertRedirects(response, reverse('teams:email_invite_invalid'))
+        self.assertRedirects(
+            response,
+            reverse('teams:email_invite_invalid', no_locale=True),
+            fetch_redirect_response=False)

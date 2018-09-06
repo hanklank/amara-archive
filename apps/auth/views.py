@@ -35,7 +35,7 @@ from django.forms import ValidationError
 from django.forms.utils import ErrorList
 from django.http import (HttpResponseRedirect, HttpResponseForbidden,
                          HttpResponse, HttpResponseBadRequest)
-from django.shortcuts import render, render_to_response, redirect, resolve_url
+from django.shortcuts import render, redirect, resolve_url
 from django.template import RequestContext
 from django.template.response import TemplateResponse
 from django.utils.encoding import force_text
@@ -153,8 +153,7 @@ def create_user(request):
 @login_required
 def delete_user(request):
     if not request.user.has_valid_password():
-        return render_to_response('auth/delete_user.html', {
-        }, context_instance=RequestContext(request))
+        return render(request, 'auth/delete_user.html', {})
     if request.method == 'POST':
         form = DeleteUserForm(request.POST)
         if form.is_valid():
@@ -175,9 +174,9 @@ def delete_user(request):
                  errors.append(_(u"Incorrect Password"))
     else:
         form = DeleteUserForm()
-    return render_to_response('auth/delete_user.html', {
+    return render(request, 'auth/delete_user.html', {
         'form': form
-    }, context_instance=RequestContext(request))
+    })
 
 def cache_key(request):
     ip = get_real_ip(request)
@@ -331,9 +330,9 @@ def login_trap(request):
             return redirect('/')
     else:
         form = ChooseUserForm()
-    return render_to_response('auth/login_trap.html', {
+    return render(request, 'auth/login_trap.html', {
         'form': form
-    }, context_instance=RequestContext(request))
+    })
 
 
 # Helpers
@@ -358,8 +357,7 @@ def render_login(request, user_creation_form, login_form, redirect_to, email_for
             context['ted_auth'] = get_authentication_provider('ted')
         if confirm_type == 'facebook':
             context['submit_facebook'] = "submit-proceed-to-create-facebook"
-    return render_to_response(
-        template, context, context_instance=RequestContext(request))
+    return render(request, template, context)
 
 def make_redirect_to(request, default=''):
     """Get the URL to redirect to after logging a user in.

@@ -39,8 +39,7 @@ from django.db import transaction
 from django.db.models import Sum
 from django.http import (HttpResponse, Http404, HttpResponseRedirect,
                          HttpResponseForbidden)
-from django.shortcuts import (render, render_to_response, get_object_or_404,
-                              redirect)
+from django.shortcuts import (render, get_object_or_404, redirect)
 from django.template import RequestContext
 from django.utils.encoding import force_unicode
 from django.utils.http import urlquote_plus
@@ -860,8 +859,7 @@ def diffing(request, first_version, second_pk):
         'video_url': video.get_video_url(),
     }
 
-    return render_to_response('videos/diffing.html', context,
-                              context_instance=RequestContext(request))
+    return render(request, 'videos/diffing.html', context)
 
 @login_required
 def stop_notification(request, video_id):
@@ -883,8 +881,7 @@ def stop_notification(request, video_id):
             logout(request)
     else:
         context['error'] = u'Incorrect secret hash'
-    return render_to_response('videos/stop_notification.html', context,
-                              context_instance=RequestContext(request))
+    return render(request, 'videos/stop_notification.html', context)
 
 @login_required
 @require_POST
@@ -1004,12 +1001,12 @@ def video_debug(request, video_id):
 
     is_youtube = video.videourl_set.filter(type=VIDEO_TYPE_YOUTUBE).count() != 0
 
-    return render_to_response("videos/video_debug.html", {
+    return render(request, "videos/video_debug.html", {
             'video': video,
             'is_youtube': is_youtube,
             'tasks': tasks,
             "cache": cache
-    }, context_instance=RequestContext(request))
+    })
 
 def reset_metadata(request, video_id):
     video = get_object_or_404(Video, video_id=video_id)
@@ -1034,11 +1031,10 @@ def set_original_language(request, video_id):
             _(u'The language for %(video)s has been changed'),
             video=video))
         return HttpResponseRedirect(reverse("videos:set_original_language", args=(video_id,)))
-    return render_to_response("videos/set-original-language.html", {
+    return render(request, "videos/set-original-language.html", {
         "video": video,
         'form': form
-    }, context_instance=RequestContext(request)
-    )
+    })
 
 @staff_member_required
 def url_search(request):
