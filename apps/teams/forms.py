@@ -956,15 +956,18 @@ class GeneralSettingsForm(forms.ModelForm):
 
         # calc the stuff according to POST data if it exists
         if self.data:
-            admission = int(self.data['admission'])
-            self._calc_admission(admission)
+
+            if (self.data.get('admission', None)):
+                self.data['admission'] = int(self.data['admission'])
+                self._calc_admission(self.data['admission'])
+                if self.errors.get('admission', None) is not None and self.data['admission'] == self.BY_INVITATION:
+                    self.fields['admission'].widget.dynamic_choice_help_text_initial = 'Please select a role below.'
+            else:
+                self.fields['admission'].widget.dynamic_choice_help_text_initial = 'Please select a team admission policy.'
+            
             self._calc_team_visibility_help_text(self.data['team_visibility'])
             self._calc_video_visibility_help_text(self.data['video_visibility'])
 
-            self.initial['admission'] = admission
-
-            if self.errors['admission'] is not None and admission == self.BY_INVITATION:
-                self.fields['admission'].widget.dynamic_choice_help_text_initial = 'Please select a role below'
         else:
             self._calc_admission(self.instance.membership_policy)   
             self._calc_team_visibility_help_text(self.instance.team_visibility.number)
@@ -1034,11 +1037,15 @@ class GeneralSettingsForm(forms.ModelForm):
                     membership_policy = Team.INVITATION_BY_ADMIN
                 else:
                     membership_policy = -1
+                    # hack to add error to the team admission field but not display an error message
+                    # this is to avoid the help text getting funky when there is an error in the said field
                     self.add_error('admission', '')
             else:
                 membership_policy = cleaned_data['admission']
 
             cleaned_data['membership_policy'] = membership_policy
+        else:
+            self.add_error('admission', '')
 
         return cleaned_data        
 
