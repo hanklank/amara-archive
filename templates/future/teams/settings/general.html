@@ -30,7 +30,7 @@
 
   <fieldset>
     <legend><h3>{% trans 'Adding New Team Members' %}</h3></legend>
-    {% render_field form.admission %}
+    {% render_field form.admission reverse_required=True %}
 
     <div class="teamMembershipSettingRoles" style="display:none">
       {% multi_field _("Roles that can invite") form.inviter_role_admin form.inviter_role_manager form.inviter_role_any dependent=True required=True %}

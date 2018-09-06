@@ -901,7 +901,11 @@ class GeneralSettingsForm(forms.ModelForm):
     
     # need to use a different field name because the choices are a little bit
     # different compared to teams.model.Teams.membership_policy field
+    #
+    # we also set required=False to force this field to just use custom validation
+    # (things get funky with the help text when there is an error in this field)
     admission = AmaraChoiceField(
+        required=False,
         label=_('Team Admission'), 
         choices=ADMISSION_CHOICES,
         widget=AmaraRadioSelect(inline=True, 
@@ -929,7 +933,7 @@ class GeneralSettingsForm(forms.ModelForm):
     video_visibility = AmaraChoiceField(
         choices=VideoVisibility.choices(),
         label=_('Video visibility'),
-        dynamic_choice_help_text=TeamVisibilityHelpText.choices())
+        dynamic_choice_help_text=VideoVisibilityHelpText.choices())
     prevent_duplicate_public_videos = forms.BooleanField(
         label=_('Prevent duplicate copies of your team videos in '
                 'the Amara public area.'), required=False, 
@@ -948,20 +952,33 @@ class GeneralSettingsForm(forms.ModelForm):
         # we dont render this field in the page but still save it in this form
         self.fields['membership_policy'].required = False
 
-        self._calc_inviter_role_checkboxes()
         self._calc_subtitle_visibility()
 
-        self.fields['admission'].widget.dynamic_choice_help_text_initial = dict(self.ADMISSION_CHOICES_HELP_TEXT)[self.instance.membership_policy]
-        self.fields['team_visibility'].help_text = self.TeamVisibilityHelpText.lookup_number(self.instance.team_visibility.number)
-        self.fields['video_visibility'].help_text = self.VideoVisibilityHelpText.lookup_number(self.instance.video_visibility.number)
+        # calc the stuff according to POST data if it exists
+        if self.data:
+            admission = int(self.data['admission'])
+            self._calc_admission(admission)
+            self._calc_team_visibility_help_text(self.data['team_visibility'])
+            self._calc_video_visibility_help_text(self.data['video_visibility'])
+
+            self.initial['admission'] = admission
+
+            if self.errors['admission'] is not None and admission == self.BY_INVITATION:
+                self.fields['admission'].widget.dynamic_choice_help_text_initial = 'Please select a role below'
+        else:
+            self._calc_admission(self.instance.membership_policy)   
+            self._calc_team_visibility_help_text(self.instance.team_visibility.number)
+            self._calc_video_visibility_help_text(self.instance.video_visibility.number)
 
         if not allow_rename:
             del self.fields['name']
 
     # determines which role checkboxes are ticked based on the team's membership_policy
-    def _calc_inviter_role_checkboxes(self):
-        if self.instance.membership_policy in [Team.INVITATION_BY_ALL, Team.INVITATION_BY_MANAGER, Team.INVITATION_BY_ADMIN]:
+    def _calc_admission(self, membership_policy):
+        membership_policy = int(membership_policy)
+        if membership_policy in [Team.INVITATION_BY_ALL, Team.INVITATION_BY_MANAGER, Team.INVITATION_BY_ADMIN]:
             self.initial['admission'] = GeneralSettingsForm.BY_INVITATION
+            self.fields['admission'].widget.dynamic_choice_help_text_initial = dict(self.ADMISSION_CHOICES_HELP_TEXT)[self.BY_INVITATION]
 
             if self.instance.membership_policy == Team.INVITATION_BY_ALL:
                 self.initial['inviter_role_any'] = True
@@ -973,7 +990,8 @@ class GeneralSettingsForm(forms.ModelForm):
             elif self.instance.membership_policy == Team.INVITATION_BY_ADMIN:
                 self.initial['inviter_role_admin'] = True
         else:
-            self.initial['admission'] = self.instance.membership_policy
+            self.initial['admission'] = membership_policy
+            self.fields['admission'].widget.dynamic_choice_help_text_initial = dict(self.ADMISSION_CHOICES_HELP_TEXT)[membership_policy]
 
     # subtitle visibility setting are for collab teams only
     def _calc_subtitle_visibility(self):
@@ -987,6 +1005,14 @@ class GeneralSettingsForm(forms.ModelForm):
             del self.fields['subtitles_public']
             del self.fields['drafts_public']
 
+    def _calc_team_visibility_help_text(self, team_visibility):
+        team_visibility = int(team_visibility)
+        self.fields['team_visibility'].help_text = self.TeamVisibilityHelpText.lookup_number(team_visibility)
+
+    def _calc_video_visibility_help_text(self, video_visibility):
+        video_visibility = int(video_visibility)
+        self.fields['video_visibility'].help_text = self.VideoVisibilityHelpText.lookup_number(video_visibility)
+
     def prevent_duplicate_public_videos_set(self):
         if self.is_bound:
             return bool(self.data.get('prevent_duplicate_public_videos'))
@@ -996,16 +1022,23 @@ class GeneralSettingsForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super(GeneralSettingsForm, self).clean()
 
-        if int(cleaned_data['admission']) == GeneralSettingsForm.BY_INVITATION:
-            if cleaned_data['inviter_role_any']:
-                membership_policy = Team.INVITATION_BY_ALL
-            elif cleaned_data['inviter_role_manager']:
-                membership_policy = Team.INVITATION_BY_MANAGER
-            elif cleaned_data['inviter_role_admin']:
-                membership_policy = Team.INVITATION_BY_ADMIN
-        else:
-            membership_policy = cleaned_data['admission']
-        cleaned_data['membership_policy'] = membership_policy
+        admission = cleaned_data.get('admission', None)
+
+        if admission:
+            if int(cleaned_data['admission']) == GeneralSettingsForm.BY_INVITATION:
+                if cleaned_data['inviter_role_any']:
+                    membership_policy = Team.INVITATION_BY_ALL
+                elif cleaned_data['inviter_role_manager']:
+                    membership_policy = Team.INVITATION_BY_MANAGER
+                elif cleaned_data['inviter_role_admin']:
+                    membership_policy = Team.INVITATION_BY_ADMIN
+                else:
+                    membership_policy = -1
+                    self.add_error('admission', '')
+            else:
+                membership_policy = cleaned_data['admission']
+
+            cleaned_data['membership_policy'] = membership_policy
 
         return cleaned_data        
 

@@ -109,7 +109,7 @@ class AmaraRadioSelect(widgets.RadioSelect):
         output.append(u'</ul>')
 
         if self.dynamic_choice_help_text:
-            output.append(u'<div class="helpBlock">')
+            output.append(u'<div class="helpBlock dynamicHelpTextContainer">')
             if self.dynamic_choice_help_text_initial:
                 output.append(self.dynamic_choice_help_text_initial)
             output.append(u'</div>')
