@@ -982,44 +982,13 @@ class AddMembersForm(forms.Form):
     role = AmaraChoiceField(choices=TeamMember.ROLES[::-1],
                              initial='contributor',
                              label=_("Assign a role"))
-
-    # old style team members field
     members = forms.CharField(widget=forms.Textarea(attrs={'rows': 10}),
                               label=_("Users to add to team"))
 
-    # new style team members field
-    members_new = MultipleUsernameInviteField(label=_('Usernames'),
-                                  help_text=_('Amara username of the existing user you want to add. '
-                                              'You can add multiple users. '
-                                              'Pasting a comma-separated or a line-by-line list of usernames and pressing the "Enter" key also works!'))
-
     def __init__(self, team, user, data=None, *args, **kwargs):
         super(AddMembersForm, self).__init__(data=data, *args, **kwargs)
-        if data:
-            # get the current username selections from invalidated POST data
-            form_data_members = data.getlist('members_new')
-            if form_data_members:
-                self.fields['members_new'].set_initial_selections(form_data_members)
         self.team = team
         self.user = user        
-
-        if self.team.is_old_style():
-            del self.fields['members_new']
-        else:
-            del self.fields['members']
-            self.fields['members_new'].set_ajax_autocomplete_url(
-                reverse('teams:ajax-inviteable-users-search', kwargs={'slug':team.slug}))
-            self.fields['members_new'].set_ajax_multiple_username_url(
-                reverse('teams:ajax-inviteable-users-multiple-search', kwargs={'slug':team.slug}))
-
-    def clean(self):
-        cleaned_data = super(AddMembersForm, self).clean()
-
-        # validation of multiple username autocomplete field
-        if not self.team.is_old_style() and not cleaned_data['members_new']:
-            self.add_error('members_new', _('At least one username must be provided!'))
-
-        return cleaned_data
 
     def save(self):
         summary = {
@@ -1029,12 +998,7 @@ class AddMembersForm(forms.Form):
             }
         member_role = self.cleaned_data['role']
 
-        if self.team.is_old_style():
-            usernames = set(self.cleaned_data['members'].split())
-        else:
-            usernames = self.cleaned_data['members_new']
-
-        for username in usernames:
+        for username in set(self.cleaned_data['members'].split()):
             try:
                 user = User.objects.get(username=username)
             except User.DoesNotExist:
