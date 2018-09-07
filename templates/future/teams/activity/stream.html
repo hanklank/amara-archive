@@ -1,10 +1,10 @@
 {% extends "future/teams/base.html" %}
-{% load i18n forms ui %}
+{% load i18n forms dropdown %}
 {% block content %}
 <div class="container">
   <div class="filterBox" data-singleton-filters="sort video" data-sort-default="-created">
-    <button id="filter-box-dropdown-button" class="filterBox-button"><span class="filterBox-buttonIcon fa fa-filter"></span> <span class="filterBox-buttonText">{% trans "Filter and Sort" %}</span></button>
-    {% dropdown "filter-box-dropdown-button" %}
+    {% dropdown-button "filter-dropdown" "filterBox-button" %}<span class="filterBox-buttonIcon fa fa-filter"></span> <span class="filterBox-buttonText">{% trans "Filter and Sort" %}</span>{% end-dropdown-button %}
+    {% dropdown "filter-dropdown" %}
     {% dropdown-js-item _('Type') 'type' %}
     {% dropdown-js-item _('Video') 'video' %}
     {% dropdown-js-item _('Video Language') 'video_language' %}

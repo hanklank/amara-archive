@@ -1,10 +1,9 @@
-{% load i18n amara_cache ui %}
+{% load i18n amara_cache dropdown %}
 <ul>
   <li>
-    <button id="{{ user_menu_id }}" class="topnav-button user-menu amaranth bold" data-toggle="dropdown" data-username="{{ user.username}}" role="button" aria-haspopup="true" aria-expanded="false">{{ user.username }}</button>
+    {% dropdown-button user_menu_id "topnav-button user-menu amaranth bold" %}{{ user.username }}{% end-dropdown-button %}
 
     {% dropdown user_menu_id %}
-
     {% dropdown-item _('Dashboard') "profiles:dashboard" %}
     {% dropdown-item _('Profile') "profiles:edit" %}
     {% dropdown-item _('Videos') "profiles:videos" user.username %}
