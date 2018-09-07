@@ -64,9 +64,9 @@ from teams.permissions_const import ROLE_NAMES
 from teams.signals import member_remove
 from teams.workflows import TeamWorkflow
 from ui.forms import (FiltersForm, ManagementForm, AmaraChoiceField,
-                      AmaraRadioSelect, SearchField, AmaraClearableFileInput,
-                      AmaraFileInput, HelpTextList, MultipleLanguageField,
-                      AmaraImageField)
+                      AmaraMultipleChoiceField, AmaraRadioSelect, SearchField,
+                      AmaraClearableFileInput, AmaraFileInput, HelpTextList,
+                      MultipleLanguageField, AmaraImageField)
 from ui.forms import LanguageField as NewLanguageField
 from utils.html import clean_html
 from utils import send_templated_email
@@ -983,44 +983,13 @@ class AddMembersForm(forms.Form):
     role = AmaraChoiceField(choices=TeamMember.ROLES[::-1],
                              initial='contributor',
                              label=_("Assign a role"))
-
-    # old style team members field
     members = forms.CharField(widget=forms.Textarea(attrs={'rows': 10}),
                               label=_("Users to add to team"))
 
-    # new style team members field
-    members_new = MultipleUsernameInviteField(label=_('Usernames'),
-                                  help_text=_('Amara username of the existing user you want to add. '
-                                              'You can add multiple users. '
-                                              'Pasting a comma-separated or a line-by-line list of usernames and pressing the "Enter" key also works!'))
-
     def __init__(self, team, user, data=None, *args, **kwargs):
         super(AddMembersForm, self).__init__(data=data, *args, **kwargs)
-        if data:
-            # get the current username selections from invalidated POST data
-            form_data_members = data.getlist('members_new')
-            if form_data_members:
-                self.fields['members_new'].set_initial_selections(form_data_members)
         self.team = team
         self.user = user        
-
-        if self.team.is_old_style():
-            del self.fields['members_new']
-        else:
-            del self.fields['members']
-            self.fields['members_new'].set_ajax_autocomplete_url(
-                reverse('teams:ajax-inviteable-users-search', kwargs={'slug':team.slug}))
-            self.fields['members_new'].set_ajax_multiple_username_url(
-                reverse('teams:ajax-inviteable-users-multiple-search', kwargs={'slug':team.slug}))
-
-    def clean(self):
-        cleaned_data = super(AddMembersForm, self).clean()
-
-        # validation of multiple username autocomplete field
-        if not self.team.is_old_style() and not cleaned_data['members_new']:
-            self.add_error('members_new', _('At least one username must be provided!'))
-
-        return cleaned_data
 
     def save(self):
         summary = {
@@ -1030,12 +999,7 @@ class AddMembersForm(forms.Form):
             }
         member_role = self.cleaned_data['role']
 
-        if self.team.is_old_style():
-            usernames = set(self.cleaned_data['members'].split())
-        else:
-            usernames = self.cleaned_data['members_new']
-
-        for username in usernames:
+        for username in set(self.cleaned_data['members'].split()):
             try:
                 user = User.objects.get(username=username)
             except User.DoesNotExist:
@@ -1572,49 +1536,33 @@ class ManagementVideoFiltersForm(VideoFiltersForm):
             qs = qs.missing_completed_language(needs_subtitles)
         return qs
 
-class ActivityFiltersForm(forms.Form):
+class ActivityFiltersForm(FiltersForm):
     SORT_CHOICES = [
-        ('-created', _('newest first')),
+        ('-created', _('newest first (default)')),
         ('created', _('oldest first')),
     ]
     SORT_CHOICES_OLD = [
         ('-created', _('date, newest')),
         ('created', _('date, oldest')),
     ]
-    type = forms.ChoiceField(
+    type = AmaraMultipleChoiceField(
         label=_('Select Type'), required=False,
         choices=[])
-    video_language = forms.ChoiceField(
+    video = forms.CharField(label=_('Search for video'), required=False)
+    video_language = MultipleLanguageField(
         label=_('Select Video Language'), required=False,
-        choices=[])
-    subtitle_language = forms.ChoiceField(
+        options='my popular all')
+    subtitle_language = MultipleLanguageField(
         label=_('Select Subtitle Language'), required=False,
-        choices=[])
-    sort = forms.ChoiceField(
+        options='my popular all')
+    sort = AmaraChoiceField(
         label=_('Select sort'), required=False,
         choices=SORT_CHOICES)
 
     def __init__(self, team, get_data):
-        super(ActivityFiltersForm, self).__init__(
-                  data=self.calc_data(get_data))
+        super(ActivityFiltersForm, self).__init__(get_data)
         self.team = team
         self.fields['type'].choices = self.calc_activity_choices()
-        language_choices = [
-            ('', ('Any language')),
-        ]
-        if team.is_old_style():
-            language_choices.extend(get_language_choices(flat=True))
-        else:
-            language_choices.extend(get_language_choices())
-        self.fields['video_language'].choices = language_choices
-        self.fields['subtitle_language'].choices = language_choices
-
-    def use_old_labels(self):
-        self.fields['type'].label = _('Activity Type')
-        self.fields['video_language'].label = _('Video Language')
-        self.fields['subtitle_language'].label =_('Subtitle Language')
-        self.fields['sort'].label = _('Sorted by')
-        self.fields['sort'].choices = self.SORT_CHOICES_OLD
 
     def calc_activity_choices(self):
         choices = [
@@ -1625,32 +1573,26 @@ class ActivityFiltersForm(forms.Form):
             (value, choice_map[value])
             for value in self.team.new_workflow.activity_type_filter_options()
         )
+        choices.sort(key=lambda choice: unicode(choice[1]))
         return choices
 
-    def calc_data(self, get_data):
-        field_names = set(['type', 'video_language', 'subtitle_language',
-                           'sort'])
-        data = {
-            key: value
-            for (key, value) in get_data.items()
-            if key in field_names
-        }
-        return data if data else None
-
-    def get_queryset(self):
+    def _get_queryset(self, cleaned_data):
         qs = ActivityRecord.objects.for_team(self.team)
         if not (self.is_bound and self.is_valid()):
             return qs
-        type = self.cleaned_data.get('type')
-        subtitle_language = self.cleaned_data.get('subtitle_language')
-        video_language = self.cleaned_data.get('video_language')
-        sort = self.cleaned_data.get('sort', '-created')
+        type = cleaned_data.get('type')
+        video = cleaned_data.get('video')
+        subtitle_language = cleaned_data.get('subtitle_language')
+        video_language = cleaned_data.get('video_language')
+        sort = cleaned_data.get('sort', '-created')
         if type:
-            qs = qs.filter(type=type)
+            qs = qs.filter(type__in=type)
+        if video:
+            qs = qs.filter(video=Video.objects.search(video))
         if subtitle_language:
-            qs = qs.filter(language_code=subtitle_language)
+            qs = qs.filter(language_code__in=subtitle_language)
         if video_language:
-            qs = qs.filter(video_language_code=video_language)
+            qs = qs.filter(video_language_code__in=video_language)
         if sort:
             qs = qs.order_by(sort)
         return qs
@@ -1871,12 +1813,13 @@ class ChangeMemberRoleForm(ManagementForm):
     languages = MultipleLanguageField(label=_('Subtitle language(s)'), options='null all', required=False)
 
     def __init__(self, user, queryset, selection, all_selected,
-                 data=None, files=None, is_owner=False, **kwargs):
+                 data=None, files=None, is_owner=False, team=None, **kwargs):
         self.user = user
         self.is_owner = is_owner
+        self.team = team
         super(ChangeMemberRoleForm, self).__init__(
             queryset, selection, all_selected, data=data, files=files)
-        self.fields['projects'].setup(kwargs['team'])
+        self.fields['projects'].setup(team)
 
     def clean(self):
         cleaned_data = super(ChangeMemberRoleForm, self).clean()
@@ -1980,6 +1923,27 @@ class ChangeMemberRoleForm(ManagementForm):
                 "%(count)s members could not be edited",
                 self.error_count), count=self.error_count))
         return errors
+
+    def get_pickle_state(self):
+        return (
+            self.user.id,
+            self.team.id,
+            self.is_owner,
+            self.queryset.query,
+            self.selection,
+            self.all_selected,
+            self.data,
+            self.files,
+        )
+
+    @classmethod
+    def restore_from_pickle_state(cls, state):
+        user = User.objects.get(id=state[0])
+        team = Team.objects.get(id=state[1])
+        is_owner = state[2]
+        queryset = TeamMember.objects.all()
+        queryset.query = state[3]
+        return cls(user, queryset, is_owner=is_owner, team=team, *state[4:])
 
 class RemoveMemberForm(ManagementForm):
     name = "remove_member"

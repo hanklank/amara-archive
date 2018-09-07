@@ -2,16 +2,18 @@
 {% load i18n forms ui %}
 {% block content %}
 <div class="container">
-  <div class="filterBox" data-singleton-filters="sort">
+  <div class="filterBox" data-singleton-filters="sort video" data-sort-default="-created">
     <button id="filter-box-dropdown-button" class="filterBox-button"><span class="filterBox-buttonIcon fa fa-filter"></span> <span class="filterBox-buttonText">{% trans "Filter and Sort" %}</span></button>
     {% dropdown "filter-box-dropdown-button" %}
     {% dropdown-js-item _('Type') 'type' %}
+    {% dropdown-js-item _('Video') 'video' %}
     {% dropdown-js-item _('Video Language') 'video_language' %}
     {% dropdown-js-item _('Subtitle Language') 'subtitle_language' %}
     {% dropdown-js-item _('Sort') 'sort' separator=True %}
     {% enddropdown %}
     <div class="filterBox-fields">
       {% render_field filters_form.type %}
+      {% render_field filters_form.video %}
       {% render_field filters_form.video_language %}
       {% render_field filters_form.subtitle_language %}
       {% render_field filters_form.sort %}

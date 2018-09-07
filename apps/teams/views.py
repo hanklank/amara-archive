@@ -57,7 +57,8 @@ from teams.forms import (
     OldMoveVideosForm, AddVideoToTeamForm, GuidelinesLangMessagesForm,
     ProjectField, ActivityFiltersForm,
 )
-from teams.oldforms import DeleteLanguageForm, AddTeamVideoForm
+from teams.oldforms import (DeleteLanguageForm, AddTeamVideoForm,
+                            OldActivityFiltersForm)
 from teams.models import (
     Team, TeamMember, Invite, Application, TeamVideo, Task, Project, Workflow,
     Setting, TeamLanguagePreference, InviteExpiredException, BillingReport,
@@ -2476,8 +2477,7 @@ def video_feed(request, team, feed_id):
     return context
 
 def activity(request, team):
-    filters_form = ActivityFiltersForm(team, request.GET)
-    filters_form.use_old_labels()
+    filters_form = OldActivityFiltersForm(team, request.GET)
     paginator = AmaraPaginator(filters_form.get_queryset(), ACTIONS_PER_PAGE)
     page = paginator.get_page(request)
 
