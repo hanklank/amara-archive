@@ -13,7 +13,10 @@
   - progressbars
   - indicators
   - tabs
-  - tables
+  - id: tables
+    title: Tables
+  - id: dropdown-menus
+    title: Dropdown menus
 
 - - Layout
   - generalLayout
@@ -66,6 +69,8 @@
   - videoCards
   - videoSubtitlesList
   - filterList
+  - id: filter-box
+    title: Filter Box
   - actionBar
   - selectList
   - pagination

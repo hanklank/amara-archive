@@ -97,11 +97,12 @@
               {% if subtitle_version and subtitle_version.has_subtitles %}
               <div class="header-actions dropdown small">
                 <button id="download-button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{% trans "Download" %}<span class="caret"></span></button>
-                <ul class="dropdown-menu" aria-labeledby="download-button">
-                  {% for format_name in downloadable_formats %}
-                  <li><a href="{% subtitle_download_url subtitle_version format_name %}">{{format_name|upper}}</a></li>
-                  {% endfor %}
-                </ul>
+                {% dropdown "download-button" %}
+                {% for format_name in downloadable_formats %}
+                {% subtitle_download_url subtitle_version format_name as download_url %}
+                {% dropdown-item format_name|upper download_url raw_url=True %}
+                {% endfor %}
+                {% enddropdown %}
               </div>
               {% endif %}
             </header>
