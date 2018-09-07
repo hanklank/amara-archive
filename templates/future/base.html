@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    {% include "gtm-head.html" %}
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -26,7 +27,6 @@
     <link rel="apple-touch-icon" sizes="180x180" href="{% asset "img/apple-touch-icon.png" %}">
     <link rel="icon" type="image/png" sizes="16x16" href="{% asset "img/favicon-16x16.png" %}">
     <link rel="icon" type="image/png" sizes="32x32" href="{% asset "img/favicon-32x32.png" %}">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     {% block css %}<link rel="stylesheet" href="{% asset "css/application.css" %}">{% endblock css %}
     <script src="{% asset "js/head.js" %}"></script>
     {% js_i18n_catalog %}
@@ -35,6 +35,7 @@
     <script>var userLanguages = [{% for language in user.get_languages %}"{{language }}"{% if not forloop.last %},{% endif %}{% endfor %}];</script>
   </head>
   <body{% block body-extra %}{% endblock %}>
+    {% include "gtm-body.html" %}
     <a id="top"></a>
     {% block header %}{% include "future/header.html" %}{% endblock %}
     {% futureui_announcement %}
@@ -82,6 +83,5 @@
 
     {% block main_js %}<script src="{% asset "js/application.js" %}"></script>{% endblock %}
     {% block bottom %}{% endblock %}
-    {% include "_analytics.html" %}
   </body>
 </html>

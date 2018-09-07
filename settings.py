@@ -180,8 +180,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'utils.context_processors.current_commit',
     'utils.context_processors.custom',
     'utils.context_processors.user_languages',
-    'utils.context_processors.run_locally',
-    'utils.context_processors.experiments',
     'django.contrib.messages.context_processors.messages',
     'django.core.context_processors.i18n',
     'staticmedia.context_processors.staticmedia',
@@ -197,16 +195,16 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.webdesign',
     # third party apps
-    'djcelery',
     'rest_framework',
+    'django_rq',
     # third party apps forked on our repo
     'localeurl',
     'openid_consumer',
     # our apps
     'accountlinker',
     'activity',
+    'amara',
     'amaradotorg',
-    'amaracelery',
     'api',
     'caching',
     'codefield',
@@ -238,20 +236,19 @@ STARTUP_MODULES = [
     'externalsites.signalhandlers',
 ]
 
-# Celery settings
-
-# import djcelery
-# djcelery.setup_loader()
-
-# For running worker use: python manage.py celeryd -E --concurrency=10 -n worker1.localhost
-# Run event cather for monitoring workers: python manage.py celerycam --frequency=5.0
-# This allow know are workers online or not: python manage.py celerybeat
-
-CELERY_IGNORE_RESULT = True
-CELERY_SEND_EVENTS = False
-CELERY_SEND_TASK_ERROR_EMAILS = True
-CELERYD_HIJACK_ROOT_LOGGER = False
-BROKER_POOL_LIMIT = 10
+# Queue settings
+RQ_QUEUES = {
+    'default': {
+        'USE_REDIS_CACHE': 'default',
+    },
+    'high': {
+        'USE_REDIS_CACHE': 'default',
+    },
+    'low': {
+        'USE_REDIS_CACHE': 'default',
+    }
+}
+RUN_JOBS_EAGERLY = False
 
 # feedworker management command setup
 FEEDWORKER_PASS_DURATION=3600
@@ -299,6 +296,8 @@ LOCALE_INDEPENDENT_PATHS = [
     re.compile('^/jstest/'),
     re.compile('^/externalsites/youtube-callback'),
     re.compile('^/auth/set-hidden-message-id/'),
+    re.compile('^/auth/twitter_login_done'),
+    re.compile('^/auth/twitter_login_done_confirm'),
     re.compile('^/crossdomain.xml'),
     re.compile('^/embedder-widget-iframe/'),
     re.compile('^/__debug__/'),
@@ -373,9 +372,9 @@ ANONYMOUS_DEFAULT_USERNAME = u"amara-bot"
 ANONYMOUS_FULL_NAME = u"Amara Bot"
 
 #Use on production
-GOOGLE_ANALYTICS_NUMBER = 'UA-163840-22'
-EXPERIMENTS_CODE = "QL2-1BUpSyeABVHp9b6G8w"
-MIXPANEL_TOKEN = '44205f56e929f08b602ccc9b4605edc3'
+GOOGLE_TAG_MANAGER_ID = None
+GOOGLE_ANALYTICS_NUMBER = None
+GOOGLE_ADWORDS_CODE = None
 
 # API integration settings
 GOOGLE_CLIENT_ID = None
@@ -395,6 +394,7 @@ DEFAULT_BUCKET = ''
 AWS_USER_DATA_BUCKET_NAME  = ''
 STATIC_MEDIA_USES_S3 = USE_AMAZON_S3 = False
 STATIC_MEDIA_COMPRESSED = True
+STATIC_MEDIA_EXPERIMENTAL_EDITOR_BUCKET = 's3.staging.amara.org'
 
 AVATAR_MAX_SIZE = 500*1024
 THUMBNAILS_SIZE = (
@@ -407,7 +407,19 @@ THUMBNAILS_SIZE = (
 
 EMAIL_BCC_LIST = []
 
-CACHE_BACKEND = 'locmem://'
+CACHES = {
+    'default': {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://{}:{}/{}".format(
+            os.environ.get('REDIS_HOST', 'redis'),
+            os.environ.get('REDIS_PORT', 6379),
+            0),
+        "OPTIONS": {
+            "PARSER_CLASS": "redis.connection.HiredisParser",
+        },
+    }
+}
+
 
 #for unisubs.example.com
 RECAPTCHA_PUBLIC = '6LdoScUSAAAAANmmrD7ALuV6Gqncu0iJk7ks7jZ0'
@@ -725,10 +737,6 @@ EMAIL_BACKEND = "utils.safemail.InternalOnlyBackend"
 EMAIL_FILE_PATH = '/tmp/unisubs-messages'
 # on staging and dev only the emails listed bellow will receive actual mail
 EMAIL_NOTIFICATION_RECEIVERS = ("arthur@stimuli.com.br", "steve@stevelosh.com", "@pculture.org")
-# If True will not try to load media (e.g. javascript files) from third parties.
-# If you're developing and have no net access, enable this setting on your
-# settings_local.py
-RUN_LOCALLY = False
 
 def log_handler_info():
     rv = {
@@ -746,7 +754,7 @@ def log_handler_info():
 
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': True,
+    'disable_existing_loggers': False,
     'root': {
         'level': 'INFO',
         'handlers': ['main'],
@@ -764,8 +772,8 @@ LOGGING = {
         'main': log_handler_info(),
     },
     'loggers': {
-        'celery': {
-            'level': 'WARNING',
+        "rq.worker": {
+            "level": "INFO"
         },
         'requests.packages.urllib3.connectionpool': {
             'level': 'WARNING',

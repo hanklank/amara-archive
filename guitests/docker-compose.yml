@@ -8,12 +8,12 @@ services:
       LANG: en_US.UTF-8
       WORKERS: "2"
       DISABLE_LOGIN_CAPTCHA: "1"
+      DISABLE_DEBUG_TOOLBAR: "1"
     volumes:
       - ..:/opt/apps/amara:z
     depends_on:
       - db
-      - queue
-      - cache
+      - redis
     ports:
       - "8000"
 
@@ -21,16 +21,13 @@ services:
     image: amara-app
     command: worker
     environment:
-      CELERY_OPTS: -B
-      CELERY_QUEUES: default,priority
       DJANGO_SETTINGS_MODULE: dev_settings
       LANG: en_US.UTF-8
     volumes:
       - ..:/opt/apps/amara:z
     links:
       - db
-      - queue
-      - cache
+      - redis
 
   feed-worker:
     image: amara-app
@@ -43,8 +40,7 @@ services:
       - ..:/opt/apps/amara:z
     depends_on:
       - db
-      - queue
-      - cache
+      - redis
 
   db:
     image: mysql:5.7
@@ -58,16 +54,8 @@ services:
     ports:
       - "3306"
 
-  queue:
-    image: rabbitmq
-    ports:
-      - "5672"
-      - "15672"
-
-  cache:
-    image: memcached
-    ports:
-      - "11211"
+  redis:
+    image: redis:4.0.10
 
   varnish:
     image: amara/amara-cache

@@ -24,12 +24,21 @@ import os
 HOSTNAME = 'unisubs.example.com:8000'
 
 INSTALLED_APPS += (
-    'debug_toolbar',
     'sslserver',
 )
-MIDDLEWARE_CLASSES = (
-        'debug_toolbar.middleware.DebugToolbarMiddleware',
-) + MIDDLEWARE_CLASSES
+
+def should_enable_debug_toolbar():
+    try:
+        import debug_toolbar
+    except ImportError:
+        return False
+    return not env_flag_set('DISABLE_DEBUG_TOOLBAR')
+
+if should_enable_debug_toolbar():
+    INSTALLED_APPS += ('debug_toolbar',)
+    MIDDLEWARE_CLASSES = (
+            'debug_toolbar.middleware.DebugToolbarMiddleware',
+    ) + MIDDLEWARE_CLASSES
 
 BROKER_URL = 'amqp://guest:guest@queue:5672'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -37,7 +46,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 FEEDWORKER_PASS_DURATION=300
 
 JS_USE_COMPILED = True
-RUN_LOCALLY = True
 
 DEBUG = True
 
@@ -52,13 +60,6 @@ DATABASES = {
         'OPTIONS': {
             'init_command': 'SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED',
         },
-    }
-}
-
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': 'cache:11211',
     }
 }
 
@@ -78,23 +79,9 @@ OAUTH_CALLBACK_PROTOCOL = 'http'
 # allow devs to use insecure passwords on local instances
 MINIMUM_PASSWORD_SCORE = 0
 
-# Celery
-CELERY_ALWAYS_EAGER = False
-CELERY_TASK_RESULT_EXPIRES = timedelta(days=7)
-
 DEBUG_TOOLBAR_CONFIG = {
     'SHOW_TOOLBAR_CALLBACK': lambda request: not request.is_ajax()
 }
-
-# Or you can use redis as backend
-#BROKER_BACKEND = 'redis'
-#BROKER_HOST = "localhost"
-#BROKER_VHOST = "/"
-
-# 1. Run Redis
-# 2. >>> python manage.py celeryd -E --concurrency=10 -n worker1.localhost
-# 3. >>> ./dev-runserver
-# 4. >>> python manage.py celerycam #this is optional. It allow see in admin-interface tasks running
 
 CACHE_PREFIX = 'unisubsdevsettings'
 CACHE_TIMEOUT = 0

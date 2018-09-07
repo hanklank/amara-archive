@@ -32,16 +32,6 @@ from auth.views import login as user_login
 admin.autodiscover()
 admin.site.login = user_login
 
-# Monkeypatch the Celery admin to show a column for task run time in the list view.
-from djcelery.admin import TaskMonitor
-from djcelery.models import TaskState
-
-
-admin.site.unregister([TaskState])
-TaskMonitor.list_display += ('runtime',)
-admin.site.register(TaskState, TaskMonitor)
-
-# run monkey patch django
 from utils import urlvalidator
 urlpatterns = patterns('',
     url('^500/$', TemplateView.as_view(template_name='500.html')),
@@ -73,7 +63,7 @@ urlpatterns = patterns('',
         name='password_reset_confirm_external'),
     url(r'^reset/done/$',
         'auth.views.password_reset_complete'),
-    url(r'^styleguide/', include('styleguide.urls')),
+    url(r'^styleguide/', include('styleguide.urls', namespace='styleguide')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^staff/', include('staff.urls', namespace='staff')),
     url(r'^subtitles/',
@@ -157,6 +147,7 @@ urlpatterns = patterns('',
     url(r'^captcha/', include('captcha.urls')),
     url(r'^commit$', RedirectView.as_view(
         url='https://github.com/pculture/unisubs/commit/{}'.format(settings.LAST_COMMIT_GUID))),
+    url(r'^django-rq/', include('django_rq.urls')),
     url(r'^$', settings.HOMEPAGE_VIEW, name="home"),
 )
 
@@ -168,14 +159,18 @@ urlpatterns += patterns('',
 
 
 if settings.DEBUG:
-    import debug_toolbar
-    urlpatterns += patterns('',
-        (r'^site_media/(?P<path>.*)$', 'django.views.static.serve',
-         {'document_root': settings.STATIC_ROOT, 'show_indexes': True}),
-        (r'^user-data/(?P<path>.*)$', 'django.views.static.serve',
-         {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
-        url(r'^__debug__/', include(debug_toolbar.urls)),
-    )
+    try:
+        import debug_toolbar
+    except ImportError:
+        pass
+    else:
+        urlpatterns += patterns('',
+            (r'^site_media/(?P<path>.*)$', 'django.views.static.serve',
+             {'document_root': settings.STATIC_ROOT, 'show_indexes': True}),
+            (r'^user-data/(?P<path>.*)$', 'django.views.static.serve',
+             {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
+            url(r'^__debug__/', include(debug_toolbar.urls)),
+        )
 
 def ensure_user(request):
     if not hasattr(request, 'user'):

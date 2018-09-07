@@ -17,13 +17,23 @@
 # http://www.gnu.org/licenses/agpl-3.0.html.
 
 from __future__ import absolute_import
-
-from django.shortcuts import render
-from django.conf import settings
-from django.http import HttpResponse
 import json
 
+from django.conf import settings
+from django.http import HttpResponse
+from django.shortcuts import render
+from django.utils.translation import gettext as _
+
+from styleguide import forms
 from styleguide.styleguide import StyleGuide
+
+# add your form class here if you need to test form processing on a styleguide
+# section
+forms_by_section = {
+    'multi-field': forms.MultiFieldForm,
+    'image-upload': forms.ImageUpload,
+    'switches': forms.SwitchForm,
+}
 
 _cached_styleguide = None
 def get_styleguide():
@@ -32,10 +42,38 @@ def get_styleguide():
         _cached_styleguide = StyleGuide()
     return _cached_styleguide
 
-def styleguide(request):
-    return render(request, 'styleguide/styleguide.html', {
+def home(request):
+    return render(request, 'styleguide/home.html', {
+        'section': {
+            'title': _('Styleguide home'),
+        },
         'styleguide': get_styleguide(),
+        'active_section': None,
     })
+
+def section(request, section_id):
+    styleguide = get_styleguide()
+    section = styleguide.sections[section_id]
+
+    return render(request, section.template_name, {
+        'styleguide': styleguide,
+        'section': section,
+        'active_section': section_id,
+        'form': get_form_for_section(request, section_id),
+    })
+
+def get_form_for_section(request, section_id):
+    FormClass = forms_by_section.get(section_id)
+    if FormClass:
+        if request.method == 'POST':
+            form = FormClass(request, data=request.POST, files=request.FILES)
+            if form.is_valid():
+                form.save()
+            return form
+        else:
+            return FormClass(request)
+    else:
+        return None
 
 def member_search(request):
     data = {

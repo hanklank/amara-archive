@@ -23,7 +23,7 @@ from django.utils.translation import ugettext as _
 from teams.models import Team, MembershipNarrowing, Workflow, TeamMember, Task
 from teams.permissions_const import (
     ROLES_ORDER, ROLE_OWNER, ROLE_CONTRIBUTOR, ROLE_ADMIN, ROLE_MANAGER,
-    ROLE_OUTSIDER
+    ROLE_OUTSIDER, ROLE_PROJ_LANG_MANAGER
 )
 class TeamsPermissionsCheck(object):
     """The result of some functions below.
@@ -132,13 +132,15 @@ def roles_user_can_assign(team, user, to_user=None):
     """
     user_role = get_role_for_target(user, team)
 
+    if to_user and user == to_user:
+        return []
     if user_role == ROLE_OWNER:
-        return ROLES_ORDER[1:]
+        return ROLES_ORDER + [ROLE_PROJ_LANG_MANAGER]
     elif user_role == ROLE_ADMIN:
         if to_user:
             if get_role(get_member(to_user, team)) == ROLE_OWNER or get_role(get_member(to_user, team)) == ROLE_ADMIN:
                 return []
-        return ROLES_ORDER[2:]
+        return ROLES_ORDER[2:] + [ROLE_PROJ_LANG_MANAGER]
     else:
         return []
 
@@ -527,6 +529,14 @@ def can_view_management_tab(team, user):
     """Return whether the given user can view the management pages """
     return team.user_is_manager(user)
 
+def can_view_project_or_language_management_tab(team, user):
+    member = team.get_member(user)
+    if not member:
+        return False
+    return (member.is_a_project_or_language_manager() and
+            not team.user_is_manager(user))
+
+
 def can_view_stats_tab(team, user):
     role = get_role_for_target(user, team)
     return not role == ROLE_OUTSIDER
@@ -569,7 +579,6 @@ def can_view_activity(team, user):
 
 def can_invite(team, user):
     """Return whether the given user can send an invite for the given team."""
-
     role = get_role_for_target(user, team)
 
     role_required = {
@@ -581,6 +590,10 @@ def can_invite(team, user):
     }[team.membership_policy]
 
     return role in _perms_equal_or_greater(role_required)
+
+def can_send_email_invite(team, user):
+    role = get_role_for_target(user, team)
+    return role in _perms_equal_or_greater(ROLE_ADMIN)
 
 def can_add_members(team, user):
     """Return whether the given user can add members to the given team."""
