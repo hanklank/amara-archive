@@ -33,3 +33,4 @@ rq-scheduler==0.8.3
 django-redis==4.9.0
 django-rq==0.9.1
 python-magic==0.4.15
+../deploy/vendor/django-registration.tar.gz
