@@ -1821,12 +1821,13 @@ class ChangeMemberRoleForm(ManagementForm):
     languages = MultipleLanguageField(label=_('Subtitle language(s)'), options='null all', required=False)
 
     def __init__(self, user, queryset, selection, all_selected,
-                 data=None, files=None, is_owner=False, **kwargs):
+                 data=None, files=None, is_owner=False, team=None, **kwargs):
         self.user = user
         self.is_owner = is_owner
+        self.team = team
         super(ChangeMemberRoleForm, self).__init__(
             queryset, selection, all_selected, data=data, files=files)
-        self.fields['projects'].setup(kwargs['team'])
+        self.fields['projects'].setup(team)
 
     def clean(self):
         cleaned_data = super(ChangeMemberRoleForm, self).clean()
@@ -1930,6 +1931,27 @@ class ChangeMemberRoleForm(ManagementForm):
                 "%(count)s members could not be edited",
                 self.error_count), count=self.error_count))
         return errors
+
+    def get_pickle_state(self):
+        return (
+            self.user.id,
+            self.team.id,
+            self.is_owner,
+            self.queryset.query,
+            self.selection,
+            self.all_selected,
+            self.data,
+            self.files,
+        )
+
+    @classmethod
+    def restore_from_pickle_state(cls, state):
+        user = User.objects.get(id=state[0])
+        team = Team.objects.get(id=state[1])
+        is_owner = state[2]
+        queryset = TeamMember.objects.all()
+        queryset.query = state[3]
+        return cls(user, queryset, is_owner=is_owner, team=team, *state[4:])
 
 class RemoveMemberForm(ManagementForm):
     name = "remove_member"
