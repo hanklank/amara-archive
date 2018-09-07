@@ -29,11 +29,18 @@ from utils.bunch import Bunch
 register = template.Library()
 
 @register.simple_tag(name='dropdown-button-icon')
-def dropdown_button_icon(button_id):
+def dropdown_button_icon(button_id, css_class=None):
+    attrs = {
+        'id': button_id,
+        'role': 'button',
+        'aria-haspopup': 'true',
+        'aria-expanded': 'false'
+    }
+    if css_class:
+        attrs['class'] = css_class
+
     return format_html(
-        '<button id="{}" role="button" aria-haspopup="true" '
-        'aria-expanded="false"><span class="fa fa-ellipsis-v"></span>'
-        '</button>', button_id)
+        '<button{}><span class="fa fa-ellipsis-v"></span>', flatatt(attrs))
 
 @register.simple_tag(name='dropdown-button')
 def dropdown_button(button_id, css_class):

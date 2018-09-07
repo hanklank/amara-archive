@@ -67,6 +67,8 @@
   - videoCards
   - videoSubtitlesList
   - filterList
+  - id: listview
+    title: List View
   - id: filter-box
     title: Filter Box
   - actionBar
