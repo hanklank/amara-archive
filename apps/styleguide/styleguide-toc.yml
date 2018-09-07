@@ -69,6 +69,8 @@
   - filterList
   - id: listview
     title: List View
+  - id: check-all
+    title: Check All
   - id: filter-box
     title: Filter Box
   - actionBar
