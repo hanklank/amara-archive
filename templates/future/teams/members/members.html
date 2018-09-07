@@ -26,9 +26,10 @@
                 <div class="search proxyField" data-proxy-for="#id_q">
                   {{ filters_form.q|render_field }}
                 </div>
-                <div class="addButton" data-helptext="Add Member">
-                    <i class="plus fa fa-plus"></i><p><b>Add Member</b></p>
-                </div>
+                <button class="contentHeader-addButton">
+                    <i class="fa fa-plus"></i>
+                    <span class="contentHeader-addButtonText">{% trans "Add Member" %}</span>
+                </button>
               </div>
               <br/>
               <div class="filters proxyField" data-proxy-for="#id_sort">
