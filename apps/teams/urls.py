@@ -80,6 +80,10 @@ urlpatterns += patterns('teams.new_views',
     url(r'^(?P<slug>[-\w]+)/member/(?P<username>.+)/$', 'member_profile', name='member-profile'),
     url(r'^(?P<slug>[-\w]+)/members/ajax-search/$', 'ajax_member_search',
         name='ajax-member-search'),
+    url(r'^(?P<slug>[-\w]+)/inviteable_users/ajax-search/$', 'ajax_inviteable_users_search',
+        name='ajax-inviteable-users-search'),
+    url(r'^(?P<slug>[-\w]+)/inviteable_users/ajax-search/multiple/$', 'ajax_inviteable_users_multiple_search',
+        name='ajax-inviteable-users-multiple-search'),
     url(r'^(?P<slug>[-\w]+)/members/invite/$', 'invite', name='invite'),
     url(r'^(?P<slug>[-\w]+)/members/add/$', 'add_members', name='add-members'),
     url(r'^(?P<slug>[-\w]+)/members/invite/autocomplete-user/$',
@@ -109,6 +113,7 @@ urlpatterns += patterns('teams.new_views',
     url(r'^(?P<slug>[-\w]+)/settings/workflows/$', 'settings_workflows', name='settings_workflows'),
     url(r'^(?P<slug>[-\w]+)/video-durations/$', 'video_durations',
         name='video-durations'),
+    url(r'^(?P<slug>[-\w]+)/debug-stats/$', 'debug_stats', name='debug-stats'),
 )
 
 # settings views that are handled by other apps
