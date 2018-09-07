@@ -17,7 +17,6 @@
 # http://www.gnu.org/licenses/agpl-3.0.html.
 
 from itertools import chain
-import json
 
 from django.core.files import File
 from django.forms import widgets

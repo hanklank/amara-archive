@@ -872,6 +872,12 @@ class GeneralSettingsForm(forms.ModelForm):
         (Team.OPEN, _(u'Open admission')),
     ]
 
+    ADMISSION_CHOICES_HELP_TEXT = [
+        (BY_INVITATION, ugettext(u'The selected roles below can invite new users from the Member Directory page.')),
+        (Team.APPLICATION, ugettext(u'Admins can review and approve team member applications from the Member Directory page.')),
+        (Team.OPEN, ugettext(u'Users can join the team from the team landing page, and any team member can invite new members from the member directory.')),
+    ]
+
     TeamVisibilityHelpText = enum.Enum('TeamVisibilityHelpText', [
         ('PUBLIC', ugettext(u'The team will be listed in the public team directory.')),
         ('UNLISTED', ugettext(u'The team landing page can be seen by anyone with the team link.')),
@@ -883,12 +889,6 @@ class GeneralSettingsForm(forms.ModelForm):
         ('UNLISTED', ugettext(u'Videos on this team can be seen by anyone with the link.')),
         ('PRIVATE', ugettext(u'Videos on this team can only be viewed and accessed by members.')),
     ])
-
-    ADMISSION_CHOICES_HELP_TEXT = [
-        (BY_INVITATION, ugettext(u'The selected roles below can invite new users from the Member Directory page.')),
-        (Team.APPLICATION, ugettext(u'Admins can review and approve team member applications from the Member Directory page.')),
-        (Team.OPEN, ugettext(u'Users can join the team from the team landing page, and any team member can invite new members from the member directory.')),
-    ]
 
     square_logo = AmaraImageField(label=_('Team Logo'),
                                   preview_size=(90, 90),
