@@ -40,6 +40,7 @@ from teams.permissions import can_create_and_edit_subtitles, can_edit_videos
 from teams.models import Team
 from videos.tasks import import_videos_from_feed
 from videos.types import video_type_registrar, VideoTypeError
+from ui.forms import AmaraChoiceField
 from utils.forms import AjaxForm, EmailListField, UsernameListField, StripRegexField, FeedURLField
 from utils import http
 from utils.text import fmt
@@ -415,6 +416,13 @@ class CreateSubtitlesForm(CreateSubtitlesFormBase):
         return self.video
 
 class TeamCreateSubtitlesForm(CreateSubtitlesForm):
+
+    subtitle_language_code = AmaraChoiceField(label=_('Subtitle into:'))
+    primary_audio_language_code = AmaraChoiceField(
+                label=_('This video is in:'),
+                help_text=_('Please double check the primary spoken '
+                            'language. This step cannot be undone.'))
+
     def __init__(self, request, video, team_slug, data=None):
         super(TeamCreateSubtitlesForm, self).__init__(request, video, data=data)
         team = Team.objects.get(slug=team_slug)
