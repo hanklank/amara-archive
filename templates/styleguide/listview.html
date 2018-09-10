@@ -1,0 +1,38 @@
+{% extends "styleguide/base.html" %}
+{% load dropdown %}
+
+{% block "content" %}
+
+<section>
+  <p>listView is a generic way to display items in a tabular layout.  Each item can have associated actions</p>
+
+  <div class="listView columns-3">
+    <div class="listView-header">Title</div>
+    <div class="listView-header">Language</div>
+    <div class="listView-header"></div>
+
+    <div>My Video</div>
+    <div>English</div>
+    <div>
+      <span class="listView-action fa fa-eye"></span>
+      {% dropdown-button-icon "menu-1a" "listView-action" %}
+      {% dropdown "menu-1a" %}
+      {% dropdown-item _('Edit') "profiles:dashboard" %}
+      {% dropdown-item _('Delete') "profiles:dashboard" %}
+      {% enddropdown %}
+    </div>
+
+    <div>My other Video</div>
+    <div>Spanish</div>
+    <div>
+      <span class="listView-action fa fa-eye"></span>
+      {% dropdown-button-icon "menu-2a" "listView-action" %}
+      {% dropdown "menu-2a" %}
+      {% dropdown-item _('Edit') "profiles:dashboard" %}
+      {% dropdown-item _('Delete') "profiles:dashboard" %}
+      {% enddropdown %}
+    </div>
+  </div>
+</section>
+
+{% endblock %}
