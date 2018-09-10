@@ -1,37 +1,70 @@
 {% extends "styleguide/base.html" %}
-{% load dropdown %}
+{% load dropdown webdesign captureas ui %}
 
 {% block "content" %}
 
 <section>
-  <p>listView is a generic way to display items in a tabular layout.  Each item can have associated actions</p>
+  <p>List View is a generic way to display items in a tabular layout.  Each item can have:</p>
+  <ul class="content bullets">
+    <li>Associated actions that get hidden until the user hovers the row.</li>
+    <li>A checkbox column that can get hooked up to an <a href="{% url "styleguide:section" "actionBar" %}">action bar</a></li>
+    <li>Extra information that gets show when you expand the item.  Click the eye icon below to see.</li>
+  </ul>
 
-  <div class="listView columns-3">
+  {% comment %}Note: sizing columns is tricky because there can be an arbitrary number,
+  and also some columns grow like (title/languge) while some columns shouldn't
+  grow (like checkboxes and actions).  Therefore, each listView needs an extra
+  class which sets grid-template-columns.  Here, it's the styleguide-example
+  class. {% endcomment %}
+  <div class="listView styleguide-example">
+    <div class="listView-header">{% checkbox class="checkAll" data_name="selection" %}</div>
     <div class="listView-header">Title</div>
     <div class="listView-header">Language</div>
     <div class="listView-header"></div>
 
-    <div>My Video</div>
-    <div>English</div>
-    <div>
-      <span class="listView-action fa fa-eye"></span>
-      {% dropdown-button-icon "menu-1a" "listView-action" %}
-      {% dropdown "menu-1a" %}
-      {% dropdown-item _('Edit') "profiles:dashboard" %}
+    {% for i in "x"|rjust:"10" %} {# dirty way to do a for loop #}
+    {% captureas menu_id %}menu-1-{{ forloop.counter }}{% endcaptureas %}
+    <div class="listView-checkbox">{% checkbox name="selection" %}</div>
+    <div>{% lorem 4 w random %}<div class="listView-secondary">Some extra info</div></div>
+    <div>{% cycle "English" "French" "Spanish" "Japanese" %}<div class="listView-secondary">Some extra info</div></div>
+    <div class="listView-actions">
+      <button class="listView-action listView-expand"><span class="fa fa-eye"></span></button>
+      {% dropdown-button-icon menu_id "listView-action" %}
+      {% dropdown menu_id %}
+      {% dropdown-js-item _('Details') "expand" %}
+      {% dropdown-item _('Edit') "profiles:dashboard" separator=True %}
       {% dropdown-item _('Delete') "profiles:dashboard" %}
       {% enddropdown %}
     </div>
+    <div class="listView-secondaryRow">An entire extra row of info</div>
+    {% endfor %}
+  </div>
+</section>
 
-    <div>My other Video</div>
-    <div>Spanish</div>
-    <div>
-      <span class="listView-action fa fa-eye"></span>
-      {% dropdown-button-icon "menu-2a" "listView-action" %}
-      {% dropdown "menu-2a" %}
-      {% dropdown-item _('Edit') "profiles:dashboard" %}
+<section>
+  <p>A varient of List View is the always-expanded version.  Here the secondary info is shown by default, without having to expand it.</p>
+
+  <div class="listView styleguide-example">
+    <div class="listView-header">{% checkbox class="checkAll" data_name="selection" %}</div>
+    <div class="listView-header">Title</div>
+    <div class="listView-header">Language</div>
+    <div class="listView-header"></div>
+
+    {% for i in "x"|rjust:"10" %} {# dirty way to do a for loop #}
+    {% captureas menu_id %}menu-2-{{ forloop.counter }}{% endcaptureas %}
+    <div class="listView-checkbox">{% checkbox name="selection" %}</div>
+
+    {# To make an always-expanded listview, just add the visible class to the secondary info  #}
+    <div>{% lorem 4 w random %}<div class="listView-secondary visible">Some extra info</div></div>
+    <div>{% cycle "English" "French" "Spanish" "Japanese" %}<div class="listView-secondary visible">Some extra info</div></div>
+    <div class="listView-actions">
+      {% dropdown-button-icon menu_id "listView-action" %}
+      {% dropdown menu_id %}
+      {% dropdown-item _('Edit') "profiles:dashboard" separator=True %}
       {% dropdown-item _('Delete') "profiles:dashboard" %}
       {% enddropdown %}
     </div>
+    {% endfor %}
   </div>
 </section>
 

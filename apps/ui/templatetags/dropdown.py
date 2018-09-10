@@ -71,7 +71,7 @@ def dropdown_item(label, view_name, *args, **kwargs):
     })
 
 @register.simple_tag(name='dropdown-js-item')
-def dropdown_item(label, *data, **kwargs):
+def dropdown_js_item(label, *data, **kwargs):
     options = extra_dropdown_item_options(kwargs)
 
     return make_dropdown_item(label, options, {
