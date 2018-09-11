@@ -1,0 +1,58 @@
+{% extends "styleguide/base.html" %}
+{% load forms %}
+{% block "content" %}
+<p>
+Workflow diagram used in the futureui workflow settings page
+</p>
+
+<div class="workflowDiagramContainer">    
+    <div class="workflowDiagramSegment first">
+        <i class="icon icon-translate icon-sm-to-md"></i>
+        <span>Transcribe</span>
+        <span>4 days</span>
+    </div>
+    <div class="workflowDiagramSeparator">
+        <svg class="workflowDiagramSeparatorSVG">
+            <polygon class="triangle" points="0,0 30,65 0,130"  />
+        </svg>
+        <svg class="workflowDiagramSeparatorSVG">
+            <polygon class="gap" points="0,0 5,0 35,65 5,130 0,130 30,65" />
+        </svg>
+    </div>
+
+    <div class="workflowDiagramSegment">
+        <i class="icon icon-review icon-sm-to-md"></i>
+        <span>Transcribe</span>
+        <span>4 days</span>
+    </div>
+    <div class="workflowDiagramSeparator">
+        <svg class="workflowDiagramSeparatorSVG">
+            <polygon class="triangle" points="0,0 30,65 0,130"  />
+        </svg>
+        <svg class="workflowDiagramSeparatorSVG">
+            <polygon class="gap" points="0,0 5,0 35,65 5,130 0,130 30,65" />
+        </svg>
+    </div>
+
+    <div class="workflowDiagramSegment">            
+        <i class="icon icon-approve icon-sm-to-md"></i>
+        <span>Transcribe</span>
+        <span>4 days</span>       
+    </div>
+    <div class="workflowDiagramSeparator">
+        <svg class="workflowDiagramSeparatorSVG">
+            <polygon class="triangle" points="0,0 30,65 0,130"  />
+        </svg>
+        <svg class="workflowDiagramSeparatorSVG">
+            <polygon class="gap" points="0,0 5,0 35,65 5,130 0,130 30,65" />
+        </svg>
+    </div>
+
+    <div class="workflowDiagramSegment last">        
+        <i class="icon icon-complete icon-sm-to-md"></i>
+        <span>COMPLETE</span>
+        <span>4 days</span>        
+    </div>
+</div>
+
+{% endblock %}

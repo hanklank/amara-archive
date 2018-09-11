@@ -72,5 +72,7 @@
   - hangingLink
   - constrainContent
   - assignmentHistoryTable
+  - id: workflow-diagram
+    title: Workflow diagram
   - zeroState
 
