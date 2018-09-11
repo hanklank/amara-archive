@@ -22,8 +22,10 @@ from django import forms
 
 from auth.models import get_amara_anonymous_user
 from styleguide.models import StyleguideData
-from ui.forms import AmaraImageField, AmaraChoiceField, SwitchInput, AmaraRadioSelect
 from utils import enum
+from ui.forms import (
+    AmaraImageField, AmaraChoiceField, AmaraMultipleChoiceField, SwitchInput, AmaraRadioSelect
+)
 
 class StyleguideForm(forms.Form):
     def __init__(self, request, **kwargs):
@@ -164,3 +166,12 @@ class DynamicHelpTextForm(StyleguideForm):
         widget=AmaraRadioSelect(dynamic_choice_help_text=RadioChoicesHelpText,
             dynamic_choice_help_text_initial='3) Radio button groups also need an initial help text. The initial help text is set in the widget')
     )
+
+class FilterBox(StyleguideForm):
+    color = AmaraMultipleChoiceField(
+        label="Select color", choices=(
+            ('plum', 'Plum'),
+            ('amaranth', 'Amaranth'),
+            ('lime', 'Lime'),
+        ))
+    shape = forms.CharField(label="Search for shapes")

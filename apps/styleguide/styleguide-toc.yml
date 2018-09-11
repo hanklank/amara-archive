@@ -13,7 +13,10 @@
   - progressbars
   - indicators
   - tabs
-  - tables
+  - id: tables
+    title: Tables
+  - id: dropdown-menus
+    title: Dropdown menus
 
 - - Layout
   - generalLayout
@@ -53,12 +56,10 @@
     title: Dynamic Help Text
 
 - - Modals / Dialogs
-  - modalbaseline
-  - dialogconfirmation
-  - modalvalidation
-  - modaltabbed
-  - dialogchoices
-  - removevideo
+  - id: modals
+    title: Modal dialogs
+  - id: language-switcher
+    title: Language Switcher
 
 - - Utility Classes
   - thumbWrapper
@@ -68,6 +69,12 @@
   - videoCards
   - videoSubtitlesList
   - filterList
+  - id: listview
+    title: List View
+  - id: check-all
+    title: Check All
+  - id: filter-box
+    title: Filter Box
   - actionBar
   - selectList
   - pagination
