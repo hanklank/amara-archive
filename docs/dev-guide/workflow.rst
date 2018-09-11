@@ -123,6 +123,17 @@ As an example, here is a function that logs exceptions:
         except Exception:
             logger.error("General exception in foo()", exc_info=True)
 
+Code Review
+-----------
+
+When a developer makes a pull request, they move the issue to the "Needs Review"
+Zenhub pipeline and finds another developer to review their pull request. The
+reviewing developer needs to make sure that the code doesn't introduce any new bugs
+or security vulnerabilities, and uses existing naming and style conventions. If
+everything looks good, the reviewer approves the pull requests and merges, and
+moves the issue to the "Dev" Zenhub pipeline. If not, they comment or request
+changes on the branch.
+
 .. _workflow:
 
 Workflow
