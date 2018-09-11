@@ -94,8 +94,14 @@ def make_dropdown_item(label, options, link_attrs):
         classes.append(options.extra_class)
 
     if options.icon:
-        label_html = format_html('<span class="dropdownMenu-text">{}</span> <span class="icon icon-{} dropdownMenu-extra"></span>',
-                                 unicode(label), options.icon)
+        if options.icon.startswith('fa-'):
+            icon_class="fa {}".format(options.icon)
+        else:
+            icon_class="icon icon-{}".format(options.icon)
+
+        label_html = format_html('<span class="dropdownMenu-text">{}</span> '
+                                 '<span class="{} dropdownMenu-extra"></span>',
+                                 unicode(label), icon_class)
     elif options.count:
         label_html = format_html('<span class="dropdownMenu-text">{}</span> <span class="dropdownMenu-extra">{}</span>',
                                  unicode(label), options.count)

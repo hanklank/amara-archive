@@ -46,7 +46,7 @@
       <button class="listView-action listView-expand"><span class="fa fa-info-circle"></span></button>
       {% dropdown-button-icon menu_id "listView-action" %}
       {% dropdown menu_id %}
-      {% dropdown-js-item _('Details') "expand" %}
+      {% dropdown-js-item _('Show Details') 'expand' class="listView-showDetails" icon="fa-info-circle" %}
       {% dropdown-item _('Edit') "profiles:dashboard" separator=True %}
       {% dropdown-item _('Delete') "profiles:dashboard" %}
       {% enddropdown %}
@@ -60,14 +60,14 @@
   <p>A varient of List View is the always-expanded version.  Here the secondary info is shown by default, without having to expand it.</p>
 
   <div class="listView styleguide-example">
-    <div class="listView-header">{% checkbox class="checkAll" data_name="selection" %}</div>
+    <div class="listView-header">{% checkbox class="checkAll" data_name="selection2" %}</div>
     <div class="listView-header">Title</div>
     <div class="listView-header">Language</div>
     <div class="listView-header"></div>
 
     {% for i in "x"|rjust:"10" %} {# dirty way to do a for loop #}
     {% captureas menu_id %}menu-2-{{ forloop.counter }}{% endcaptureas %}
-    <div class="listView-checkbox">{% checkbox name="selection" %}</div>
+    <div class="listView-checkbox">{% checkbox name="selection2" %}</div>
 
     {# To make an always-expanded listview, just add the visible class to the secondary info  #}
     <div>{% lorem 4 w random %}<div class="listView-secondary visible">Some extra info</div></div>
