@@ -4,19 +4,34 @@
 {% block "content" %}
 
 <section>
-  <p>List View is a generic way to display items in a tabular layout.  Each item can have:</p>
-  <ul class="content bullets">
-    <li>Associated actions that get hidden until the user hovers the row.</li>
-    <li>A checkbox column that can get hooked up to an <a href="{% url "styleguide:section" "actionBar" %}">action bar</a></li>
-    <li>Extra information that gets show when you expand the item.  Click the (i) icon below to see.</li>
-  </ul>
+  <p>List View is a generic way to display items in a tabular layout.</p>
+
+
+  <div class="content">
+    <h3>List View items have:</h3>
+    <ul class="bullets">
+      <li>Associated actions that get hidden until the user hovers the row.</li>
+      <li>A checkbox column that can get hooked up to an <a href="{% url "styleguide:section" "actionBar" %}">action bar</a></li>
+      <li>Extra information that gets show when you expand the item.  Click the (i) icon below to see.</li>
+    </ul>
+  </div>
+
+  <div class="content">
+    <h3>Keyboard Controls</h3>
+    <ul class="bullets">
+      <li>Up/Down -- navigate the list</li>
+      <li>Space -- toggle the checkbox</li>
+      <li>Enter -- Activate the right-most action (usually a context menu)</li>
+      <li>Ctrl-a -- Select all checkboxes</li>
+    </ul>
+  </div>
 
   {% comment %}Note: sizing columns is tricky because there can be an arbitrary number,
   and also some columns grow like (title/languge) while some columns shouldn't
   grow (like checkboxes and actions).  Therefore, each listView needs an extra
   class which sets grid-template-columns.  Here, it's the styleguide-example
   class. {% endcomment %}
-  <div class="listView styleguide-example">
+  <div tabindex="0" class="listView styleguide-example">
     <div class="listView-header">{% checkbox class="checkAll" data_name="selection" %}</div>
     <div class="listView-header">Title</div>
     <div class="listView-header">Language</div>
