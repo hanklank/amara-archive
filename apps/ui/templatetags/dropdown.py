@@ -31,31 +31,39 @@ register = template.Library()
 @register.simple_tag(name='dropdown-button-icon')
 def dropdown_button_icon(button_id, css_class=None):
     attrs = {
-        'id': button_id,
+        'data-target': button_id,
         'role': 'button',
         'aria-haspopup': 'true',
-        'aria-expanded': 'false'
+        'aria-expanded': 'false',
+        'class': 'dropdownMenu-button',
     }
     if css_class:
-        attrs['class'] = css_class
+        attrs['class'] += ' {}'.format(css_class)
 
     return format_html(
         '<button{}><span class="fa fa-ellipsis-v"></span>', flatatt(attrs))
 
 @register.simple_tag(name='dropdown-button')
-def dropdown_button(button_id, css_class):
+def dropdown_button(button_id, css_class, **attrs):
     return format_html(
-        '<button id="{}" class="{}" role="button" aria-haspopup="true" '
-        'aria-expanded="false">', button_id, css_class)
+        '<button data-target="{}" class="dropdownMenu-button {}" role="button" aria-haspopup="true" '
+        'aria-expanded="false"{}>', button_id, css_class, flatatt(attrs))
 
 @register.simple_tag(name='end-dropdown-button')
 def end_dropdown_button():
     return mark_safe('</button>')
 
 @register.simple_tag
-def dropdown(button_id):
-    return format_html(
-        '<ul class="dropdownMenu" role="menu" aria-labeledby="{}">', button_id)
+def dropdown(button_id, labelled_by=None):
+    attrs = {
+        'class': 'dropdownMenu',
+        'role': 'menu',
+        'id': button_id
+    }
+    if labelled_by:
+        attrs['aria-labelledby'] = labelled_by
+
+    return format_html('<ul{}>', flatatt(attrs))
 
 @register.simple_tag(name='dropdown-item')
 def dropdown_item(label, view_name, *args, **kwargs):
