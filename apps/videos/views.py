@@ -349,6 +349,10 @@ def video(request, video_id, video_url=None, title=None):
         'custom_sidebar': customization.sidebar,
         'header': customization.header,
         'use_old_messages': True,
+        'video_urls': [
+            (vurl, get_sync_account(video, vurl))
+            for vurl in video.get_video_urls()
+        ],
     })
 
 def video_ajax_form(request, video_id):
