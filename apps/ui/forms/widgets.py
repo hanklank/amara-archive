@@ -197,8 +197,20 @@ class SwitchInput(widgets.CheckboxInput):
             'attrs': flatatt(attrs),
         }))
 
+# mainly used to hack the ordered multi field in the collab workflow settings page
+class ReadOnlySpan(widgets.Widget):
+    def __init__(self, inner_text='', attrs=None):
+        super(ReadOnlySpan, self).__init__(attrs)
+        self.inner_text = inner_text
+
+    def render(self, name, value, attrs=None):
+        span_class = ''
+        if 'class' in self.attrs:
+            span_class = self.attrs['class']
+        return mark_safe(u'<span class="{}">{}</span>'.format(span_class, self.inner_text))
+
 __all__ = [
     'AmaraRadioSelect', 'SearchBar', 'AmaraFileInput',
     'AmaraClearableFileInput', 'UploadOrPasteWidget',
-    'AmaraImageInput', 'SwitchInput',
+    'AmaraImageInput', 'SwitchInput', 'ReadOnlySpan',
 ]
