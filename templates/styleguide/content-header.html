@@ -1,0 +1,27 @@
+{% extends "styleguide/base.html" %}
+{% load forms %}
+{% block "content" %}
+<p>
+Use these headers wherever there is a list or section of content that will be grouped and filtered should exist. The header can be implemented with a searchbar and add button for select lists.
+</p>
+
+<h2>Example:</h2>
+<div class="col-md-9">
+  <div class="styleGuide-exampleBox">
+    <h4 class="styleGuide-exampleTitle">With searchbar and add button</h4>
+    <pre class="styleGuide-exampleSource">
+    {{ form.example_with_search }}
+    </pre>
+    <div class="styleGuide-examples styleGuide-example">
+      <div class="row contentHeader">
+        <div class="col-sm-2 title">Select List</div>
+        <div class="search">{{ form.search|render_field }}</div>
+        <button data-href="#" class="contentHeader-addButton ajaxLink">
+          <i class="fa fa-plus"></i>
+          <span class="contentHeader-addButtonText">Add Item</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

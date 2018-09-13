@@ -67,6 +67,8 @@
   - videoSubtitlesList
   - filterList
   - actionBar
+  - id: content-header
+    title: Content header
   - selectList
   - pagination
   - hangingLink

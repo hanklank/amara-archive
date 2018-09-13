@@ -22,7 +22,7 @@ from django import forms
 
 from auth.models import get_amara_anonymous_user
 from styleguide.models import StyleguideData
-from ui.forms import AmaraImageField, AmaraChoiceField, SwitchInput
+from ui.forms import AmaraImageField, AmaraChoiceField, SearchField, SwitchInput
 
 class StyleguideForm(forms.Form):
     def __init__(self, request, **kwargs):
@@ -106,3 +106,16 @@ class ImageUpload(StyleguideForm):
         else:
             styleguide_data.thumbnail = self.cleaned_data['thumbnail']
         styleguide_data.save()
+
+class ContentHeader(StyleguideForm):
+    search = SearchField(label='Search', required=False)
+    example_with_search = """
+    <div class="row contentHeader">
+      <div class="col-sm-2 title">Select List</div>
+      <div class="search">{{ form.search|render_field }}</div>
+      <button data-href="#" class="ajaxLink contentHeader-addButton">
+        <i class="fa fa-plus"></i>
+        <span class="contentHeader-addButtonText">Add Item</span>
+      </button>
+    </div>
+    """
