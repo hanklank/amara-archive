@@ -22,7 +22,9 @@ from django import forms
 
 from auth.models import get_amara_anonymous_user
 from styleguide.models import StyleguideData
-from ui.forms import AmaraImageField, AmaraChoiceField, SearchField, SwitchInput
+from ui.forms import (
+    AmaraImageField, AmaraChoiceField, AmaraMultipleChoiceField, SearchField, SwitchInput,
+)
 
 class StyleguideForm(forms.Form):
     def __init__(self, request, **kwargs):
@@ -119,3 +121,12 @@ class ContentHeader(StyleguideForm):
       </button>
     </div>
     """
+
+class FilterBox(StyleguideForm):
+    color = AmaraMultipleChoiceField(
+        label="Select color", choices=(
+            ('plum', 'Plum'),
+            ('amaranth', 'Amaranth'),
+            ('lime', 'Lime'),
+        ))
+    shape = forms.CharField(label="Search for shapes")
