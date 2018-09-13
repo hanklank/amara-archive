@@ -54,21 +54,18 @@ def header_links(context):
     parts.append(u'</ul>')
     return u'\n'.join(parts)
 
-@register.simple_tag(takes_context=True)
-def checkbox(context, **kwargs):
+@register.simple_tag()
+def checkbox(id_, id_prefix=None, **kwargs):
     """
     Use this to create a checkbox not attached to any form
 
     A good example of this is the checkboxes in listView
     """
-    if '_checkbox_counter' not in context:
-        context['_checkbox_counter'] = 1
-    else:
-        context['_checkbox_counter'] += 1
-    id_ = 'auto-checkbox-{}'.format(context['_checkbox_counter'])
+    if id_prefix:
+        id_ = '{}{}'.format(id_prefix, id_)
     attrs = {
-        'id': id_,
         'type': 'checkbox',
+        'id': id_,
     }
     attrs.update({
         key.replace('_', '-'): name
