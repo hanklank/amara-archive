@@ -448,6 +448,10 @@ def urls_tab_replacement_data(request, video):
             'video': video,
             'allow_delete': True,
             'allow_make_primary': True,
+            'video_urls': [
+                (vurl, get_sync_account(video, vurl))
+                for vurl in video.get_video_urls()
+            ],
             'create_url_form': NewCreateVideoUrlForm(video, request.user),
         })
 

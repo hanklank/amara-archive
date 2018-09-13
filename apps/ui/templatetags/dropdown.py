@@ -16,6 +16,8 @@
 # along with this program.  If not, see
 # http://www.gnu.org/licenses/agpl-3.0.html.
 
+from __future__ import absolute_import
+
 import json
 
 from django import template
@@ -25,18 +27,20 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
 from utils.bunch import Bunch
+from ui.templatetags.utils import fix_attrs
 
 register = template.Library()
 
 @register.simple_tag(name='dropdown-button-icon')
-def dropdown_button_icon(button_id, css_class=None):
-    attrs = {
+def dropdown_button_icon(button_id, css_class=None, **attrs):
+    fix_attrs(attrs)
+    attrs.update({
         'data-target': button_id,
         'role': 'button',
         'aria-haspopup': 'true',
         'aria-expanded': 'false',
         'class': 'dropdownMenu-button',
-    }
+    })
     if css_class:
         attrs['class'] += ' {}'.format(css_class)
 
@@ -45,6 +49,7 @@ def dropdown_button_icon(button_id, css_class=None):
 
 @register.simple_tag(name='dropdown-button')
 def dropdown_button(button_id, css_class, **attrs):
+    fix_attrs(attrs)
     return format_html(
         '<button data-target="{}" class="dropdownMenu-button {}" role="button" aria-haspopup="true" '
         'aria-expanded="false"{}>', button_id, css_class, flatatt(attrs))
@@ -85,10 +90,10 @@ def dropdown_js_item(label, *data, **kwargs):
     return make_dropdown_item(label, options, {
         'href': '#',
         'data-activate-args': json.dumps(data),
-    })
+    }, link_tag='button')
 
 
-def make_dropdown_item(label, options, link_attrs):
+def make_dropdown_item(label, options, link_attrs, link_tag='a'):
     link_attrs.update({
         'tabindex': -1,
         'role': 'menuitem',
@@ -120,7 +125,7 @@ def make_dropdown_item(label, options, link_attrs):
         link_html = format_html(
             '<span class="dropdownMenu-link disabled">{}</span>', label_html)
     else:
-        link_html = format_html('<a{}>{}</a>', flatatt(link_attrs), label_html)
+        link_html = format_html('<{0}{1}>{2}</{0}>', link_tag, flatatt(link_attrs), label_html)
 
     return format_html('<li role="none" class="{}">{}</li>',
                        ' '.join(classes), link_html)
