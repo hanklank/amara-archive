@@ -36,3 +36,4 @@ def fix_attrs(attrs):
         if '_' in key:
             new_key = key.replace('_', '-')
             attrs[new_key] = attrs.pop(key)
+    return attrs
