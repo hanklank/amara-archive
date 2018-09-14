@@ -23,6 +23,9 @@ from django.core.urlresolvers import reverse
 from django.forms.utils import flatatt
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
+from django.utils.translation import ugettext as _
+
+from utils.text import fmt
 
 import ui.siteheader
 import ui.dates
@@ -75,3 +78,19 @@ def checkbox(id_, id_prefix=None, **kwargs):
         '<div class="checkbox"><input{}>'
         '<label for="{}"><span class="checkbox-icon"></span></label></div>',
         flatatt(attrs), id_)
+
+@register.simple_tag(name='progress-bar')
+def progress_bar(label, current, total, css_class='teal'):
+    if total > 0:
+        percent = '{}%'.format(100.0 * float(current) / float(total))
+    else:
+        percent = '0%'
+    percent_label = fmt(_(u'%(percent)s complete'), percent=percent)
+
+    return format_html(
+        '<div class="progressBar teal">'
+        '<div class="progressBar-progress" role="progressbar" style="width: {};">'
+        '<span class="sr-only">{}</span></div></div>'
+        '<p class="progressBar-label teal">{} '
+        '<span class="progressBar-percentage">{}</span></p>',
+        percent, percent_label, unicode(label), percent_label)

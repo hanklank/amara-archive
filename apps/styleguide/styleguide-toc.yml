@@ -10,7 +10,8 @@
   - lists
   - alerts
   - announcements
-  - progressbars
+  - id: progress-bar
+    title: Progress bars
   - indicators
   - tabs
   - id: tables
