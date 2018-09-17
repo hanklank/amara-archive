@@ -3166,7 +3166,7 @@ class Setting(models.Model):
         if name.endswith('localized')
     ]
     MESSAGE_DEFAULTS = {
-        'pagetext_welcome_heading': _("Help %(team)s reach a world audience"),
+        'pagetext_welcome_heading': _("Help %(team)s reach a world audience!"),
     }
     FEATURE_KEYS = [
         key for key, name in KEY_CHOICES
