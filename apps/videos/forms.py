@@ -419,19 +419,11 @@ class TeamCreateSubtitlesForm(CreateSubtitlesForm):
 
     subtitle_language_code = AmaraChoiceField(label=_('Subtitle into:'))
     primary_audio_language_code = AmaraChoiceField(
-                label=_('This video is in:'),
-                help_text=_('Please double check the primary spoken '
-                            'language. This step cannot be undone.'))
+                label=_('Video language'))
 
     def __init__(self, request, video, team_slug, data=None):
         super(TeamCreateSubtitlesForm, self).__init__(request, video, data=data)
         team = Team.objects.get(slug=team_slug)
-
-        if self.needs_primary_audio_language:
-            if can_edit_videos(team, request.user):
-                self.fields['primary_audio_language_code'].help_text = ''
-            else:
-                self.fields['primary_audio_language_code'].help_text = 'Please double check the primary spoken language.'
 
         self.team_url_arg = '?team={}'.format(team_slug)
         self.action_url = reverse('videos:create_subtitles', kwargs={

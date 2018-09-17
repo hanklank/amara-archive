@@ -1,32 +1,26 @@
-{% load i18n forms %}
-<div class="modal-dialog modal-md">
+{% load i18n forms modal %}
+
+{% startmodal "create_subtitles" "Add a new language!"  %}
+<form class="ajaxForm" method="POST" action="{{ form.action_url }}">
+  {% csrf_token %}
   <div class="modal-content">
-    <header class="dialogHeader">
-      <h4 class="dialogTitle">{% trans 'Add a new language!' %}</h4>
-    </header>
-    <form class="ajaxForm" method="POST" action="{{ form.action_url }}">
-      {% csrf_token %}
-      <div class="modal-body">
-        {% include "future/forms/non-field-errors.html" %}
+    {% include "future/forms/non-field-errors.html" %}
 
-        {% if not form.needs_primary_audio_language %}
-          <p>
-          {% blocktrans with language=video.get_primary_audio_language_code_display %}
-            This video is in {{ language }}
-          {% endblocktrans %}
-          </p>  
-        {% else %}
-          {{ form.primary_audio_language_code|render_field }}
-        {% endif %}
+    {% if not form.needs_primary_audio_language %}
+      <p>
+      {% blocktrans with language=video.get_primary_audio_language_code_display %}
+        This video is in {{ language }}
+      {% endblocktrans %}
+      </p>  
+    {% else %}
+      {{ form.primary_audio_language_code|render_field }}
+    {% endif %}
 
-        {{ form.subtitle_language_code|render_field }}
-      </div>
-
-      <div class="modal-footer">
-        <button class="button borderless" data-dismiss="modal">{% trans 'Cancel' %}</button>
-        <button class="button cta" type="submit">{% trans 'Continue' %}</button>
-      </div>
-
-    </form>
+    {{ form.subtitle_language_code|render_field }}
   </div>
-</div>
+  <div class="modal-footer">
+    <button class="button borderless modal-close">{% trans 'Cancel' %}</button>
+    <button class="button cta" type="submit">{% trans 'Continue' %}</button>
+  </div>
+</form>
+{% endmodal %}
