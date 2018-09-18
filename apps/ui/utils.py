@@ -107,9 +107,10 @@ class CTA(Link):
             css_class += " cta"
         if block:
             css_class += " block"
-        link = link_element.format(self.url, css_class, self.icon, self.label)
+        link = format_html(link_element, self.url, css_class, self.icon,
+                           self.label)
         if len(self.tooltip) > 0:
-            link = tooltip_element.format(self.tooltip, link)
+            link = format_html(tooltip_element, self.tooltip, link)
         return link
 
     def __eq__(self, other):
@@ -132,13 +133,13 @@ class Tab(Link):
 class SectionWithCount(list):
     """Section that contains a list of things with a count in the header
     """
-    header_template = _('%(header)s <span class="count">(%(count)s)</span>')
+    header_template = u'{} <span class="count">({})</span>'
     def __init__(self, header_text):
         self.header_text = header_text
 
     def header(self):
-        return fmt(self.header_template, header=self.header_text,
-                   count=len(self))
+        return format_html(self.header_template, self.header_text,
+                           len(self))
 
 @html_safe
 class ContextMenu(object):
