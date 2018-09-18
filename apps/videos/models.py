@@ -39,7 +39,7 @@ from django.utils.dateformat import format as date_format
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import ugettext
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.core.exceptions import ValidationError
 from django.forms.forms import NON_FIELD_ERRORS
 
@@ -1150,6 +1150,12 @@ class Video(models.Model):
             l for l in self.all_subtitle_languages() if l.subtitles_complete
         ]
 
+    def incomplete_languages_sorted(self):
+        return sorted(self.incomplete_languages(), key=lambda l: l.language_code)
+    
+    def complete_languages_sorted(self):
+        return sorted(self.complete_languages(), key=lambda l: l.language_code)
+
     def incomplete_languages_with_public_versions(self):
         self.prefetch_languages(with_public_tips=True)
         return [
@@ -1491,7 +1497,7 @@ class VideoMetadata(models.Model):
         never allow it to overwrite a key with a different name.
 
         """
-        field = VideoMetadata._meta.get_field_by_name('key')[0]
+        field = VideoMetadata._meta.get_field('key')
 
         choices = field.choices
         for x in choices:
