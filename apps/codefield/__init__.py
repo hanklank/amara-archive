@@ -38,6 +38,7 @@ the kind of activity and customizes the message we display for it.
 from __future__ import absolute_import
 
 from django.db import models
+from django.core import exceptions
 
 class Code(object):
     """A possible code for a CodeField"""
@@ -175,6 +176,17 @@ class CodeField(models.PositiveSmallIntegerField):
             if isinstance(value, (int, long)):
                 return value
             return 'unknown-code-{}'.format(value)
+
+    def to_python(self, value):
+        if value is None:
+            return None
+        elif isinstance(value, (int, long)):
+            return self.value_to_code[value].slug
+        elif isinstance(value, basestring):
+            return value
+        else:
+            raise exceptions.ValidationError(
+                'Bad type for CodeField: {}'.format(value))
 
     def get_prep_value(self, value):
         if value is None:
