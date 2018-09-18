@@ -26,12 +26,12 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import PermissionDenied, ValidationError as django_core_ValidationError
 from django.core.files.base import ContentFile
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.core.validators import EMPTY_VALUES, validate_email
 from django.db.models import Q
 from django.db import transaction, IntegrityError
 from django.forms.formsets import formset_factory
-from django.forms.util import ErrorDict
+from django.forms.utils import ErrorDict
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
