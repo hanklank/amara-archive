@@ -363,7 +363,7 @@ class EmailInviteViewTest(TransactionTestCase):
         response = self.client.get(self.email_invite.get_url())
         self.assertRedirects(
             response,
-            reverse('teams:email_invite_invalid', no_locale=True),
+            reverse('teams:email_invite_invalid'),
             fetch_redirect_response=False)
 
     def test_invite_has_been_used(self):
@@ -372,5 +372,5 @@ class EmailInviteViewTest(TransactionTestCase):
         response = self.client.get(self.email_invite.get_url())
         self.assertRedirects(
             response,
-            reverse('teams:email_invite_invalid', no_locale=True),
+            reverse('teams:email_invite_invalid'),
             fetch_redirect_response=False)
