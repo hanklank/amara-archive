@@ -37,7 +37,7 @@ def render_team_header(request, team):
         'brand': 'future/teams/brand.html',
         'brand_url': team.get_absolute_url(),
         'primarynav': 'future/teams/primarynav.html',
-    }, RequestContext(request))
+    }, request)
 
 class SimpleVideoPageCustomization(VideoPageCustomization):
     def __init__(self, team, request, video):
