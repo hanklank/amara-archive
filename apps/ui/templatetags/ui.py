@@ -53,7 +53,7 @@ def header_links(context):
         else:
             parts.append(format_html(u'<li>{}</li>', tab))
     parts.append(mark_safe(u'</ul>'))
-    return format_html_join(u'\n', '{}', [(p,) for p in parts])
+    return format_html_join(u'\n', u'{}', [(p,) for p in parts])
 
 @register.simple_tag()
 def checkbox(id_, id_prefix=None, **kwargs):
