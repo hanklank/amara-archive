@@ -28,7 +28,7 @@
           <div class="stat-container">
             <h1 class="text-center stat-value">{{members_count}}</h1>
             <h3 class="text-center">
-              {% if members_count < 1 %}
+              {% if members_count > 1 %}
                 {% trans 'members' %}
               {% else %}
                 {% trans 'member' %}
@@ -39,7 +39,13 @@
           {% if videos_count %}
           <div class="stat-container">
             <h1 class="text-center stat-value">{{videos_count}}</h1>
-            <h3 class="text-center">{% trans 'videos' %}</h3>
+            <h3 class="text-center">
+              {% if videos_count > 1 %}
+                {% trans 'videos' %}
+              {% else %}
+                {% trans 'video' %}
+              {% endif %}
+            </h3>
           </div>
           {% endif %}
         </div>
