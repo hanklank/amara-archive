@@ -1126,6 +1126,12 @@ class Video(models.Model):
             l for l in self.all_subtitle_languages() if l.subtitles_complete
         ]
 
+    def incomplete_languages_sorted(self):
+        return sorted(self.incomplete_languages(), key=lambda l: l.language_code)
+    
+    def complete_languages_sorted(self):
+        return sorted(self.complete_languages(), key=lambda l: l.language_code)
+
     def incomplete_languages_with_public_versions(self):
         self.prefetch_languages(with_public_tips=True)
         return [
