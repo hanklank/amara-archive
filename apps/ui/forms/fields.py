@@ -28,8 +28,6 @@ from django.forms import widgets as django_widgets
 from utils import translation
 from ui.forms import widgets
 
-from auth.models import CustomUser as User
-
 class HelpTextList(SafeUnicode):
     """
     Help text displayed as a bullet list
