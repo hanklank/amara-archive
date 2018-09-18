@@ -26,7 +26,7 @@ from videos.models import Video
 from widget import video_cache
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _, ngettext
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils.http import urlencode, urlquote
 from widget.views import base_widget_params
 

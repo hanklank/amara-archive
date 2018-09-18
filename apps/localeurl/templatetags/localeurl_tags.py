@@ -2,12 +2,12 @@
 # Licensed under the terms of the MIT License (see LICENSE.txt)
 
 from django.conf import settings
-from django.core.urlresolvers import get_script_prefix
 from django import template
 from django.template import (Node, TemplateSyntaxError, defaulttags)
 from django.template.base import Token
 from django.template.defaultfilters import stringfilter
 from django.utils import translation
+from django.urls import get_script_prefix
 import localeurl.settings
 from localeurl import utils
 

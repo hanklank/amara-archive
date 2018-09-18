@@ -19,7 +19,7 @@
 import json
 from django import forms
 from django.core import validators
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.forms.utils import ErrorDict
 from django.utils.translation import ugettext as _
 from django.utils.translation import ugettext_lazy

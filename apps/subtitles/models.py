@@ -27,7 +27,7 @@ from datetime import datetime, date, timedelta
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import models, IntegrityError
 from django.db.models import query, Q, Count
 from django.utils.functional import cached_property

@@ -24,7 +24,7 @@ import babelsubs
 
 from django.conf import settings
 from django.contrib import messages
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db.models import ObjectDoesNotExist
 from django.http import HttpResponse, Http404, HttpResponseServerError, HttpResponseRedirect
 from django.shortcuts import (render, render, redirect,

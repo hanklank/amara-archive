@@ -29,7 +29,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.views import redirect_to_login
 from django.core.exceptions import MultipleObjectsReturned
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db.models import Q, Count
 from django.http import (
     Http404, HttpResponseForbidden, HttpResponseRedirect, HttpResponse,

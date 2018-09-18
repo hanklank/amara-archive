@@ -32,7 +32,7 @@ from django.conf import settings
 from django.contrib.auth.models import UserManager, User as BaseUser
 from django.core.cache import cache
 from django.core.exceptions import MultipleObjectsReturned, ValidationError
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import IntegrityError
 from django.db import models
 from django.db import transaction

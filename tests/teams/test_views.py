@@ -21,7 +21,7 @@ from __future__ import absolute_import
 from os import path
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.test import TestCase, TransactionTestCase
 
 from teams.models import Team, TeamMember, TeamVideo, Project, EmailInvite

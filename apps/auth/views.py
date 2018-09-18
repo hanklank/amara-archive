@@ -30,7 +30,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import password_reset as contrib_password_reset
 from django.core.cache import cache
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.forms import ValidationError
 from django.forms.utils import ErrorList
 from django.http import (HttpResponseRedirect, HttpResponseForbidden,

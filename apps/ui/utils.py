@@ -27,7 +27,7 @@ from collections import deque
 from urllib import urlencode
 
 from collections import namedtuple
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils.html import format_html, html_safe
 from django.utils.translation import ugettext_lazy as _
 

@@ -5,9 +5,9 @@ from inspect import getargspec
 from urllib import urlencode, quote
 
 from django.core.serializers.json import DjangoJSONEncoder
-from django.core.urlresolvers import reverse
 from django.db import models
 from django.http import HttpResponse
+from django.urls import reverse
 from django.utils.datastructures import MultiValueDict
 from django.utils.encoding import smart_str, force_unicode
 from django.utils.functional import Promise

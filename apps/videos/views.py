@@ -33,7 +33,7 @@ from django.contrib.auth.views import redirect_to_login
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from videos.templatetags.paginator import paginate
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import IntegrityError
 from django.db import transaction
 from django.db.models import Sum
