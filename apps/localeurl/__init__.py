@@ -5,6 +5,7 @@ django_reverse = None
 
 def patch_reverse():
     global django_reverse
+    from django import urls
     from django.conf import settings
     from django.core import urlresolvers
     from django.utils import translation
@@ -20,5 +21,6 @@ def patch_reverse():
                 return path
             return utils.locale_url(path, utils.supported_language(locale))
         
-        django_reverse = urlresolvers.reverse
+        django_reverse = urls.reverse
         urlresolvers.reverse = reverse
+        urls.reverse = reverse
