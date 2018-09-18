@@ -1,6 +1,6 @@
 # Amara, universalsubtitles.org
 #
-# Copyright (C) 2016 Participatory Culture Foundation
+# Copyright (C) 2018 Participatory Culture Foundation
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -16,15 +16,16 @@
 # along with this program.  If not, see
 # http://www.gnu.org/licenses/agpl-3.0.html.
 
-from __future__ import absolute_import
+"""
+Bunch -- Simple object for storing attributes.
 
-from django.conf.urls import url
+This class is simply a place to store data like a dict, but with attribute
+style access (obj.foo instead of obj['foo']).
+"""
 
-from styleguide import views
+# Copied from the ancient Alex Martelli recipe.  It's simpler than the version
+# on PyPi, which is good because we don't want anything fancy.
+class Bunch(object):
+    def __init__(self, **kwds):
+        self.__dict__.update(kwds)
 
-urlpatterns = [
-    url(r'^$', views.home, name='styleguide'),
-    url(r'^member-search$', views.member_search, name='member_search'),
-    url(r'^filter-box$', views.filter_box, name='filter-box'),
-    url(r'^(?P<section_id>[\w-]+)$', views.section, name='section'),
-]

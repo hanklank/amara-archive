@@ -1,6 +1,6 @@
 # Amara, universalsubtitles.org
 #
-# Copyright (C) 2016 Participatory Culture Foundation
+# Copyright (C) 2018 Participatory Culture Foundation
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -16,15 +16,23 @@
 # along with this program.  If not, see
 # http://www.gnu.org/licenses/agpl-3.0.html.
 
-from __future__ import absolute_import
+from django import template
+from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
-from django.conf.urls import url
+register = template.Library()
 
-from styleguide import views
+@register.simple_tag
+def startmodal(id_, title, remove_on_close=False):
+    title_id = id_ + '-title'
+    classes = ['modal']
+    if remove_on_close:
+        classes.append('removeOnClose')
+    return format_html(
+        u'<div id="{0}" class="{3}" role="dialog" aria-modal="true" aria-labeledby="{1}">'
+        '<h4 id="{1}" class="modal-title">{2}</h4>',
+        id_, title_id, unicode(title), ' '.join(classes))
 
-urlpatterns = [
-    url(r'^$', views.home, name='styleguide'),
-    url(r'^member-search$', views.member_search, name='member_search'),
-    url(r'^filter-box$', views.filter_box, name='filter-box'),
-    url(r'^(?P<section_id>[\w-]+)$', views.section, name='section'),
-]
+@register.simple_tag
+def endmodal():
+    return mark_safe(u'</div>')
