@@ -155,6 +155,15 @@ class Enum(object):
     def __len__(self):
         return len(self.members)
 
+    def deconstruct(self):
+        args = []
+        kwargs = {
+            'enum_name': self.enum_name,
+            'members': [(m.slug, m.label) for m in self.members]
+        }
+        name = 'utils.enum.Enum'
+        return (name, args, kwargs)
+
 class EnumField(models.PositiveSmallIntegerField):
     """
     Store enum values in a database field.
@@ -230,5 +239,5 @@ class EnumField(models.PositiveSmallIntegerField):
         name, path, args, kwargs = super(EnumField, self).deconstruct()
         if 'choices' in kwargs:
             del kwargs['choices']
-        args = [self.enum]
+        kwargs['enum'] = self.enum
         return (name, path, args, kwargs)
