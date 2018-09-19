@@ -423,7 +423,7 @@ class SubtitlesForm(forms.Form):
 
     def submit(self, request):
         """Handle form submission."""
-        with transaction.commit_on_success():
+        with transaction.atomic():
             if self.subtitle_language.is_writelocked:
                 messages.error(request, _(u'Subtitles are currently being edited'))
                 return
