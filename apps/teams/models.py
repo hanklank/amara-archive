@@ -1624,6 +1624,8 @@ class TeamMember(models.Model):
     projects_managed = models.ManyToManyField(Project,
                                               related_name='managers')
 
+    cache = ModelCacheManager()
+
     objects = TeamMemberManager()
 
     def __unicode__(self):
@@ -1777,6 +1779,9 @@ class TeamMember(models.Model):
     def remove_as_proj_lang_manager(self):
         self.remove_as_language_manager()
         self.remove_as_project_manager()
+
+    def calc_subtitles_completed(self):
+        return TeamSubtitlesCompleted.objects.filter(member=self).count()
 
     class Meta:
         unique_together = (('team', 'user'),)
@@ -3966,3 +3971,22 @@ class Partner(models.Model):
 
     def is_admin(self, user):
         return user in self.admins.all()
+
+class TeamSubtitlesCompleted(models.Model):
+    """
+    Track the number of subtitles completed for a team by team members.
+    """
+    member = models.ForeignKey(TeamMember)
+    video = models.ForeignKey(Video)
+    language_code = models.CharField(max_length=16,
+                                     choices=translation.ALL_LANGUAGE_CHOICES)
+
+    class Meta:
+        unique_together = [
+            ('member', 'video', 'language_code'),
+        ]
+
+    @classmethod
+    def add(cls, member, video, language_code):
+        cls.objects.get_or_create(member=member, video=video,
+                                  language_code=language_code)
