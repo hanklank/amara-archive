@@ -24,6 +24,7 @@ from auth.models import get_amara_anonymous_user
 from styleguide.models import StyleguideData
 from ui.forms import (
     AmaraImageField, AmaraChoiceField, AmaraMultipleChoiceField, SearchField, SwitchInput,
+    ContentHeaderSearchBar
 )
 
 class StyleguideForm(forms.Form):
@@ -110,17 +111,8 @@ class ImageUpload(StyleguideForm):
         styleguide_data.save()
 
 class ContentHeader(StyleguideForm):
-    search = SearchField(label='Search', required=False)
-    example_with_search = """
-    <div class="row contentHeader">
-      <div class="col-sm-2 title">Select List</div>
-      <div class="search">{{ form.search|render_field }}</div>
-      <button data-href="#" class="ajaxLink contentHeader-addButton">
-        <i class="fa fa-plus"></i>
-        <span class="contentHeader-addButtonText">Add Item</span>
-      </button>
-    </div>
-    """
+    search = SearchField(label='Search', required=False,
+                         widget=ContentHeaderSearchBar)
 
 class FilterBox(StyleguideForm):
     color = AmaraMultipleChoiceField(
