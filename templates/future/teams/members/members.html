@@ -19,23 +19,14 @@
               </form>
             </div>
             <div class="col-sm-9">
-              <div class="row contentHeader">
-                <div class="col-xs-2 title">
-                  {% trans "Members" %}
-                </div>
-                <div class="search proxyField" data-proxy-for="#id_q">
+              <div class="row filters">
+                <div class="col-xs-8 proxyField" data-proxy-for="#id_q">
                   {{ filters_form.q|render_field }}
                 </div>
-                <button class="contentHeader-addButton">
-                    <i class="fa fa-plus"></i>
-                    <span class="contentHeader-addButtonText">{% trans "Add Member" %}</span>
-                </button>
+                <div class="col-xs-4 proxyField" data-proxy-for="#id_sort">
+                  {{ filters_form.sort|render_field }}
+                </div>
               </div>
-              <br/>
-              <div class="filters proxyField" data-proxy-for="#id_sort">
-                {{ filters_form.sort|render_field }}
-              </div>
-
             <div id="member-list-all">
             {% include "future/teams/members/member-list.html" %}
             </div>
