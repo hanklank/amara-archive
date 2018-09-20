@@ -1,0 +1,17 @@
+{% extends "styleguide/base.html" %}
+{% load forms %}
+{% block content %}
+<p>
+Use these headers wherever there is a list or section of content that will be grouped and filtered should exist. The header can be implemented with a searchbar and add button for select lists.
+</p>
+
+<div class="contentHeader">
+  <div class="contentHeader-title">Select List</div>
+  {{ form.search }}
+  <button data-href="#" class="contentHeader-addButton ajaxLink">
+    <i class="fa fa-plus"></i>
+    <span class="contentHeader-addButtonText">Add Item</span>
+  </button>
+</div>
+
+{% endblock %}

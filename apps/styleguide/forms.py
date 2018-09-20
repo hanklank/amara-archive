@@ -23,7 +23,8 @@ from django import forms
 from auth.models import get_amara_anonymous_user
 from styleguide.models import StyleguideData
 from ui.forms import (
-    AmaraImageField, AmaraChoiceField, AmaraMultipleChoiceField, SwitchInput,
+    AmaraImageField, AmaraChoiceField, AmaraMultipleChoiceField, SearchField, SwitchInput,
+    ContentHeaderSearchBar
 )
 
 class StyleguideForm(forms.Form):
@@ -108,6 +109,10 @@ class ImageUpload(StyleguideForm):
         else:
             styleguide_data.thumbnail = self.cleaned_data['thumbnail']
         styleguide_data.save()
+
+class ContentHeader(StyleguideForm):
+    search = SearchField(label='Search', required=False,
+                         widget=ContentHeaderSearchBar)
 
 class FilterBox(StyleguideForm):
     color = AmaraMultipleChoiceField(
