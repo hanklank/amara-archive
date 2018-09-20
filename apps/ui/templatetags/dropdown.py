@@ -32,10 +32,10 @@ from ui.templatetags.utils import fix_attrs
 register = template.Library()
 
 @register.simple_tag(name='dropdown-button-icon')
-def dropdown_button_icon(button_id, css_class=None, **attrs):
+def dropdown_button_icon(menu_id, css_class=None, **attrs):
     fix_attrs(attrs)
     attrs.update({
-        'data-target': button_id,
+        'data-target': menu_id,
         'role': 'button',
         'aria-haspopup': 'true',
         'aria-expanded': 'false',
@@ -48,22 +48,32 @@ def dropdown_button_icon(button_id, css_class=None, **attrs):
         u'<button{}><span class="fa fa-ellipsis-v"></span>', flatatt(attrs))
 
 @register.simple_tag(name='dropdown-button')
-def dropdown_button(button_id, css_class, **attrs):
+def dropdown_button(menu_id, css_class, **attrs):
     fix_attrs(attrs)
     return format_html(
         u'<button data-target="{}" class="dropdownMenu-button {}" role="button" aria-haspopup="true" '
-        'aria-expanded="false"{}>', button_id, css_class, flatatt(attrs))
+        'aria-expanded="false"{}>', menu_id, css_class, flatatt(attrs))
 
 @register.simple_tag(name='end-dropdown-button')
 def end_dropdown_button():
     return mark_safe(u'</button>')
 
+@register.simple_tag(name='filterbox-dropdown-button')
+def filter_box_dropdown_button(menu_id, label):
+    return format_html(
+        '{}'
+        '<span class="filterBox-buttonIcon fa fa-filter"></span> '
+        '<span class="filterBox-buttonText">{}</span>'
+        '{}',
+        dropdown_button(menu_id, 'filterBox-button'), label,
+        end_dropdown_button())
+
 @register.simple_tag
-def dropdown(button_id, labelled_by=None):
+def dropdown(menu_id, labelled_by=None):
     attrs = {
         'class': 'dropdownMenu',
         'role': 'menu',
-        'id': button_id
+        'id': menu_id
     }
     if labelled_by:
         attrs['aria-labelledby'] = labelled_by
