@@ -37,7 +37,7 @@ from django.contrib.auth.views import redirect_to_login
 from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.core.signing import BadSignature
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db.models import Q
 from django.core.exceptions import PermissionDenied
 from django.http import (Http404, HttpResponse, HttpResponseRedirect,
