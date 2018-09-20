@@ -20,6 +20,7 @@ import functools
 from django.conf import settings
 from django.urls import reverse
 from django.template.loader import render_to_string
+from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 from django.utils.translation import get_language
@@ -41,7 +42,7 @@ def cached_by_video(cache_prefix):
             cache_key = '{}-{}'.format(cache_prefix, get_language())
             cached = video.cache.get(cache_key)
             if cached:
-                return cached
+                return mark_safe(cached)
             computed = func(video, *args, **kwargs)
             video.cache.set(cache_key, computed)
             return computed
@@ -228,10 +229,10 @@ def embedder_code(video):
 def video_metadata(context, video):
     request = context['request']
     metadata = video.get_metadata_for_locale(request.LANGUAGE_CODE)
-    return "\n".join(
-        u'<h4>{0}: {1}</h4>'.format(field['label'], field['content'])
+    return format_html_join(u'\n', u'<h4>{0}: {1}</h4>', [
+        (field['label'], field['content'])
         for field in metadata.convert_for_display()
-    )
+    ])
 
 @register.simple_tag(name='sharing-widget-for-video')
 @cached_by_video('sharing-widget')

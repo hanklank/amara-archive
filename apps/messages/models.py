@@ -186,15 +186,15 @@ class Message(models.Model):
 
         if self.content:
             if self.message_type == SYSTEM_NOTIFICATION:
-                escaped_content = self.content
+                my_content_with_links = self.content
             else:
                 escaped_content = escape(self.content)
-            try:
-                my_content_with_links = urlize(escaped_content)
-            except ValueError:
-                # urlize() throws a value error on some input.  In that case,
-                # just skip the call.  See #2162
-                my_content_with_links = escaped_content
+                try:
+                    my_content_with_links = urlize(escaped_content)
+                except ValueError:
+                    # urlize() throws a value error on some input.  In that case,
+                    # just skip the call.  See #2162
+                    my_content_with_links = escaped_content
             content.append(my_content_with_links.replace('\n', '<br />'))
             content.append('\n')
 
