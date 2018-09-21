@@ -85,7 +85,7 @@ class ProjectFieldMixin(object):
         return value.id if isinstance(value, Project) else value
 
     def clean(self, value):
-        if not self.enabled or value in EMPTY_VALUES or not self.team:
+        if not self.enabled or self.value_is_empty(value) or not self.team:
             return None
         if value == 'none':
             if getattr(self, 'source_teams', None):
@@ -99,6 +99,12 @@ class ProjectFieldMixin(object):
             projects = Project.objects.get(id=value)
 
         return projects
+
+    def value_is_empty(self, value):
+        if isinstance(value, list):
+            return all(v in EMPTY_VALUES for v in value)
+        else:
+            return value in EMPTY_VALUES
 
 class MultipleProjectField(ProjectFieldMixin, AmaraMultipleChoiceField):
     widget = widgets.AmaraProjectSelectMultiple
