@@ -2064,18 +2064,12 @@ class EditMembershipForm(forms.Form):
 
 class ApplicationForm(forms.Form):
     about_you = forms.CharField(widget=forms.Textarea, label="")
-    language1 = LanguageField(
-        choices=get_language_choices(), required=True)
-    language2 = LanguageField(
-        choices=get_language_choices(with_empty=True), required=False)
-    language3 = LanguageField(
-        choices=get_language_choices(with_empty=True), required=False)
-    language4 = LanguageField(
-        choices=get_language_choices(with_empty=True), required=False)
-    language5 = LanguageField(
-        choices=get_language_choices(with_empty=True), required=False)
-    language6 = LanguageField(
-        choices=get_language_choices(with_empty=True), required=False)
+    language1 = NewLanguageField(required=True)
+    language2 = NewLanguageField(required=False)
+    language3 = NewLanguageField(required=False)
+    language4 = NewLanguageField(required=False)
+    language5 = NewLanguageField(required=False)
+    language6 = NewLanguageField(required=False)
 
     def __init__(self, application, *args, **kwargs):
         super(ApplicationForm, self).__init__(*args, **kwargs)
