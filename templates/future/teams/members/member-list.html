@@ -58,9 +58,10 @@
     {% dropdown-js-item _('Change role') 'listview-form' 'role' %}
     {% enddropdown %}
   {% endif %}
-</div>
 
-<div class="content"> {% include "future/paginator.html" %} </div> 
+</div>
+{% include "content-footer.html" %}
+
 
 {% if is_team_admin %}
 <div id="memberDirectory-actionBar" class="actionBar">
