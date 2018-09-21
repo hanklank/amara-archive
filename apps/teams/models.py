@@ -1642,6 +1642,28 @@ class TeamMember(models.Model):
         super(TeamMember, self).delete()
         Team.cache.invalidate_by_pk(self.team_id)
 
+    def get_role_summary(self):
+        if self.is_a_language_manager():
+            if self.is_a_project_manager():
+                return _('Project/Language Manager')
+            else:
+                return _('Language Manager')
+        elif self.is_a_project_manager():
+            return _('Project Manager')
+        return self.get_role_display()
+
+    def get_projects_managed_display(self):
+        return fmt(
+            _('Project manager for: %(projects)s'),
+            projects=', '.join(p.name for p in self.get_projects_managed())
+        )
+
+    def get_languages_managed_display(self):
+        return fmt(
+            _('Language manager for: %(languages)s'),
+            languages=', '.join(p.get_code_display() for p in self.get_languages_managed())
+        )
+
     def leave_team(self):
         member_leave.send(sender=self)
         notifier.team_member_leave(self.team_id, self.user_id)

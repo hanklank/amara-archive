@@ -24,7 +24,15 @@
     <a href="{% url 'teams:member-profile' slug=team.slug username=member.user.username %}">{{ member.user }}</a>
     <div class="listView-secondary">{% include "future/users/icon.html" with user=member.user %} {{ member.user.username }}</div>
   </div>
-  <div>{{ member.role }}</div>
+  <div>
+    {{ member.get_role_summary }}
+    {% if member.is_a_project_manager or member.is_a_language_manager %}
+    <div class="listView-secondary">
+      {% if member.is_a_project_manager %}{{ member.get_projects_managed_display }}{% if member.is_a_language_manager %}<br>{% endif %}{% endif %}
+      {% if member.is_a_language_manager %}{{ member.get_languages_managed_display  }}{% endif %}
+    </div>
+    {% endif %}
+  </div>
   <div>{{ member.created|datetime }}</div>
   <div>100</div>
   {% if is_team_admin %}
