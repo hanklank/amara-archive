@@ -1508,7 +1508,7 @@ class VideoFiltersForm(FiltersForm):
             '-time': '-created',
         }.get(sort or '-time'))
 
-        return qs.select_related('video')
+        return qs
 
 class ManagementVideoFiltersForm(VideoFiltersForm):
     language = NewLanguageField(label=_("Video language"),
@@ -1588,7 +1588,7 @@ class ActivityFiltersForm(FiltersForm):
         if type:
             qs = qs.filter(type__in=type)
         if video:
-            qs = qs.filter(video=Video.objects.search(video))
+            qs = qs.filter(video__in=Video.objects.search(video))
         if subtitle_language:
             qs = qs.filter(language_code__in=subtitle_language)
         if video_language:
