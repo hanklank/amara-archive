@@ -100,6 +100,16 @@ class SearchBar(widgets.TextInput):
                          '{}'
                          '</div>'.format(_('Search'), input))
 
+class ContentHeaderSearchBar(widgets.TextInput):
+    def render(self, name, value, attrs=None):
+        attrs['class'] = 'contentHeader-searchBar'
+        input = super(ContentHeaderSearchBar, self).render(name, value, attrs)
+        return format_html(
+            '<div class="contentHeader-search">'
+            '<label class="sr-only">{}</label>' +
+            unicode(input) +
+            '</div>', _('Search'))
+
 class AmaraFileInput(widgets.FileInput):
     template_name = "widget/file_input.html"
     def render(self, name, value, attrs=None):
@@ -215,7 +225,7 @@ class ReadOnlySpan(widgets.Widget):
         return mark_safe(u'<span class="{}">{}</span>'.format(span_class, self.inner_text))
 
 __all__ = [
-    'AmaraRadioSelect', 'SearchBar', 'AmaraFileInput',
-    'AmaraClearableFileInput', 'UploadOrPasteWidget',
+    'AmaraRadioSelect', 'SearchBar', 'ContentHeaderSearchBar',
+    'AmaraFileInput', 'AmaraClearableFileInput', 'UploadOrPasteWidget',
     'AmaraImageInput', 'SwitchInput', 'ReadOnlySpan',
 ]
