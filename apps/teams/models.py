@@ -53,7 +53,6 @@ from teams.permissions_const import (
 )
 from teams import stats
 from teams import tasks
-from teams import workflows
 from teams.exceptions import ApplicationInvalidException
 from teams.notifications import BaseNotification
 from teams.signals import (member_leave, api_subtitles_approved,
@@ -336,6 +335,7 @@ class Team(models.Model):
 
     @property
     def new_workflow(self):
+        from teams import workflows
         if not hasattr(self, '_new_workflow'):
             self._new_workflow = workflows.TeamWorkflow.get_workflow(self)
         return self._new_workflow

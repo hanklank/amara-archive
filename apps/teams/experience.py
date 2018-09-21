@@ -20,7 +20,7 @@
 teams.experience -- Track user experience on teams.
 
 This module handles things like tracking how many subtitles were completed by
-a team member.
+a member.
 """
 
 from django.core.cache import cache
@@ -35,7 +35,7 @@ def subtitles_completed_cache_key(member):
         member = member.id
     return 'team-subtitles-completed-{}'.format(member)
 
-def get_subtitles_completed(team, member_list):
+def get_subtitles_completed(member_list):
     """
     Get the number of subtitles completed for a list of members
 

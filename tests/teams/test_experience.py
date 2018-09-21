@@ -40,7 +40,7 @@ def test_add_subtitles_completed(team, video, member):
     pipeline.add_subtitles(video, 'en', SubtitleSetFactory(),
                            author=member.user)
 
-    subtitles_completed = experience.get_subtitles_completed(team, [member])
+    subtitles_completed = experience.get_subtitles_completed([member])
     assert subtitles_completed == [1]
 
 def test_same_subtitles(team, video, member):
@@ -49,7 +49,7 @@ def test_same_subtitles(team, video, member):
                            author=member.user)
     pipeline.add_subtitles(video, 'en', SubtitleSetFactory(),
                            author=member.user)
-    subtitles_completed = experience.get_subtitles_completed(team, [member])
+    subtitles_completed = experience.get_subtitles_completed([member])
     assert subtitles_completed == [1]
 
 def test_multiple_users(team, video, member):
@@ -60,7 +60,6 @@ def test_multiple_users(team, video, member):
     pipeline.add_subtitles(video, 'en', SubtitleSetFactory(),
                            author=member2.user)
     subtitles_completed = experience.get_subtitles_completed(
-        team,
         [member, member2, member3])
     assert subtitles_completed == [1, 1, 0]
 
@@ -70,11 +69,11 @@ def test_invalidate_cache(team, video, member):
     # correctly when the user creates more subtitles
     pipeline.add_subtitles(video, 'en', SubtitleSetFactory(),
                            author=member.user)
-    subtitles_completed = experience.get_subtitles_completed(team, [member])
+    subtitles_completed = experience.get_subtitles_completed([member])
 
     pipeline.add_subtitles(video, 'fr', SubtitleSetFactory(),
                            author=member.user)
     # get_subtitles_completed() will still be 1 if we didn't clear the cache
     member = reload_obj(member)
-    subtitles_completed = experience.get_subtitles_completed(team, [member])
+    subtitles_completed = experience.get_subtitles_completed([member])
     assert subtitles_completed == [2]

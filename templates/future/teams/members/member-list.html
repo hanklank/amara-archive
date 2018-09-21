@@ -7,7 +7,7 @@
   <div class="listView-header">{% trans 'Name' %}</div>
   <div class="listView-header">{% trans 'Role' %}</div>
   <div class="listView-header">{% trans 'Joined' %}</div>
-  <div class="listView-header">Subtitles created</div>
+  <div class="listView-header">{{ experience_column_label }}</div>
   {% if is_team_admin %}
   <div class="listView-header"></div>
   {% endif %}
@@ -34,7 +34,10 @@
     {% endif %}
   </div>
   <div>{{ member.created|datetime }}</div>
-  <div>100</div>
+  <div>
+    {{ member.experience.count}}
+    {% if member.experience_extra %}<ul class="inline">{% for experience in member.experience_extra %}<li>{{ experience.label }}: {{ experience.count}}</li>{% endfor %}</ul>{% endif %}
+  </div>
   {% if is_team_admin %}
   <div class="listView-actions">
     <button class="listView-action listView-expand"><span class="fa fa-info-circle"></span></button>
