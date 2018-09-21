@@ -134,25 +134,18 @@ Workflow diagram used in the futureui workflow settings page
 
 <script>
     function recalc_spacing(container) {
-        var container = $(container)
-        var container_width = container.width()
-        var workflow_segments = container.find('.workflowStep')
-        var workflow_segment_last = container.find('.last')
+        var container = $(container);
+    
+        /*
+         * function call to calculate the spacing
+         */
+        calc_spacing(container)
 
-        var separator_width = 35 
-        var separator_space = workflow_segments.length * separator_width
-        
-        var segments_space = calc_segments_space()
-        var last_space = calc_last_space()
-        calc_spacing()
+        /*
+         * function definitions
+         */
 
-        function calc_segments_space() {
-            var segments_space = Math.floor(container_width * 0.67)
-            var separator_space = separator_width * workflow_segments.length
-            return segments_space - separator_space
-        }
-
-        function calc_total_duration() {
+        function calc_total_duration(workflow_segments) {
             var total_duration = 0
             $.each(workflow_segments, function(i, segment) {
                 total_duration += $(segment).data('duration')
@@ -160,14 +153,18 @@ Workflow diagram used in the futureui workflow settings page
             return total_duration
         }
 
-        function calc_last_space() {
-            var last_space = Math.floor(container_width * 0.33)
-            return last_space - separator_space
-        }
+        function calc_spacing(container) {
+            var container_width = container.width()
+            var workflow_segments = container.find('.workflowStep')
+            var workflow_segment_last = container.find('.last')
 
-        function calc_spacing() {
+            /* the last segment will always be 150px */
+            var last_width = 150    
+            // total available space for the segments to occupy
+            var segments_space = Math.floor(container_width - last_width)
+
             var spaces = []
-            var total_duration = calc_total_duration()
+            var total_duration = calc_total_duration(workflow_segments)
 
             $.each(workflow_segments, function(i, segment) {
                 var duration = $(segment).data('duration')
