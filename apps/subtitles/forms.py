@@ -486,8 +486,9 @@ class ChangeSubtitleLanguageForm(SubtitlesForm):
             messages.error(request, ugettext(u'Invalid language code.'))
         except IntegrityError:
             messages.error(request, ugettext(u'Subtitles already exist for this language.'))
-        ActivityRecord.objects.create_for_subtitle_language_changed(
-                self.user, self.subtitle_language, old_language_code)
+        else:
+            ActivityRecord.objects.create_for_subtitle_language_changed(
+                    self.user, self.subtitle_language, old_language_code)
 
 class RollbackSubtitlesForm(SubtitlesForm):
     def check_permissions(self):
