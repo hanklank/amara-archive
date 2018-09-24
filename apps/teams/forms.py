@@ -1508,7 +1508,7 @@ class VideoFiltersForm(FiltersForm):
             '-time': '-created',
         }.get(sort or '-time'))
 
-        return qs.select_related('video')
+        return qs
 
 class ManagementVideoFiltersForm(VideoFiltersForm):
     language = NewLanguageField(label=_("Video language"),
@@ -1588,7 +1588,7 @@ class ActivityFiltersForm(FiltersForm):
         if type:
             qs = qs.filter(type__in=type)
         if video:
-            qs = qs.filter(video=Video.objects.search(video))
+            qs = qs.filter(video__in=Video.objects.search(video))
         if subtitle_language:
             qs = qs.filter(language_code__in=subtitle_language)
         if video_language:
@@ -2064,18 +2064,12 @@ class EditMembershipForm(forms.Form):
 
 class ApplicationForm(forms.Form):
     about_you = forms.CharField(widget=forms.Textarea, label="")
-    language1 = LanguageField(
-        choices=get_language_choices(), required=True)
-    language2 = LanguageField(
-        choices=get_language_choices(with_empty=True), required=False)
-    language3 = LanguageField(
-        choices=get_language_choices(with_empty=True), required=False)
-    language4 = LanguageField(
-        choices=get_language_choices(with_empty=True), required=False)
-    language5 = LanguageField(
-        choices=get_language_choices(with_empty=True), required=False)
-    language6 = LanguageField(
-        choices=get_language_choices(with_empty=True), required=False)
+    language1 = NewLanguageField(required=True)
+    language2 = NewLanguageField(required=False)
+    language3 = NewLanguageField(required=False)
+    language4 = NewLanguageField(required=False)
+    language5 = NewLanguageField(required=False)
+    language6 = NewLanguageField(required=False)
 
     def __init__(self, application, *args, **kwargs):
         super(ApplicationForm, self).__init__(*args, **kwargs)
