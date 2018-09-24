@@ -54,6 +54,7 @@ from teams.permissions_const import (
 from teams import stats
 from teams import tasks
 from teams import workflows
+from teams import behaviors
 from teams.exceptions import ApplicationInvalidException
 from teams.notifications import BaseNotification
 from teams.signals import (member_leave, api_subtitles_approved,
@@ -681,12 +682,11 @@ class Team(models.Model):
             - "login" -- user needs to login first
             - None -- user can't join the team
         """
-        if (self.is_ted_team() and 
-            (not user.is_authenticated() or not user.is_ted_account())):
-            return 'login-ted'
+        
+        team_login_url = behaviors.get_team_login_url(self, user)
 
-        if not user.is_authenticated():
-            return 'login'
+        if team_login_url:
+            return team_login_url
         elif self.user_is_member(user):
             return 'already-joined'
         elif self.is_open():
@@ -702,9 +702,6 @@ class Team(models.Model):
                 if application.status == Application.STATUS_PENDING:
                     return 'pending-application'
         return None
-
-    def is_ted_team(self):
-        return self.slug.startswith('ted')
 
     def user_is_member(self, user):
         members = self.cache.get('members')

@@ -28,3 +28,13 @@ def get_main_project(team):
     overrided for specific teams though (e.g. TED).
     """
     return None
+
+@behavior
+def get_team_login_url(team, user):
+    """
+    Get the appropriate login url for the team
+    """
+    if not user.is_authenticated():
+        return 'login'
+    else:
+        return None
