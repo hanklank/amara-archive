@@ -666,10 +666,6 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
                     return True
         return False
 
-    def is_ted_account(self):
-        from ted.models import TEDAccount
-        return len(TEDAccount.objects.for_user(self)) > 0
-
     def has_valid_password(self):
         # remove this post-1.9 when setting is used
         validator = PasswordStrengthValidator()
