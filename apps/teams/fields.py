@@ -67,12 +67,15 @@ class ProjectFieldMixin(object):
                 self.set_select_data('placeholder', _('Select project'))
 
             if initial is None:
-                initial = choices[0][0]
+                initial = self.default_initial(choices)
             self.initial = initial
             if self.futureui:
                 self.setup_widget()   
         else:
             self.enabled = False
+
+    def default_initial(self, choices):
+        return choices[0][0]
 
     def setup_widget(self):
         if len(self.choices) < 7:
@@ -108,6 +111,9 @@ class ProjectFieldMixin(object):
 
 class MultipleProjectField(ProjectFieldMixin, AmaraMultipleChoiceField):
     widget = widgets.AmaraProjectSelectMultiple
+
+    def default_initial(self, choices):
+        return []
 
 class TeamMemberRoleSelect(AmaraChoiceField):
     def __init__(self, *args, **kwargs):
