@@ -22,7 +22,7 @@ def test_get_or_calc_cache_hit():
     assert func.call_count == 0
 
 def test_get_or_calc_many():
-    func = mock.Mock(return_value=1)
+    func = mock.Mock(side_effect=lambda keys: [1] * len(keys))
     cache.set('key2', 2)
     result = get_or_calc_many(['key1', 'key2'], func)
     assert result == [1, 2]

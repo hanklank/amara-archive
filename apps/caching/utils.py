@@ -49,26 +49,23 @@ def get_or_calc_many(keys, work_func, cache=None):
     Args:
         keys: list of keys needed
         work_func: function to call on cache misses.  It will be passed a
-            key value.
+            list of keys and should return a list of results.
 
     Returns: list of results, one corresponding to each key in keys
 
     """
     if cache is None:
         cache = default_cache
-    cached_values = cache.get_many(keys)
-    rv = []
-    to_set = {}
-    for key in keys:
-        if key in cached_values:
-            result = cached_values[key]
-        else:
-            result = work_func(key)
-            to_set[key] = result
-        rv.append(result)
-    if to_set:
-        cache.set_many(to_set)
-    return rv
+    results_map = cache.get_many(keys)
+
+    cache_misses = [key for key in keys if key not in results_map]
+    if cache_misses:
+        work_results = work_func(cache_misses)
+        new_results = dict(zip(cache_misses, work_results))
+        cache.set_many(new_results)
+        results_map.update(new_results)
+
+    return [results_map[key] for key in keys]
 
 __all__ = [
     'get_or_calc', 'get_or_calc_many',

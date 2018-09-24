@@ -259,13 +259,13 @@ class TeamWorkflow(object):
         We call this for the team members page to populate the experience
         column (usually subtitles completed).  This method should:
 
-          - Set the experience attribute to each member to a TeamExperence object
+          - Set the experience attribute to each member to a TeamExperience object
           - Optionally, set the experience_extra attribute, which is a list of
             extra experience to show in the expanded view.
         """
         subtitles_completed = experience.get_subtitles_completed(page)
         for member, count in zip(page, subtitles_completed):
-            member.experience = TeamExperence(_('Subtitles completed'), count)
+            member.experience = TeamExperience(_('Subtitles completed'), count)
 
     # map type codes to subclasses
     _type_code_map = {}
@@ -334,7 +334,7 @@ Attributes:
     url: URL for the page
 """
 
-TeamExperence = namedtuple('TeamExperence', 'label count')
+TeamExperience = namedtuple('TeamExperience', 'label count')
 """Used to list experience counts on the members directory
 
 By default, we show subtitles completed, but other workflows might want to

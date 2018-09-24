@@ -24,6 +24,7 @@ a member.
 """
 
 from django.core.cache import cache
+from django.db.models import Count
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -45,8 +46,15 @@ def get_subtitles_completed(member_list):
     keys = [ subtitles_completed_cache_key(m) for m in member_list ]
     member_map = dict(zip(keys, member_list))
 
-    def calc_subtitles_completed(key):
-        return member_map[key].calc_subtitles_completed()
+    def calc_subtitles_completed(keys):
+        member_ids = [member_map[k].id for k in keys]
+        qs = (
+            TeamSubtitlesCompleted.objects.filter(member_id__in=member_ids)
+            .values('member_id').annotate(count=Count('id')))
+        count_map = {
+            r['member_id']: r['count'] for r in qs
+        }
+        return [count_map.get(m_id, 0) for m_id in member_ids]
 
     return get_or_calc_many(keys, calc_subtitles_completed)
 
