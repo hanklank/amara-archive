@@ -311,3 +311,25 @@ Attributes:
     title: human friendly tab title
     url: URL for the page
 """
+
+class TeamPermissionsRow(object):
+    """
+    Used to display the checks/Xs on the permissions settings page
+    """
+    def __init__(self, label, admins, managers, contributors,
+                 setting_name=None):
+        self.label = label
+        self.admins = admins
+        self.managers = managers
+        self.contributors = contributors
+        self.setting_name = setting_name
+
+
+    @classmethod
+    def from_setting(cls, label, form, setting_name):
+        value = form[setting_name].value()
+        permissions = form[setting_name].field.widget.decompress(value)
+        # some fields only have settings for admins/managers.  Make sure to
+        # extend permissions to 3 items in that case
+        permissions.extend([False] * (3 - len(permissions)))
+        return cls(label, *permissions, setting_name=setting_name)

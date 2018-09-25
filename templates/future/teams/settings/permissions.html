@@ -2,7 +2,7 @@
 {% load i18n forms %}
 
 {% block settings_form %}
-<form method="POST">
+<form method="POST" id="team-permissionsForm">
   {% csrf_token %}
   {% if form.membership_policy %}
   <fieldset>
@@ -22,4 +22,36 @@
   </div>
 </form>
 
+<section>
+  <table class="table striped">
+    {% for heading, rows in permissions_table %}
+    {% if forloop.first %}
+    <thead>
+      <tr>
+        <th>{{ heading }}</th>
+        <th>{% trans "Managers" %}</th>
+        <th>{% trans "Contributors" %}</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% else %}
+    <tbody class="secondary">
+      <tr>
+        <td>{{ heading }}</td>
+        <td></td>
+        <td></td>
+      </tr>
+    {% endif %}
+      {% for row in rows %}
+      <tr{% if row.setting_name %} class="team-permissionsTableDynamicRow" data-setting-name="{{ row.setting_name }}"{% endif %}>
+        <td>{{ row.label }}</td>
+        <td>{% if row.managers %}<span class="fa fa-check text-lime"></span>{% else %}<span class="fa fa-times text-amaranth"></span>{% endif %}</td>
+        <td>{% if row.contributors %}<span class="fa fa-check text-lime"></span>{% else %}<span class="fa fa-times text-amaranth"></span>{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    {% endfor %}
+  </table>
+  <div class="italic">{% trans "Admins can change team settings, edit projects and video feeds in addition to all other permissions." %}</div>
+</section>
 {% endblock %}

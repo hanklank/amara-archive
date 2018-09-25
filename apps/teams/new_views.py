@@ -62,7 +62,7 @@ from auth.models import CustomUser as User
 from auth.forms import CustomUserCreationForm
 from messages import tasks as messages_tasks
 from subtitles.models import SubtitleLanguage
-from teams.workflows import TeamWorkflow
+from teams.workflows import TeamWorkflow, TeamPermissionsRow
 from ui import (
     AJAXResponseRenderer, ManagementFormList, render_management_form_submit,
     AjaxLink, ContextMenu)
@@ -1263,7 +1263,30 @@ def settings_permissions(request, team):
         'form': form,
         'team_nav': 'settings',
         'settings_tab': 'permissions',
+        'permissions_table': make_permissions_table(form, team),
     })
+
+def make_permissions_table(form, team):
+    management_rows = []
+    if team.is_by_invitation():
+        management_rows.append(TeamPermissionsRow.from_setting(
+            _('Invite users to join team'), form, 'membership_policy'))
+    elif team.is_by_application():
+        management_rows.append(TeamPermissionsRow(
+            _('Review team member applications'), True, False, False))
+    management_rows.extend([
+        TeamPermissionsRow(_('Change team member roles'),
+                           True, True, False),
+        TeamPermissionsRow(_('Remove users from team'),
+                           True, True, False),
+    ])
+    return [
+        (_('Video Management'), [
+            TeamPermissionsRow.from_setting(
+                _('Add, update, or remove videos'), form, 'video_policy'),
+        ]),
+        (_('Team Management'), management_rows),
+     ]
 
 @team_settings_view
 def settings_projects(request, team):
