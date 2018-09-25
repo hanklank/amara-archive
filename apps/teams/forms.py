@@ -67,7 +67,7 @@ from teams.workflows import TeamWorkflow
 from ui.forms import (FiltersForm, ManagementForm, AmaraChoiceField,
                       AmaraMultipleChoiceField, AmaraRadioSelect, SearchField,
                       AmaraClearableFileInput, AmaraFileInput, HelpTextList,
-                      MultipleLanguageField, AmaraImageField, SwitchInput)
+                      MultipleLanguageField, AmaraImageField, SwitchInput, DependentBooleanField)
 from ui.forms import LanguageField as NewLanguageField
 from utils.html import clean_html
 from utils import send_templated_email, enum
@@ -878,6 +878,12 @@ class GeneralSettingsForm(forms.ModelForm):
         (Team.OPEN, ugettext(u'Users can join the team from the team landing page, and any team member can invite new members from the Member Directory.')),
     ]
 
+    ADMISSION_BY_INVITATION_CHOICES = [
+        (Team.INVITATION_BY_ADMIN, _('Admin')),
+        (Team.INVITATION_BY_MANAGER, _('Manager')),
+        (Team.INVITATION_BY_ALL, _('Contributor'))
+    ]
+
     TeamVisibilityHelpText = enum.Enum('TeamVisibilityHelpText', [
         ('PUBLIC', ugettext(u'The team will be listed in the public team directory.')),
         ('UNLISTED', ugettext(u'The team landing page can be seen by anyone with the team link.')),
@@ -913,10 +919,16 @@ class GeneralSettingsForm(forms.ModelForm):
                                 dynamic_choice_help_text=ADMISSION_CHOICES_HELP_TEXT)
     )
 
+    inviter_roles = DependentBooleanField(
+        label=_('Role'),
+        required=True,
+        initial=Team.INVITATION_BY_ADMIN,
+        choices=ADMISSION_BY_INVITATION_CHOICES)
+
     # checkboxes for multi-field when Invitation radio choice is selected
-    inviter_role_admin = forms.BooleanField(label=_('Admin'), required=False)
-    inviter_role_manager = forms.BooleanField(label=_('Manager'), required=False)
-    inviter_role_any = forms.BooleanField(label=_('Contributor'), required=False)
+    # inviter_role_admin = forms.BooleanField(label=_('Admin'), required=False)
+    # inviter_role_manager = forms.BooleanField(label=_('Manager'), required=False)
+    # inviter_role_any = forms.BooleanField(label=_('Contributor'), required=False)
 
     # switches for multi-field for subtitle visibility
     subtitles_public = forms.BooleanField(
@@ -1029,17 +1041,20 @@ class GeneralSettingsForm(forms.ModelForm):
 
         if admission:
             if int(cleaned_data['admission']) == GeneralSettingsForm.BY_INVITATION:
-                if cleaned_data['inviter_role_any']:
-                    membership_policy = Team.INVITATION_BY_ALL
-                elif cleaned_data['inviter_role_manager']:
-                    membership_policy = Team.INVITATION_BY_MANAGER
-                elif cleaned_data['inviter_role_admin']:
-                    membership_policy = Team.INVITATION_BY_ADMIN
-                else:
-                    membership_policy = -1
-                    # hack to add error to the team admission field but not display an error message
-                    # this is to avoid the help text getting funky when there is an error in the said field
-                    self.add_error('admission', '')
+                membership_policy = cleaned_data['inviter_roles']
+
+
+                # if cleaned_data['inviter_role_any']:
+                #     membership_policy = Team.INVITATION_BY_ALL
+                # elif cleaned_data['inviter_role_manager']:
+                #     membership_policy = Team.INVITATION_BY_MANAGER
+                # elif cleaned_data['inviter_role_admin']:
+                #     membership_policy = Team.INVITATION_BY_ADMIN
+                # else:
+                #     membership_policy = -1
+                #     # hack to add error to the team admission field but not display an error message
+                #     # this is to avoid the help text getting funky when there is an error in the said field
+                #     self.add_error('admission', '')
             else:
                 membership_policy = cleaned_data['admission']
 
