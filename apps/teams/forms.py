@@ -875,7 +875,7 @@ class GeneralSettingsForm(forms.ModelForm):
     ADMISSION_CHOICES_HELP_TEXT = [
         (BY_INVITATION, ugettext(u'The selected roles below can invite new users from the Member Directory page.')),
         (Team.APPLICATION, ugettext(u'Admins can review and approve team member applications from the Member Directory page.')),
-        (Team.OPEN, ugettext(u'Users can join the team from the team landing page, and any team member can invite new members from the member directory.')),
+        (Team.OPEN, ugettext(u'Users can join the team from the team landing page, and any team member can invite new members from the Member Directory.')),
     ]
 
     TeamVisibilityHelpText = enum.Enum('TeamVisibilityHelpText', [
@@ -896,7 +896,7 @@ class GeneralSettingsForm(forms.ModelForm):
                                   required=False)
     logo = AmaraImageField(label=_('Team Banner Image'),
                            preview_size=(160, 90),
-                           help_text=_('Recommended size 280 x 100 px'),
+                           help_text=_('Recommended size 940 x 235 px'),
                            required=False)
     
     # need to use a different field name because the choices are a little bit
@@ -958,9 +958,9 @@ class GeneralSettingsForm(forms.ModelForm):
         if self.data:
 
             if (self.data.get('admission', None)):
-                self.data['admission'] = int(self.data['admission'])
-                self._calc_admission(self.data['admission'])
-                if self.errors.get('admission', None) is not None and self.data['admission'] == self.BY_INVITATION:
+                admission = int(self.data['admission'])
+                self._calc_admission(admission)
+                if self.errors.get('admission', None) is not None and admission == self.BY_INVITATION:
                     self.fields['admission'].widget.dynamic_choice_help_text_initial = 'Please select a role below.'
             else:
                 self.fields['admission'].widget.dynamic_choice_help_text_initial = 'Please select a team admission policy.'
