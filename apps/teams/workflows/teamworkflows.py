@@ -226,6 +226,12 @@ class TeamWorkflow(object):
             'language-changed',
         ]
 
+    def customize_permissions_table(self, team, form, permissions_table):
+        """
+        Customize the table show on the permissions settings page
+        """
+        pass
+
     # these can be used to customize the content in the project/language
     # manager pages
     def render_project_page(self, request, team, project, page_data):

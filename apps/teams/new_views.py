@@ -1280,13 +1280,15 @@ def make_permissions_table(form, team):
         TeamPermissionsRow(_('Remove users from team'),
                            True, True, False),
     ])
-    return [
+    table = [
         (_('Video Management'), [
             TeamPermissionsRow.from_setting(
                 _('Add, update, or remove videos'), form, 'video_policy'),
         ]),
         (_('Team Management'), management_rows),
      ]
+    team.new_workflow.customize_permissions_table(team, form, table)
+    return table
 
 @team_settings_view
 def settings_projects(request, team):
