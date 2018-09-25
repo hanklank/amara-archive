@@ -1,0 +1,25 @@
+{% extends "future/teams/settings/base.html" %}
+{% load i18n forms %}
+
+{% block settings_form %}
+<form method="POST">
+  {% csrf_token %}
+  {% if form.membership_policy %}
+  <fieldset>
+    <legend><h3>{% trans "Team Admissions" %}</h3></legend>
+    {% render_field form.membership_policy %}
+  </fieldset>
+  {% endif  %}
+  <fieldset>
+    <legend><h3>{% trans "Video Management" %}</h3></legend>
+    {% render_field form.video_policy %}
+  </fieldset>
+
+  <div class="fieldset-footer-shadow">
+      <div class="fieldset-backtotop-container">
+      </div>
+      <button type="submit" class="button cta saveChangesButton">Save Changes</button>
+  </div>
+</form>
+
+{% endblock %}

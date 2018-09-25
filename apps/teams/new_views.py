@@ -1247,6 +1247,25 @@ def settings_feeds(request, team):
     })
 
 @team_settings_view
+def settings_permissions(request, team):
+    if request.POST:
+        form = forms.NewPermissionsForm(team, data=request.POST)
+
+        if form.is_valid():
+            form.save(request.user)
+            messages.success(request, _(u'Permissions saved.'))
+            return HttpResponseRedirect(request.path)
+    else:
+        form = forms.NewPermissionsForm(team)
+
+    return render(request, "future/teams/settings/permissions.html", {
+        'team': team,
+        'form': form,
+        'team_nav': 'settings',
+        'settings_tab': 'permissions',
+    })
+
+@team_settings_view
 def settings_projects(request, team):
     if team.is_old_style():
         return old_views.settings_projects(request, team)
