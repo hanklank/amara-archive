@@ -287,11 +287,16 @@ class DependentCheckboxes(widgets.MultiWidget):
         context = super(DependentCheckboxes, self).get_context(
             name, value, attrs)
 
+        for choice, widget in zip(self.choices,
+                                  context['widget']['subwidgets']):
+            if choice[0] == value:
+                widget['attrs']['checked'] = 'checked'
         if required:
             context['widget']['subwidgets'][0]['attrs'].update({
                 'disabled': 'disabled',
                 'checked': 'checked'
             })
+
 
         context['widget']['subwidgets_and_labels'] = [
             (choice[1], subwidget)

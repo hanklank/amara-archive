@@ -167,13 +167,13 @@ EXISTS(
         # Terms with less chars are not indexed, so they will never match anything.
         terms = get_terms(query)
         if len(terms) == 1 and len(terms[0]) > 2:
-            return self.filter(index__text__search=query)
+            return self.filter(index__text__search=terms[0])
         else:
             terms = [t for t in get_terms(query) if len(t) > 2]
             if len(terms) > MAX_VIDEO_SEARCH_TERMS:
                 terms = terms[:MAX_VIDEO_SEARCH_TERMS]
-            query = u' '.join(u'+"{}"'.format(t) for t in terms)
-            return self.filter(index__text__search=query)
+            new_query = u' '.join(u'+"{}"'.format(t) for t in terms)
+            return self.filter(index__text__search=new_query)
 
     def add_num_completed_languages(self):
         sql = ("""

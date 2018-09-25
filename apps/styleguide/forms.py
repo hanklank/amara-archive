@@ -69,7 +69,7 @@ class MultiFieldForm(StyleguideForm):
     ], label='Species')
 
     role = DependentBooleanField(
-        label='Role', required=True, choices=[
+        label='Role', required=True, initial='manager', choices=[
             ('admin', 'Admin'),
             ('manager', 'Manager'),
             ('any', 'Any Team Member'),

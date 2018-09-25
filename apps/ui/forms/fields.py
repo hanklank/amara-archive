@@ -308,6 +308,11 @@ class DependentBooleanField(forms.MultiValueField):
         for choice, checked in reversed(zip(self.choices, data_list)):
             if checked:
                 return choice[0]
+            elif self.required:
+                # required fields make the first choice always checked and
+                # disabled.  That means we won't see it in the POST data, but
+                # we should return it here.
+                return self.choices[0][0]
         return None
 
 __all__ = [
