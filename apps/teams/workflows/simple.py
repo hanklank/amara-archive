@@ -26,6 +26,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from teams import views as old_views
 from teams import forms
+from teams.models import Team
 from teams.workflows import TeamWorkflow
 from utils.breadcrumbs import BreadCrumb
 from .subtitleworkflows import TeamVideoWorkflow
