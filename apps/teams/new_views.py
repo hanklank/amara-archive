@@ -51,7 +51,7 @@ from . import permissions
 from . import signals
 from . import stats
 from . import tasks
-from .behaviors import get_main_project, get_team_join_mode, get_team_login_url
+from .behaviors import get_main_project, get_team_login_url
 from .bulk_actions import add_videos_from_csv
 from .exceptions import ApplicationInvalidException
 from .models import (Invite, Setting, Team, Project, TeamVideo,
@@ -946,7 +946,7 @@ def welcome(request, team):
 
     return render(request, 'future/teams/welcome.html', {
         'team': team,
-        'join_mode': get_team_join_mode(team, request.user),
+        'join_mode': team.get_join_mode(request.user),
         'login_base_url': get_team_login_url(team),
         'team_messages': team.get_messages([
             'pagetext_welcome_heading',

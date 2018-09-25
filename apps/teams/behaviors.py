@@ -16,6 +16,7 @@
 # along with this program.  If not, see
 # http://www.gnu.org/licenses/agpl-3.0.html.
 
+from django.urls import reverse
 from utils.behaviors import behavior
 
 @behavior
