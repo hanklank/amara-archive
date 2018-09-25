@@ -226,7 +226,7 @@ class DependentCheckboxes(widgets.MultiWidget):
 
         rv = []
 
-        for choice_label, choice_value in reversed(self.choices):
+        for choice_value, choice_label in reversed(self.choices):
             if choice_value == value or saw_value:
                 rv.append(True)
                 saw_value = True
