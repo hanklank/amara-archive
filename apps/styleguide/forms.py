@@ -24,7 +24,8 @@ from auth.models import get_amara_anonymous_user
 from styleguide.models import StyleguideData
 from utils import enum
 from ui.forms import (
-    AmaraImageField, AmaraChoiceField, AmaraMultipleChoiceField, SwitchInput, AmaraRadioSelect
+    AmaraImageField, AmaraChoiceField, AmaraMultipleChoiceField, SearchField, SwitchInput,
+    ContentHeaderSearchBar, DependentBooleanField, AmaraRadioSelect
 )
 
 class StyleguideForm(forms.Form):
@@ -67,10 +68,13 @@ class MultiFieldForm(StyleguideForm):
         ('horse', 'Horse'),
     ], label='Species')
 
-    role_admin = forms.BooleanField(label='Admin', required=False,
-                                    initial=True)
-    role_manager = forms.BooleanField(label='Manager', required=False)
-    role_any = forms.BooleanField(label='Any Team Member', required=False)
+    role = DependentBooleanField(
+        label='Role', required=True, choices=[
+            ('admin', 'Admin'),
+            ('manager', 'Manager'),
+            ('any', 'Any Team Member'),
+        ])
+
 
     subtitles_public = forms.BooleanField(
         label='Completed', required=False, initial=True,
@@ -166,6 +170,10 @@ class DynamicHelpTextForm(StyleguideForm):
         widget=AmaraRadioSelect(dynamic_choice_help_text=RadioChoicesHelpText,
             dynamic_choice_help_text_initial='3) Radio button groups also need an initial help text. The initial help text is set in the widget')
     )
+
+class ContentHeader(StyleguideForm):
+    search = SearchField(label='Search', required=False,
+                         widget=ContentHeaderSearchBar)
 
 class FilterBox(StyleguideForm):
     color = AmaraMultipleChoiceField(

@@ -128,6 +128,10 @@
 {% endmodal %}
 {% endif %}
 
+{% if create_subtitles_form %}
+  {% include 'future/videos/create-subtitles-modal.html' with form=create_subtitles_form %}
+{% endif %}
+
 {% endblock %}
 
 {% block page-controls %}

@@ -19,7 +19,7 @@
 import json
 
 from django import template
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.forms.utils import flatatt
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
@@ -40,22 +40,22 @@ def dropdown_button_icon(button_id, css_class=None):
         attrs['class'] = css_class
 
     return format_html(
-        '<button{}><span class="fa fa-ellipsis-v"></span>', flatatt(attrs))
+        u'<button{}><span class="fa fa-ellipsis-v"></span>', flatatt(attrs))
 
 @register.simple_tag(name='dropdown-button')
 def dropdown_button(button_id, css_class):
     return format_html(
-        '<button id="{}" class="{}" role="button" aria-haspopup="true" '
+        u'<button id="{}" class="{}" role="button" aria-haspopup="true" '
         'aria-expanded="false">', button_id, css_class)
 
 @register.simple_tag(name='end-dropdown-button')
 def end_dropdown_button():
-    return mark_safe('</button>')
+    return mark_safe(u'</button>')
 
 @register.simple_tag
 def dropdown(button_id):
     return format_html(
-        '<ul class="dropdownMenu" role="menu" aria-labeledby="{}">', button_id)
+        u'<ul class="dropdownMenu" role="menu" aria-labeledby="{}">', button_id)
 
 @register.simple_tag(name='dropdown-item')
 def dropdown_item(label, view_name, *args, **kwargs):
@@ -94,22 +94,28 @@ def make_dropdown_item(label, options, link_attrs):
         classes.append(options.extra_class)
 
     if options.icon:
-        label_html = format_html('<span class="dropdownMenu-text">{}</span> <span class="icon icon-{} dropdownMenu-extra"></span>',
-                                 unicode(label), options.icon)
+        if options.icon.startswith('fa-'):
+            icon_class="fa {}".format(options.icon)
+        else:
+            icon_class="icon icon-{}".format(options.icon)
+
+        label_html = format_html(u'<span class="dropdownMenu-text">{}</span> '
+                                 '<span class="{} dropdownMenu-extra"></span>',
+                                 unicode(label), icon_class)
     elif options.count:
-        label_html = format_html('<span class="dropdownMenu-text">{}</span> <span class="dropdownMenu-extra">{}</span>',
+        label_html = format_html(u'<span class="dropdownMenu-text">{}</span> <span class="dropdownMenu-extra">{}</span>',
                                  unicode(label), options.count)
     else:
-        label_html = format_html('<span class="dropdownMenu-text">{}</span>',
+        label_html = format_html(u'<span class="dropdownMenu-text">{}</span>',
                                  unicode(label))
     if options.disabled:
         link_html = format_html(
-            '<span class="dropdownMenu-link disabled">{}</span>', label_html)
+            u'<span class="dropdownMenu-link disabled">{}</span>', label_html)
     else:
-        link_html = format_html('<a{}>{}</a>', flatatt(link_attrs), label_html)
+        link_html = format_html(u'<a{}>{}</a>', flatatt(link_attrs), label_html)
 
-    return format_html('<li role="none" class="{}">{}</li>',
-                       ' '.join(classes), link_html)
+    return format_html(u'<li role="none" class="{}">{}</li>',
+                       u' '.join(classes), link_html)
 
 def extra_dropdown_item_options(kwargs):
     """
@@ -128,4 +134,4 @@ def extra_dropdown_item_options(kwargs):
 
 @register.simple_tag
 def enddropdown():
-    return format_html('</ul>')
+    return format_html(u'</ul>')

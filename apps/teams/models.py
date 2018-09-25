@@ -21,11 +21,12 @@ from math import ceil
 import csv
 import datetime
 import logging
+from cStringIO import StringIO
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.core.files import File
 from django.core.signing import Signer
 from django.db import connection
@@ -241,7 +242,7 @@ class Team(models.Model):
     team_visibility = enum.EnumField(enum=TeamVisibility,
                                      default=TeamVisibility.PRIVATE)
     video_visibility = enum.EnumField(enum=VideoVisibility,
-                                       default=VideoVisibility.PRIVATE)
+                                      default=VideoVisibility.PRIVATE)
     sync_metadata = models.BooleanField(_(u'Sync metadata when available (Youtube)?'), default=False)
     videos = models.ManyToManyField(Video, through='TeamVideo',  verbose_name=_('videos'))
     users = models.ManyToManyField(User, through='TeamMember', related_name='teams', verbose_name=_('users'))
@@ -3639,23 +3640,23 @@ class BillingReport(models.Model):
             rows = self.generate_rows()
         except StandardError:
             logger.error("Error generating billing report: (id: %s)", self.id)
-            self.csv_file = None
         else:
-            self.csv_file = self.make_csv_file(rows)
+            self.make_csv_file(rows)
         self.processed = datetime.datetime.utcnow()
         self.save()
 
     def make_csv_file(self, rows):
         rows = self.convert_unicode_to_utf8(rows)
-        fn = '/tmp/bill-%s-teams-%s-%s-%s-%s.csv' % (
+
+        csv_file = StringIO()
+        writer = csv.writer(csv_file)
+        writer.writerows(rows)
+
+        name = 'bill-%s-teams-%s-%s-%s-%s.csv' % (
             self.teams.all().count(),
             self.start_str, self.end_str,
             self.get_type_display(), self.pk)
-        with open(fn, 'w') as f:
-            writer = csv.writer(f)
-            writer.writerows(rows)
-
-        return File(open(fn, 'r'))
+        self.csv_file.save(name, csv_file)
 
     @property
     def start_str(self):
@@ -3963,7 +3964,7 @@ class Partner(models.Model):
     # The `admins` field specifies users who can do just about anything within
     # the partner realm.
     admins = models.ManyToManyField('amara_auth.CustomUser',
-            related_name='managed_partners', blank=True, null=True)
+            related_name='managed_partners', blank=True)
 
     def __unicode__(self):
         return self.name

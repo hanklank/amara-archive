@@ -63,7 +63,6 @@
 
 - - Utility Classes
   - thumbWrapper
-  - trackClicks
 
 - - Elements
   - videoCards
@@ -76,6 +75,8 @@
   - id: filter-box
     title: Filter Box
   - actionBar
+  - id: content-header
+    title: Content header
   - selectList
   - pagination
   - hangingLink
