@@ -21,7 +21,7 @@ from django.conf.urls import url
 from ui import views
 
 urlpatterns = [
-    url(r'^task-progress/(?P<task_id>[0-9a-f-]+)/$', views.task_progress,
+    url(r'^task-progress/(?P<job_id>[0-9a-f-]+)/$', views.task_progress,
         name='task-progress'),
     url(r'^language-select/$', views.language_select, name='language-select'),
 ]
