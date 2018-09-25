@@ -683,10 +683,10 @@ class Team(models.Model):
             - None -- user can't join the team
         """
         
-        team_login_url = behaviors.get_team_login_url(self, user)
+        join_mode = behaviors.get_team_join_mode(self, user)
 
-        if team_login_url:
-            return team_login_url
+        if join_mode:
+            return join_mode
         elif self.user_is_member(user):
             return 'already-joined'
         elif self.is_open():

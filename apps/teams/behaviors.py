@@ -30,11 +30,18 @@ def get_main_project(team):
     return None
 
 @behavior
-def get_team_login_url(team, user):
+def get_team_join_mode(team, user):
     """
-    Get the appropriate login url for the team
+    Get the appropriate join mode for the team - mainly used for the non-member landing page
     """
     if not user.is_authenticated():
         return 'login'
     else:
         return None
+
+@behavior
+def get_team_login_url(team):
+    """
+    Get the appropriate login url for the team
+    """
+    return reverse('auth:login')
