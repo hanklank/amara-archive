@@ -186,6 +186,10 @@ Workflow diagram used in the futureui workflow settings page
         }
     }
 
+    $('.workflowDiagramContainer').each(function() {
+        recalc_spacing($(this))
+    });
+
     $('.duration').change(function(e) {
         target = '#' + $(this).data('target-id')
         $(target).data('duration', parseInt(this.value))
