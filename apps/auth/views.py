@@ -315,8 +315,10 @@ def password_reset_complete(request,
     if extra_context is not None:
         context.update(extra_context)
     logout(request)
-    return TemplateResponse(request, template_name, context,
-                            current_app=current_app)
+    if current_app is not None:
+        request.current_app = current_app
+
+    return TemplateResponse(request, template_name, context)
 
 
 @user_passes_test(lambda u: u.is_superuser)
