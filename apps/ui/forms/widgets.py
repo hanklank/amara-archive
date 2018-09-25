@@ -212,8 +212,53 @@ class SwitchInput(widgets.CheckboxInput):
             'attrs': flatatt(attrs),
         }))
 
+class DependentCheckboxes(widgets.MultiWidget):
+    # TODO Make this work with switches as well as checkboxes
+    template_name = 'ui/dependent-choices.html'
+
+    def __init__(self, choices):
+        self.choices = choices
+        super(DependentCheckboxes, self).__init__(
+            [widgets.CheckboxInput() for choice in choices])
+
+    def decompress(self, value):
+        saw_value = False
+
+        rv = []
+
+        for choice_label, choice_value in reversed(self.choices):
+            if choice_value == value or saw_value:
+                rv.append(True)
+                saw_value = True
+            else:
+                rv.append(False)
+        rv.reverse()
+        return rv
+
+    def get_context(self, name, value, attrs):
+        # We handle the required attribute specially.  Don't make the
+        # checkboxes required.  Instead make the first checkbox checked and
+        # disabled.
+        required = attrs['required']
+        attrs['required'] = False
+
+        context = super(DependentCheckboxes, self).get_context(
+            name, value, attrs)
+
+        if required:
+            context['widget']['subwidgets'][0]['attrs'].update({
+                'disabled': 'disabled',
+                'checked': 'checked'
+            })
+
+        context['widget']['subwidgets_and_labels'] = [
+            (choice[1], subwidget)
+            for choice, subwidget in zip(self.choices, context['widget']['subwidgets'])
+        ]
+        return context
+
 __all__ = [
     'AmaraRadioSelect', 'SearchBar', 'ContentHeaderSearchBar',
     'AmaraFileInput', 'AmaraClearableFileInput', 'UploadOrPasteWidget',
-    'AmaraImageInput', 'SwitchInput',
+    'AmaraImageInput', 'SwitchInput', 'DependentCheckboxes',
 ]

@@ -2113,7 +2113,7 @@ class ApplicationForm(forms.Form):
     def _get_language_list(self):
         languages = []
         for i in xrange(1, 7):
-            value = self.cleaned_data['language{}'.format(i)]
+            value = self.cleaned_data.get('language{}'.format(i))
             if value:
                 languages.append({"language": value, "priority": i})
 

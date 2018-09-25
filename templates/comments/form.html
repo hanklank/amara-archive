@@ -6,7 +6,7 @@
         {% endif %}
     {% endfor %}
     <div>
-        {% if not is_authnticated %}
+        {% if not is_authenticated %}
         <div class="login-for-comment">
             <a href="{% url "auth:login" %}?next={{ next_page }}">Login to post a comment</a> 
         </div>
