@@ -994,16 +994,7 @@ class GeneralSettingsForm(forms.ModelForm):
         if membership_policy in [Team.INVITATION_BY_ALL, Team.INVITATION_BY_MANAGER, Team.INVITATION_BY_ADMIN]:
             self.initial['admission'] = GeneralSettingsForm.BY_INVITATION
             self.fields['admission'].widget.dynamic_choice_help_text_initial = dict(self.ADMISSION_CHOICES_HELP_TEXT)[self.BY_INVITATION]
-
-            if self.instance.membership_policy == Team.INVITATION_BY_ALL:
-                self.initial['inviter_role_any'] = True
-                self.initial['inviter_role_manager'] = True
-                self.initial['inviter_role_admin'] = True
-            elif self.instance.membership_policy == Team.INVITATION_BY_MANAGER:
-                self.initial['inviter_role_manager'] = True
-                self.initial['inviter_role_admin'] = True
-            elif self.instance.membership_policy == Team.INVITATION_BY_ADMIN:
-                self.initial['inviter_role_admin'] = True
+            self.initial['inviter_roles'] = membership_policy
         else:
             self.initial['admission'] = membership_policy
             self.fields['admission'].widget.dynamic_choice_help_text_initial = dict(self.ADMISSION_CHOICES_HELP_TEXT)[membership_policy]
@@ -1042,7 +1033,6 @@ class GeneralSettingsForm(forms.ModelForm):
         if admission:
             if int(cleaned_data['admission']) == GeneralSettingsForm.BY_INVITATION:
                 membership_policy = cleaned_data['inviter_roles']
-
 
                 # if cleaned_data['inviter_role_any']:
                 #     membership_policy = Team.INVITATION_BY_ALL
