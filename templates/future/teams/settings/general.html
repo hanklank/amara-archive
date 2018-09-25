@@ -33,12 +33,7 @@
     {% render_field form.admission reverse_required=True %}
 
     <div class="teamMembershipSettingRoles" style="display:none">
-{% comment %}
-      {% multi_field _("Roles that can invite") form.inviter_role_admin form.inviter_role_manager form.inviter_role_any dependent=True required=True %}
-    {% endcomment %}
-
       {% render_field form.inviter_roles %}
-
     </div>
   </fieldset>
 

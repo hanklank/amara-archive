@@ -919,16 +919,11 @@ class GeneralSettingsForm(forms.ModelForm):
                                 dynamic_choice_help_text=ADMISSION_CHOICES_HELP_TEXT)
     )
 
+    # checkboxes for multi-field when Invitation radio choice is selected
     inviter_roles = DependentBooleanField(
         label=_('Role'),
-        required=True,
         initial=Team.INVITATION_BY_ADMIN,
         choices=ADMISSION_BY_INVITATION_CHOICES)
-
-    # checkboxes for multi-field when Invitation radio choice is selected
-    # inviter_role_admin = forms.BooleanField(label=_('Admin'), required=False)
-    # inviter_role_manager = forms.BooleanField(label=_('Manager'), required=False)
-    # inviter_role_any = forms.BooleanField(label=_('Contributor'), required=False)
 
     # switches for multi-field for subtitle visibility
     subtitles_public = forms.BooleanField(
@@ -994,6 +989,7 @@ class GeneralSettingsForm(forms.ModelForm):
         if membership_policy in [Team.INVITATION_BY_ALL, Team.INVITATION_BY_MANAGER, Team.INVITATION_BY_ADMIN]:
             self.initial['admission'] = GeneralSettingsForm.BY_INVITATION
             self.fields['admission'].widget.dynamic_choice_help_text_initial = dict(self.ADMISSION_CHOICES_HELP_TEXT)[self.BY_INVITATION]
+
             self.initial['inviter_roles'] = membership_policy
         else:
             self.initial['admission'] = membership_policy
@@ -1033,23 +1029,15 @@ class GeneralSettingsForm(forms.ModelForm):
         if admission:
             if int(cleaned_data['admission']) == GeneralSettingsForm.BY_INVITATION:
                 membership_policy = cleaned_data['inviter_roles']
-
-                # if cleaned_data['inviter_role_any']:
-                #     membership_policy = Team.INVITATION_BY_ALL
-                # elif cleaned_data['inviter_role_manager']:
-                #     membership_policy = Team.INVITATION_BY_MANAGER
-                # elif cleaned_data['inviter_role_admin']:
-                #     membership_policy = Team.INVITATION_BY_ADMIN
-                # else:
-                #     membership_policy = -1
-                #     # hack to add error to the team admission field but not display an error message
-                #     # this is to avoid the help text getting funky when there is an error in the said field
-                #     self.add_error('admission', '')
             else:
                 membership_policy = cleaned_data['admission']
 
             cleaned_data['membership_policy'] = membership_policy
         else:
+            '''
+            hack to add error to the team admission field but not display an error message
+            this is to avoid the help text getting funky when there is an error in this particular field
+            '''
             self.add_error('admission', '')
 
         return cleaned_data        
@@ -1057,6 +1045,10 @@ class GeneralSettingsForm(forms.ModelForm):
     def save(self, user):
         with transaction.atomic():
             team = super(GeneralSettingsForm, self).save()
+
+            # for some reason the form does not save membership_policy after upgrading to django 1.11
+            team.membership_policy = self.cleaned_data['membership_policy']
+            team.save()
 
             if self.instance.is_collab_team():
                 if self.cleaned_data['drafts_public']:
