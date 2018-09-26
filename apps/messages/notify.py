@@ -21,7 +21,9 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
 
+from auth.models import CustomUser as User
 from utils.enum import Enum
+from utils.taskqueue import job
 
 Notifications = Enum('Notifications', [
     ('ROLE_CHANGED', _('Role changed')),
@@ -42,6 +44,13 @@ def notify_users(notification, user_list, subject, text_template, html_template,
             True/False to force an email to be sent or not sent.  None, the
             default means use the notify_by_email flag from CustomUser.
     """
+    do_notify_users.delay(notification, [u.id for u in user_list], subject,
+                          text_template, html_template, context, send_email)
+
+@job
+def do_notify_users(notification, user_ids, subject, text_template,
+                    html_template, context, send_email):
+    user_list = User.objects.filter(id__in=user_ids)
     message = render_to_string(text_template, context)
     html_message = render_to_string(html_template, context)
     for user in user_list:
