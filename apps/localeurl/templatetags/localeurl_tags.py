@@ -56,4 +56,4 @@ def universal_url(view_name, *args, **kwargs):
 
 @register.filter
 def universal_url(url):
-    return utils.make_universal(view_name)
+    return utils.make_universal(url)
