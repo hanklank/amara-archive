@@ -1,6 +1,6 @@
 # Amara, universalsubtitles.org
 #
-# Copyright (C) 2013 Participatory Culture Foundation
+# Copyright (C) 2018 Participatory Culture Foundation
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -16,13 +16,23 @@
 # along with this program.  If not, see
 # http://www.gnu.org/licenses/agpl-3.0.html.
 
-# override the default loader
-from django.db import connection
-from djcelery.loaders import DjangoLoader
+from django import template
+from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
-class AmaraCeleryLoader(DjangoLoader):
-    def close_database(self, **kwargs):
-        # DjangoLoader sometimes reuses connections.  Make sure our current
-        # transaction is commited in that case.
-        connection.cursor().execute("COMMIT")
-        DjangoLoader.close_database(self, **kwargs)
+register = template.Library()
+
+@register.simple_tag
+def startmodal(id_, title, remove_on_close=False):
+    title_id = id_ + '-title'
+    classes = ['modal']
+    if remove_on_close:
+        classes.append('removeOnClose')
+    return format_html(
+        u'<div id="{0}" class="{3}" role="dialog" aria-modal="true" aria-labeledby="{1}">'
+        '<h4 id="{1}" class="modal-title">{2}</h4>',
+        id_, title_id, unicode(title), ' '.join(classes))
+
+@register.simple_tag
+def endmodal():
+    return mark_safe(u'</div>')

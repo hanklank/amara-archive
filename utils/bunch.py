@@ -1,6 +1,6 @@
 # Amara, universalsubtitles.org
 #
-# Copyright (C) 2013 Participatory Culture Foundation
+# Copyright (C) 2018 Participatory Culture Foundation
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -15,3 +15,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see
 # http://www.gnu.org/licenses/agpl-3.0.html.
+
+"""
+Bunch -- Simple object for storing attributes.
+
+This class is simply a place to store data like a dict, but with attribute
+style access (obj.foo instead of obj['foo']).
+"""
+
+# Copied from the ancient Alex Martelli recipe.  It's simpler than the version
+# on PyPi, which is good because we don't want anything fancy.
+class Bunch(object):
+    def __init__(self, **kwds):
+        self.__dict__.update(kwds)
+
