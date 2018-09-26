@@ -1006,7 +1006,8 @@ def manage_videos(request, team, project_id=None):
             for form in enabled_forms
         ],
         'project_id': project_id,
-        'management_extra_tabs' : team.new_workflow.management_page_extra_tabs(request, project_id=project_id),
+        'management_extra_tabs' : team.new_workflow.management_page_extra_tabs(
+            request.user, project_id=project_id),
         'header': header,
     }    
 
