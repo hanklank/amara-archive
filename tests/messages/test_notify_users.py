@@ -16,63 +16,89 @@
 # along with this program.  If not, see
 # http://www.gnu.org/licenses/agpl-3.0.html.
 
+from lxml import etree
 import mock
+import re
 
 import pytest
 
 from messages.notify import notify_users, Notifications
+from utils.bunch import Bunch
 from utils.factories import *
-
-@pytest.fixture(autouse=True)
-def mock_render_to_string(monkeypatch):
-    mock_render_to_string = mock.Mock(
-        side_effect=lambda template_name, context: 'render: ' + template_name)
-    with mock.patch('messages.notify.render_to_string',
-                    mock_render_to_string):
-        yield mock_render_to_string
 
 @pytest.fixture(autouse=True)
 def mock_send_mail(monkeypatch):
     mock_send_mail = mock.Mock()
     with mock.patch('messages.notify.send_mail', mock_send_mail):
-        print 'send mail: ', repr(mock_send_mail)
         yield mock_send_mail
 
 @pytest.fixture(autouse=True)
 def set_default_from(settings):
     settings.DEFAULT_FROM_EMAIL = 'test@example.com'
+    settings.HOSTNAME = 'test.amara.org'
+    settings.DEFAULT_PROTOCOL  = 'https'
+
+@pytest.fixture
+def rendered_messages(mock_send_mail):
+    user = UserFactory(notify_by_email=True)
+    notify_users(Notifications.ROLE_CHANGED, [user],
+                        'Test subject', 'tests/test-message.html', {})
+    return Bunch(
+        text=mock_send_mail.call_args[0][1],
+        html=mock_send_mail.call_args[1]['html_message']
+    )
 
 def test_notify_by_email(mock_send_mail):
     user = UserFactory(notify_by_email=True)
     notify_users(Notifications.ROLE_CHANGED, [user],
-                        'Test subject', 'template.txt', 'template.html', {})
+                        'Test subject', 'tests/test-message.html', {})
     assert mock_send_mail.called
     assert mock_send_mail.call_args == mock.call(
-        'Test subject', 'render: template.txt', 'test@example.com',
-        [user.email], html_message='render: template.html')
+        'Test subject', mock.ANY, 'test@example.com',
+        [user.email], html_message=mock.ANY)
+
 
 def test_no_email_address_set(mock_send_mail):
     user = UserFactory(notify_by_email=True, email='')
     notify_users(Notifications.ROLE_CHANGED, [user],
-                        'Test subject', 'template.txt', 'template.html', {})
+                        'Test subject', 'tests/test-message.html', {})
     assert not mock_send_mail.called
 
 def test_notify_by_email_unset(mock_send_mail):
     user = UserFactory(notify_by_email=False)
     notify_users(Notifications.ROLE_CHANGED, [user],
-                        'Test subject', 'template.txt', 'template.html', {})
+                        'Test subject', 'tests/test-message.html', {})
     assert not mock_send_mail.called
 
 def test_force_email(mock_send_mail):
     user = UserFactory(notify_by_email=False)
     notify_users(Notifications.ROLE_CHANGED, [user],
-                        'Test subject', 'template.txt', 'template.html', {},
+                        'Test subject', 'tests/test-message.html', {},
                  send_email=True)
     assert mock_send_mail.called
 
 def test_force_no_email(mock_send_mail):
     user = UserFactory(notify_by_email=True)
     notify_users(Notifications.ROLE_CHANGED, [user],
-                        'Test subject', 'template.txt', 'template.html', {},
+                        'Test subject', 'tests/test-message.html', {},
                  send_email=False)
     assert not mock_send_mail.called
+
+def test_text_rendering(rendered_messages):
+    """
+    Templates often start with a line like "{% load i18n %}\n".  Make sure the
+    newline at the end of that doesn't show up as a leading newline in the
+    text message
+    """
+    assert rendered_messages.text == """\
+Here's a link: Home (https://test.amara.org/)
+
+Here's a table:
+
+  - one
+  - two
+
+Here's a paragraph with a really really really really really really
+really really really really really really really really really long
+line.
+"""
