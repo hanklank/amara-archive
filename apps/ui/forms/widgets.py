@@ -226,7 +226,7 @@ class DependentCheckboxes(widgets.MultiWidget):
 
         rv = []
 
-        for choice_label, choice_value in reversed(self.choices):
+        for choice_value, choice_label in reversed(self.choices):
             if choice_value == value or saw_value:
                 rv.append(True)
                 saw_value = True
@@ -245,17 +245,26 @@ class DependentCheckboxes(widgets.MultiWidget):
         context = super(DependentCheckboxes, self).get_context(
             name, value, attrs)
 
+        self.add_checked_to_subwidgets(context['widget']['subwidgets'], value)
         if required:
             context['widget']['subwidgets'][0]['attrs'].update({
                 'disabled': 'disabled',
                 'checked': 'checked'
             })
 
+
         context['widget']['subwidgets_and_labels'] = [
             (choice[1], subwidget)
             for choice, subwidget in zip(self.choices, context['widget']['subwidgets'])
         ]
         return context
+
+    def add_checked_to_subwidgets(self, subwidgets, value):
+        saw_value = False
+        for choice, widget in reversed(zip(self.choices, subwidgets)):
+            if choice[0] == value or saw_value:
+                widget['attrs']['checked'] = 'checked'
+                saw_value = True
 
 __all__ = [
     'AmaraRadioSelect', 'SearchBar', 'ContentHeaderSearchBar',
