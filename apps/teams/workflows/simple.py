@@ -98,10 +98,11 @@ class SimpleDashboardVideoView(object):
             dropdown_items = []
             for language in self.other_cta_languages:
                 icon, label = self._calc_label_for_cta(language)
-                dropdown_items.append(Link(label, self.editor_url(language)))
+                dropdown_items.append((label, self.editor_url(language)))
 
             return SplitCTA(main_label, self.editor_url(), main_icon, block=True,
                             main_tooltip=_('Click the dropdown button for more available subtitling work!'),
+                            menu_id=self.video.video_id + '_dropdown',
                             dropdown_items = dropdown_items)
         else:
             return CTA(main_label, main_icon, self.editor_url(), block=True)
