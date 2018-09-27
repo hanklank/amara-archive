@@ -33,7 +33,8 @@
   - buttonTags
   - buttonOptions
   - asyncButton
-  - splitButton
+  - id: split-button
+    title: Split Buttons
 
 - - Forms
   - forms
