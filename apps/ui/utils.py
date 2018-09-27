@@ -28,7 +28,7 @@ from urllib import urlencode
 
 from collections import namedtuple
 from django.urls import reverse
-from django.utils.html import format_html, html_safe
+from django.utils.html import format_html, format_html_join, html_safe
 from django.utils.translation import ugettext_lazy as _
 
 from utils.text import fmt
@@ -122,7 +122,7 @@ class CTA(Link):
 class SplitCTA(CTA):
     def __init__(self, label, view_name, icon=None, block=False,
                     disabled=False, main_tooltip=None, dropdown_tooltip=None, 
-                    dropdown_items=[ 'Translate [en]', 'Translate [fil]'], 
+                    dropdown_items=[], 
                     *args, **kwargs):
         super(SplitCTA, self).__init__(label, icon, view_name, block, disabled, main_tooltip)
         self.dropdown_tooltip = dropdown_tooltip
@@ -138,7 +138,7 @@ class SplitCTA(CTA):
         cta_css_class = "button split-button"
 
         if self.icon:
-            icon_mu = u'<i class="icon {}"></i>'.format(self.icon)
+            icon_mu = format_html(u'<i class="icon {}"></i>', self.icon)
 
         if self.disabled:
             cta_css_class += " disabled"
@@ -150,17 +150,17 @@ class SplitCTA(CTA):
                 tooltip_css_class += "width-100"
 
             # just the cta element
-            cta = cta_mu.format(self.url, cta_css_class, icon_mu, self.label)
+            cta = format_html(cta_mu, self.url, cta_css_class, icon_mu, self.label)
 
             # the cta element wrapped in the tooltip span
-            cta = tooltip_mu.format(tooltip_css_class, self.tooltip, cta)
+            cta = format_html(tooltip_mu, tooltip_css_class, self.tooltip, cta)
         else:
             if self.block:
                 cta_css_class += " block"
             # no need to wrap the cta element in the tooltip span if there's no tooltip
-            cta = cta_mu.format(self.url, cta_css_class, icon_mu, self.label)
+            cta = format_html(cta_mu, self.url, cta_css_class, icon_mu, self.label)
 
-        return mark_safe(cta)
+        return cta
 
     def _create_dropdown_toggle(self):
         tooltip_mu = u'<span data-toggle="tooltip" data-placement="top" title="{}">{}</span>'
@@ -175,23 +175,23 @@ class SplitCTA(CTA):
 
         if self.dropdown_tooltip:
             # just the dropdown toggle button
-            dropdown_toggle = dropdown_mu.format(css_class)
+            dropdown_toggle = format_html(dropdown_mu, css_class)
 
             # the dropdown toggle button wrapped in the tooltip span
-            dropdown_toggle = tooltip_mu.format(self.dropdown_tooltip, dropdown_toggle)
+            dropdown_toggle = format_html(tooltip_mu, self.dropdown_tooltip, dropdown_toggle)
         else:
-            dropdown_toggle = dropdown_mu.format(css_class)
+            dropdown_toggle = format_html(dropdown_mu, css_class)
 
-        return mark_safe(dropdown_toggle)
+        return dropdown_toggle
 
     def _create_dropdown_menu(self):
         dropdown_menu_mu = u'<ul class="split-button-dropdown-menu" role="menu">{}</ul>'
         dropdown_item_mu = u'<li>{}</li>'
 
-        dropdown_items = [ dropdown_item_mu.format(i) for i in self.dropdown_items]
-        dropdown_items = ''.join(dropdown_items)
+        # the third argument for format_html_join must be a sequence of iterables
+        dropdown_items = format_html_join('', dropdown_item_mu, [[i] for i in self.dropdown_items])
 
-        return mark_safe(dropdown_menu_mu.format(dropdown_items))
+        return format_html(dropdown_menu_mu, dropdown_items)
 
     def render(self, block=False):
         container = u'<div class="{}">{}{}{}</div>'
@@ -206,7 +206,7 @@ class SplitCTA(CTA):
         dropdown_toggle = self._create_dropdown_toggle()
         dropdown_menu = self._create_dropdown_menu()
 
-        return mark_safe(container.format(css_class, main_cta, dropdown_toggle, dropdown_menu))
+        return format_html(container, css_class, main_cta, dropdown_toggle, dropdown_menu)
 
     def __eq__(self, other):
         return (super(SplitCTA, self).__eq__(other) and
