@@ -23,6 +23,7 @@ from django.forms.utils import flatatt
 from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 
+from ui.templatetags.utils import fix_attrs
 import ui.siteheader
 import ui.dates
 
@@ -56,7 +57,7 @@ def header_links(context):
     return format_html_join(u'\n', u'{}', [(p,) for p in parts])
 
 @register.simple_tag()
-def checkbox(id_, id_prefix=None, **kwargs):
+def checkbox(id_, id_prefix=None, **attrs):
     """
     Use this to create a checkbox not attached to any form
 
@@ -64,13 +65,9 @@ def checkbox(id_, id_prefix=None, **kwargs):
     """
     if id_prefix:
         id_ = '{}{}'.format(id_prefix, id_)
-    attrs = {
+    fix_attrs(attrs).update({
         'type': 'checkbox',
         'id': id_,
-    }
-    attrs.update({
-        key.replace('_', '-'): name
-        for key, name in kwargs.items()
     })
     return format_html(
         '<div class="checkbox"><input{}>'
