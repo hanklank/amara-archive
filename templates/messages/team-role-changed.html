@@ -22,5 +22,5 @@
 {% if custom_message %}<p>{{ custom_message }}</p>{% endif %}
 
 {% if member.is_any_type_of_manager %}
-<p>{% blocktrans with management_url=management_url|universal_url %}You can manage the work on this team from the Management tab ({{ management_url }}).{% endblocktrans %}</p>
+<p>{% blocktrans with management_url=management_url|universal_url %}You can manage the work on this team from the <a href="{{ management_url }}">Management tab</a>.{% endblocktrans %}</p>
 {% endif %}

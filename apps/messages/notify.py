@@ -27,6 +27,7 @@ from django.utils.translation import ugettext_lazy as _
 from lxml import html
 
 from auth.models import CustomUser as User
+from messages.models import Message, SYSTEM_NOTIFICATION
 from utils.enum import Enum
 from utils.taskqueue import job
 
@@ -64,17 +65,26 @@ def do_notify_users(notification, user_ids, subject, template_name,
                     context, send_email):
     user_list = User.objects.filter(id__in=user_ids)
     message = _render_message_template(subject, template_name, context, 'text')
-    html_message = _render_message_template(subject, template_name, context, 'html')
+    html_message = _render_message_template(subject, template_name, context,
+                                            'html')
     for user in user_list:
-        if (not user.email or
-                send_email == False or
-                send_email is None and not user.notify_by_email):
-            continue
-        send_mail(
-            subject, message, settings.DEFAULT_FROM_EMAIL, [user.email], html_message=html_message)
+        if should_send_email(user, send_email):
+            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL,
+                      [user.email], html_message=html_message)
+        else:
+            Message.objects.create(user=user, subject=subject,
+                                   message_type=SYSTEM_NOTIFICATION,
+                                   content=html_message, html_formatted=True)
+
+def should_send_email(user, send_email):
+    """
+    Logic to decide if we should send an email to the user for notify_users()
+    """
+    return (user.email and
+            (send_email == True or
+             send_email is None and user.notify_by_email))
 
 def _render_message_template(subject, template_name, context, mode):
-    context['message_mode'] = mode
     source = render_to_string(template_name, context)
     if mode == 'html':
         return format_html_message(subject, source)
