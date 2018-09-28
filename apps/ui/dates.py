@@ -110,9 +110,9 @@ def due_date(deadline, when, hypothetical=False):
     if delta_total_seconds < 0 and delta.days < -7:
         count = None
         if hypothetical:
-            msg = _(u'%(deadline)s could be due %(date)s')
+            msg = _(u'%(deadline)s could have been due %(date)s')
         else:
-            msg = _(u'%(deadline)s due %(date)s')
+            msg = _(u'%(deadline)s was due %(date)s')
     elif delta_total_seconds <= 60 * 60 * 24 * -1:
         '''
         Time differences of n days + "a fraction of a day" ago get 
@@ -125,8 +125,8 @@ def due_date(deadline, when, hypothetical=False):
         '''
         count = delta.days * -1
         if hypothetical:
-            msg = ungettext('%(deadline)s could be due %(count)s day ago',
-                            '%(deadline)s could be due %(count)s days ago',
+            msg = ungettext('%(deadline)s possibly due %(count)s day ago',
+                            '%(deadline)s possibly due %(count)s days ago',
                         count)
         else:
             msg = ungettext('%(deadline)s due %(count)s day ago',
@@ -136,8 +136,8 @@ def due_date(deadline, when, hypothetical=False):
     elif delta_total_seconds <= 60 * 60 * -1:
         count = int(round(delta.total_seconds() * -1 / (60.0 * 60.0)))
         if hypothetical:
-            msg = ungettext('%(deadline)s could be due %(count)s hour ago',
-                            '%(deadline)s could be due %(count)s hours ago',
+            msg = ungettext('%(deadline)s possibly due %(count)s hour ago',
+                            '%(deadline)s possibly due %(count)s hours ago',
                         count)
         else:
             msg = ungettext('%(deadline)s due %(count)s hour ago',
@@ -148,8 +148,8 @@ def due_date(deadline, when, hypothetical=False):
         if delta_total_seconds <= 60 * -1:
             count = int(round(delta.total_seconds() * -1 / 60.0))
             if hypothetical:
-                msg = ungettext('%(deadline)s could be due %(count)s minute ago',
-                                '%(deadline)s could be due %(count)s minutes ago',
+                msg = ungettext('%(deadline)s possibly due %(count)s minute ago',
+                                '%(deadline)s possibly due %(count)s minutes ago',
                             count)
             else:
                 msg = ungettext('%(deadline)s due %(count)s minute ago',
@@ -158,8 +158,8 @@ def due_date(deadline, when, hypothetical=False):
         else:
             count = int(delta.total_seconds() * -1)
             if hypothetical:
-                msg = ungettext('%(deadline)s could be due %(count)s second ago',
-                                '%(deadline)s could be due %(count)s seconds ago',
+                msg = ungettext('%(deadline)s possibly due %(count)s second ago',
+                                '%(deadline)s possibly due %(count)s seconds ago',
                             count)
             else:
                 msg = ungettext('%(deadline)s due %(count)s second ago',
