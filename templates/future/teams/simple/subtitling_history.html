@@ -13,9 +13,9 @@
       {% for history in histories %}
       <tr>
         <td><a href="{{ history.video_page_url }}">{{ history.video.title_display }}</a></td>
-        <td class="text-center"><a href="{{ history.language_page_url }}">{{ history.language }}</a></td>
-        <td class="text-center hidden-md visible-lg">{{ history.video.duration|format_duration }}</td>
-        <td style="width:200px">{{ history.date }}</td>
+        <td class="simpleDashboardHistoryLanguageLink"><a href="{{ history.language_page_url }}">{{ history.language }}</a></td>
+        <td class="simpleDashboardHistoryDuration hidden-md visible-lg">{{ history.video.duration|format_duration }}</td>
+        <td class="simpleDashboardHistoryDate">{{ history.date }}</td>
       </tr>
       {% endfor %}
     </tbody>
