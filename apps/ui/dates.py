@@ -25,6 +25,7 @@ from __future__ import absolute_import
 
 from datetime import timedelta
 
+from django.utils.html import format_html
 from django.utils.translation import ugettext as _
 from django.utils.translation import ungettext
 
@@ -211,8 +212,13 @@ def due_date(deadline, when, hypothetical=False):
     # Note: We're not sure where the deadline label will end up in the final
     # string, so we lowercase it, interplate the string, then capitalize the
     # whole thing.
-    msg = fmt(msg, deadline=deadline.lower(), count=count, date=date(dt))
-    return msg.capitalize()
+
+    msg = fmt(msg, deadline=deadline.lower(), count=count, date=date(dt)).capitalize()
+
+    # we make the text red when its deadline has passed
+    if delta_total_seconds <= 0:
+        msg = format_html(u'<span class="text-amaranth-dark">{}</span>', msg.capitalize())
+    return msg
 
 __all__ = [
     'date', 'elapsed_time', 'due_date',
