@@ -26,6 +26,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from teams import views as old_views
 from teams import forms
+from teams.models import Team
 from teams.workflows import TeamWorkflow
 from utils.breadcrumbs import BreadCrumb
 from .subtitleworkflows import TeamVideoWorkflow
@@ -37,7 +38,7 @@ def render_team_header(request, team):
         'brand': 'future/teams/brand.html',
         'brand_url': team.get_absolute_url(),
         'primarynav': 'future/teams/primarynav.html',
-    }, RequestContext(request))
+    }, request)
 
 class SimpleVideoPageCustomization(VideoPageCustomization):
     def __init__(self, team, request, video):

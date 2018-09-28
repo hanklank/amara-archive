@@ -22,7 +22,10 @@ from django import forms
 
 from auth.models import get_amara_anonymous_user
 from styleguide.models import StyleguideData
-from ui.forms import AmaraImageField, AmaraChoiceField, SwitchInput
+from ui.forms import (
+    AmaraImageField, AmaraChoiceField, AmaraMultipleChoiceField, SearchField, SwitchInput,
+    ContentHeaderSearchBar, DependentBooleanField
+)
 
 class StyleguideForm(forms.Form):
     def __init__(self, request, **kwargs):
@@ -64,10 +67,13 @@ class MultiFieldForm(StyleguideForm):
         ('horse', 'Horse'),
     ], label='Species')
 
-    role_admin = forms.BooleanField(label='Admin', required=False,
-                                    initial=True)
-    role_manager = forms.BooleanField(label='Manager', required=False)
-    role_any = forms.BooleanField(label='Any Team Member', required=False)
+    role = DependentBooleanField(
+        label='Role', required=True, initial='manager', choices=[
+            ('admin', 'Admin'),
+            ('manager', 'Manager'),
+            ('any', 'Any Team Member'),
+        ])
+
 
     subtitles_public = forms.BooleanField(
         label='Completed', required=False, initial=True,
@@ -106,3 +112,16 @@ class ImageUpload(StyleguideForm):
         else:
             styleguide_data.thumbnail = self.cleaned_data['thumbnail']
         styleguide_data.save()
+
+class ContentHeader(StyleguideForm):
+    search = SearchField(label='Search', required=False,
+                         widget=ContentHeaderSearchBar)
+
+class FilterBox(StyleguideForm):
+    color = AmaraMultipleChoiceField(
+        label="Select color", choices=(
+            ('plum', 'Plum'),
+            ('amaranth', 'Amaranth'),
+            ('lime', 'Lime'),
+        ))
+    shape = forms.CharField(label="Search for shapes")
