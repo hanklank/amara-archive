@@ -45,7 +45,8 @@ def dropdown_button_icon(menu_id, css_class=None, **attrs):
         attrs['class'] += ' {}'.format(css_class)
 
     return format_html(
-        u'<button{}><span class="fa fa-ellipsis-v"></span>', flatatt(attrs))
+        u'<button{}><span class="fa fa-ellipsis-v"></span></button>',
+        flatatt(attrs))
 
 @register.simple_tag(name='dropdown-button')
 def dropdown_button(menu_id, css_class, **attrs):
