@@ -54,7 +54,6 @@ from teams.permissions_const import (
 from teams import behaviors
 from teams import stats
 from teams import tasks
-from teams import workflows
 from teams.exceptions import ApplicationInvalidException
 from teams.notifications import BaseNotification
 from teams.signals import (member_leave, api_subtitles_approved,
