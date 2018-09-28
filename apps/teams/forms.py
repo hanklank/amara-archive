@@ -861,8 +861,6 @@ class LegacyRenameableSettingsForm(LegacySettingsForm):
     class Meta(LegacySettingsForm.Meta):
             fields = LegacySettingsForm.Meta.fields + ('name',)
 
-
-
 class GeneralSettingsForm(forms.ModelForm): 
     BY_INVITATION = 0
 
