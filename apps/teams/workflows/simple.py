@@ -173,7 +173,7 @@ def get_dashboard_videos(team, user, main_project):
         qs = qs.filter(teamvideo__project=main_project)
 
     for video in qs:
-        video_subtitle_languages = video.complete_languages()        
+        video_subtitle_languages = video.complete_language_codes()
         cta_languages = [l for l in user_languages if l not in video_subtitle_languages]
         if (cta_languages):
             available_videos.append(SimpleDashboardVideoView(video, team, cta_languages))

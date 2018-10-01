@@ -1133,6 +1133,12 @@ class Video(models.Model):
             l for l in self.all_subtitle_languages() if l.subtitles_complete
         ]
 
+    # returns a list of language codes with complete subtitles (in contrast to returning a list of SubtitleLanguage objects)
+    def complete_language_codes(self):
+        return [
+            l.language_code for l in self.all_subtitle_languages() if l.subtitles_complete
+        ]
+
     def incomplete_languages_sorted(self):
         return sorted(self.incomplete_languages(), key=lambda l: l.language_code)
     
