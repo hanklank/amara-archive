@@ -10,9 +10,10 @@
         <div class="col-xs-12">
           <div id="" class="content">
             {% include "future/teams/simple/dashboard_videos.html" %}
+            <a href="{% url 'teams:videos' slug=team.slug %}">{% trans 'Find more videos that need subtitling' %}</a>
           </div>
         </div>
-      </div>   
+      </div>
       {% else %}
       <div class="zero-state">{% trans "This team has no videos ready for subtitling yet" %}</div>
       {% endif %}      
