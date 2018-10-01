@@ -126,45 +126,45 @@ def due_date(deadline, when, hypothetical=False):
         '''
         count = delta.days * -1
         if hypothetical:
-            msg = ungettext('%(deadline)s possibly due %(count)s day ago',
-                            '%(deadline)s possibly due %(count)s days ago',
+            msg = ungettext('%(deadline)s was possibly due %(count)s day ago',
+                            '%(deadline)s was possibly due %(count)s days ago',
                         count)
         else:
-            msg = ungettext('%(deadline)s due %(count)s day ago',
-                            '%(deadline)s due %(count)s days ago',
+            msg = ungettext('%(deadline)s was due %(count)s day ago',
+                            '%(deadline)s was due %(count)s days ago',
                         count)
     # Time difference 1 hour ago and further back
     elif delta_total_seconds <= 60 * 60 * -1:
         count = int(round(delta.total_seconds() * -1 / (60.0 * 60.0)))
         if hypothetical:
-            msg = ungettext('%(deadline)s possibly due %(count)s hour ago',
-                            '%(deadline)s possibly due %(count)s hours ago',
+            msg = ungettext('%(deadline)s was possibly due %(count)s hour ago',
+                            '%(deadline)s was possibly due %(count)s hours ago',
                         count)
         else:
-            msg = ungettext('%(deadline)s due %(count)s hour ago',
-                            '%(deadline)s due %(count)s hours ago',
+            msg = ungettext('%(deadline)s was due %(count)s hour ago',
+                            '%(deadline)s was due %(count)s hours ago',
                         count)
     # Time difference 1 minute ago and further back
     elif delta.days < 0:        
         if delta_total_seconds <= 60 * -1:
             count = int(round(delta.total_seconds() * -1 / 60.0))
             if hypothetical:
-                msg = ungettext('%(deadline)s possibly due %(count)s minute ago',
-                                '%(deadline)s possibly due %(count)s minutes ago',
+                msg = ungettext('%(deadline)s was possibly due %(count)s minute ago',
+                                '%(deadline)s was possibly due %(count)s minutes ago',
                             count)
             else:
-                msg = ungettext('%(deadline)s due %(count)s minute ago',
-                                '%(deadline)s due %(count)s minutes ago',
+                msg = ungettext('%(deadline)s was due %(count)s minute ago',
+                                '%(deadline)s was due %(count)s minutes ago',
                             count)
         else:
             count = int(delta.total_seconds() * -1)
             if hypothetical:
-                msg = ungettext('%(deadline)s possibly due %(count)s second ago',
-                                '%(deadline)s possibly due %(count)s seconds ago',
+                msg = ungettext('%(deadline)s was possibly due %(count)s second ago',
+                                '%(deadline)s was possibly due %(count)s seconds ago',
                             count)
             else:
-                msg = ungettext('%(deadline)s due %(count)s second ago',
-                                '%(deadline)s due %(count)s seconds ago',
+                msg = ungettext('%(deadline)s was due %(count)s second ago',
+                                '%(deadline)s was due %(count)s seconds ago',
                             count)            
     elif delta.days < 3:
         if delta_total_seconds < 60:
@@ -216,7 +216,7 @@ def due_date(deadline, when, hypothetical=False):
     msg = fmt(msg, deadline=deadline.lower(), count=count, date=date(dt)).capitalize()
 
     # we make the text red when its deadline has passed
-    if delta_total_seconds <= 0:
+    if delta_total_seconds <= 59:
         msg = format_html(u'<span class="text-amaranth-dark">{}</span>', msg.capitalize())
     return msg
 

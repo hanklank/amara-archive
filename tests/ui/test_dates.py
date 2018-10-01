@@ -12,93 +12,98 @@ class TestDueDate(TestCase):
         self.now = datetime.now()
         mocked_now.return_value = self.now
 
+        # the expected message for past due dates
+        self.expected_string_past = u'<span class="text-amaranth-dark"> was due %(count)s %(unit)s ago</span>'
+
     def test_more_than_seven_days_ago(self):
         when = self.now - timedelta(days=7, seconds=1)
-        expected = fmt(' due %(date)s',date=date(when))
+        expected = fmt('<span class="text-amaranth-dark"> was due %(date)s</span>',date=date(when))
         self.assertEqual(due_date("", when), expected)
 
     def test_exactly_seven_days_ago(self):
         when = self.now - timedelta(days=7)
-        expected = fmt(' due 7 days ago', date=date(when))
+        expected = fmt(self.expected_string_past, count=7, unit='days')
         self.assertEqual(due_date("", when), expected)
 
     def test_n_days_ago(self):
         when = self.now - timedelta(hours=24)
-        expected = ' due 1 day ago'
+        # expected = 'was due 1 day ago'
+        expected = fmt(self.expected_string_past, count=1, unit='day')
         self.assertEqual(due_date("", when), expected)
 
         for n in range(2, 7):
             when = self.now - timedelta(days=n)
-            expected = fmt(' due %(count)s days ago', count=n)
+            expected = fmt(self.expected_string_past, count=n, unit='days')
             self.assertEqual(due_date("", when), expected)
 
         '''
         Time differences of n days + "a fraction of a day" get returned as ' due n+1 days ago'
         '''
         when = self.now - timedelta(days=6, hours=23, minutes=59, seconds=59)
-        expected = ' due 7 days ago'
+        # expected = ' due 7 days ago'
+        expected = fmt(self.expected_string_past, count=7, unit='days')
         self.assertEqual(due_date("", when), expected)                
 
     def test_n_hours_ago(self):
         when = self.now - timedelta(minutes=60)
-        expected = ' due 1 hour ago'
+        expected = fmt(self.expected_string_past, count=1, unit='hour')
         self.assertEqual(due_date("", when), expected) 
 
         for n in range(2, 24):
             when = self.now - timedelta(hours=n)
-            expected = fmt(' due %(count)s hours ago', count=n)
+            expected = fmt(self.expected_string_past, count=n, unit='hours')
             self.assertEqual(due_date("", when), expected)
 
         when = self.now - timedelta(hours=23, minutes=30) + timedelta(seconds=1)
-        expected = ' due 23 hours ago'
+        expected = fmt(self.expected_string_past, count=23, unit='hours')
         self.assertEqual(due_date("", when), expected)
 
         when = self.now - timedelta(hours=23, minutes=30, seconds=1)
-        expected = ' due 24 hours ago'
+        expected = fmt(self.expected_string_past, count=24, unit='hours')
         self.assertEqual(due_date("", when), expected)
 
         when = self.now - timedelta(hours=23, minutes=30)
-        expected = ' due 24 hours ago'
+        expected = fmt(self.expected_string_past, count=24, unit='hours')
         self.assertEqual(due_date("", when), expected)               
 
     def test_n_minutes_ago(self):
         for n in range(2, 60):
             when = self.now - timedelta(minutes=n)
-            expected = fmt(' due %(count)s minutes ago', count=n)
+            expected = fmt(self.expected_string_past, count=n, unit='minutes')
             self.assertEqual(due_date("", when), expected)
 
         when = self.now - timedelta(minutes=30, seconds=30)
-        expected = ' due 31 minutes ago'
+        expected = fmt(self.expected_string_past, count=31, unit='minutes')
         self.assertEqual(due_date("", when), expected)
 
         when = self.now - timedelta(minutes=30, seconds=31)
-        expected = ' due 31 minutes ago'
+        expected = fmt(self.expected_string_past, count=31, unit='minutes')
         self.assertEqual(due_date("", when), expected)
 
         when = self.now - timedelta(minutes=30, seconds=29)
-        expected = ' due 30 minutes ago'
+        expected = fmt(self.expected_string_past, count=30, unit='minutes')
         self.assertEqual(due_date("", when), expected)
 
         when = self.now - timedelta(seconds=60)
-        expected = ' due 1 minute ago'
+        expected = fmt(self.expected_string_past, count=1, unit='minute')
         self.assertEqual(due_date("", when), expected)        
 
     def test_n_seconds_ago(self):
         when = self.now - timedelta(seconds=59)
-        expected = ' due 59 seconds ago'
+        expected = fmt(self.expected_string_past, count=59, unit='seconds')
         self.assertEqual(due_date("", when), expected)
 
         when = self.now - timedelta(seconds=1)
-        expected = ' due 1 second ago'
+        expected = fmt(self.expected_string_past, count=1, unit='second')
         self.assertEqual(due_date("", when), expected)
 
     def test_exactly_now(self):
         when = self.now
-        expected = ' due now'
+        expected = u'<span class="text-amaranth-dark"> due now</span>'
         self.assertEqual(due_date("", when), expected)
 
         when = self.now + timedelta(seconds=59)
-        expected = ' due now'
+        expected = u'<span class="text-amaranth-dark"> due now</span>'
         self.assertEqual(due_date("", when), expected)
 
     '''
