@@ -41,7 +41,9 @@
   {% if is_team_admin %}
   <div class="listView-actions">
     <button class="listView-action listView-expand"><span class="fa fa-info-circle"></span></button>
+    {% if member.user != request.user  %}
     {% dropdown-button-icon "member-context-menu" "listView-action" %}
+    {% endif %}
   </div>
   {% endif %}
   <div class="listView-secondaryRow">
