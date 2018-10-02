@@ -54,6 +54,7 @@ from teams.permissions_const import (
 from teams import stats
 from teams import tasks
 from teams import workflows
+from teams import behaviors
 from teams.exceptions import ApplicationInvalidException
 from teams.notifications import BaseNotification
 from teams.signals import (member_leave, api_subtitles_approved,
@@ -689,14 +690,17 @@ class Team(models.Model):
             - "login" -- user needs to login first
             - None -- user can't join the team
         """
-        if not user.is_authenticated():
-            return 'login'
+        
+        join_mode = behaviors.get_team_join_mode(self, user)
+
+        if self.is_by_invitation():
+            return 'invitation'
+        elif join_mode:
+            return join_mode
         elif self.user_is_member(user):
             return 'already-joined'
         elif self.is_open():
             return 'open'
-        elif self.is_by_invitation():
-            return 'invitation'
         elif self.is_by_application():
             try:
                 application = self.applications.get(user=user)
@@ -3168,7 +3172,7 @@ class Setting(models.Model):
         if name.endswith('localized')
     ]
     MESSAGE_DEFAULTS = {
-        'pagetext_welcome_heading': _("Help %(team)s reach a world audience"),
+        'pagetext_welcome_heading': '',
     }
     FEATURE_KEYS = [
         key for key, name in KEY_CHOICES
