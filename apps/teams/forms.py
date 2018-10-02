@@ -66,7 +66,7 @@ from teams.workflows import TeamWorkflow
 from ui.forms import (FiltersForm, ManagementForm, AmaraChoiceField,
                       AmaraMultipleChoiceField, AmaraRadioSelect, SearchField,
                       AmaraClearableFileInput, AmaraFileInput, HelpTextList,
-                      MultipleLanguageField, AmaraImageField)
+                      MultipleLanguageField, AmaraImageField, ContentHeaderSearchBar)
 from ui.forms import LanguageField as NewLanguageField
 from utils.html import clean_html
 from utils import send_templated_email
@@ -1186,8 +1186,8 @@ class ProjectForm(forms.ModelForm):
         model = Project
         fields = ('name', 'description', 'workflow_enabled')
 
-    def __init__(self, team, *args, **kwargs):
-        super(ProjectForm, self).__init__(*args, **kwargs)
+    def __init__(self, team, data=None, **kwargs):
+        super(ProjectForm, self).__init__(data, **kwargs)
         self.team = team
 
     def clean_name(self):
@@ -1209,16 +1209,18 @@ class ProjectForm(forms.ModelForm):
         return project
 
 class EditProjectForm(forms.Form):
-    project = forms.ChoiceField(choices=[])
     name = forms.CharField(required=True)
     description = forms.CharField(widget=forms.Textarea, required=False)
+    workflow_enabled = forms.BooleanField()
 
-    def __init__(self, team, *args, **kwargs):
-        super(EditProjectForm, self).__init__(*args, **kwargs)
+    def __init__(self, team, data=None, **kwargs):
+        super(EditProjectForm, self).__init__(data, **kwargs)
         self.team = team
-        self.fields['project'].choices = [
-            (p.id, p.id) for p in team.project_set.all()
-        ]
+        if data:
+            self.project = data['project']
+            self.name = self.project.name
+            self.description = self.project.description
+            self.workflow_enabled = self.project.workflow_enabled
 
     def clean(self):
         if self.cleaned_data.get('name') and self.cleaned_data.get('project'):
@@ -1240,12 +1242,52 @@ class EditProjectForm(forms.Form):
             ])
             del self.cleaned_data['name']
 
-    def save(self):
-        project = self.team.project_set.get(id=self.cleaned_data['project'])
+    def save(self, project):
         project.name = self.cleaned_data['name']
         project.description = self.cleaned_data['description']
+        project.workflow_enabled = self.cleaned_data['workflow_enabled']
         project.save()
-        return project
+        return self.project
+
+class DeleteProjectForm(ManagementForm):
+    name = "delete_project"
+    label = _("Delete Project")
+
+    def __init__(self, team, queryset, selection, data=None, files=None, **kwargs):
+        super(DeleteProjectForm, self).__init__(
+            team, queryset, selection, data=data, files=None, **kwargs)
+
+    def perform_submit(self, projects):
+        self.error_count = 0
+        self.deleted_count = 0
+
+        for project in projects:
+            try:
+                project.delete()
+                self.removed_count += 1
+            except Exception as e:
+                logger.warn(e, exc_info=True)
+                self.error_count += 1
+
+    def message(self):
+        if self.removed_count:
+            return fmt(self.ungettext('Project has been deleted',
+                                      '%(count)s project has been deleted',
+                                      '%(count)s projects have been deleted',
+                                      self.deleted_count), count=self.deleted_count)
+        else:
+            return None
+
+    def error_messages(self):
+        errors = []
+        if self.error_count:
+            errors.append(fmt(self.ungettext(
+                "Project could not be deleted",
+                "%(count)s project could not be deleted",
+                "%(count)s projects could not be deleted",
+                self.error_count), count=self.error_count))
+        return errors
+
 
 class AddProjectManagerForm(forms.Form):
     member = UserAutocompleteField()
@@ -1694,6 +1736,36 @@ class ApplicationFiltersForm(forms.Form):
         if language and language != 'any':
             qs = qs.filter(user__userlanguage__language=language)
 
+        return qs
+
+class ProjectFiltersForm(forms.Form):
+    q = SearchField(label=_('Search'), required=False,
+                    widget=ContentHeaderSearchBar)
+
+    def __init__(self, get_data=None):
+        super(ProjectFiltersForm, self).__init__(
+            self.calc_data(get_data)
+        )
+
+    def calc_data(self, get_data):
+        if get_data is None:
+            return None
+        data = {k:v for k, v in get_data.items() if k != 'page'}
+        return data if data else None
+
+    def update_qs(self, qs):
+        if not (self.is_bound and self.is_valid()):
+            return qs.order_by('name')
+        else:
+            data = self.cleaned_data
+
+        q = data.get('q', '')
+
+        for term in [term.strip() for term in q.split()]:
+            if term:
+                qs = qs.filter(Q(name__icontains=term)
+                               | Q(slug__icontains=term))
+        qs = qs.order_by('name')
         return qs
 
 class ApproveApplicationForm(ManagementForm):
