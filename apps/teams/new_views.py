@@ -1337,19 +1337,6 @@ def settings_projects(request, team):
         )
         return response_renderer.render()
 
-    """
-    if request.method == 'POST' and form == 'delete':
-        try:
-            project = projects.get(id=request.POST['project'])
-        except Project.DoesNotExist:
-            pass
-        else:
-            project.delete()
-            messages.success(request, _('Project deleted.'))
-            return HttpResponseRedirect(
-                reverse('teams:settings_projects', args=(team.slug,))
-            )
-    """
     return render(request, "future/teams/settings/projects.html", context)
 
 def settings_projects_form(request, team, form_name, projects, page):

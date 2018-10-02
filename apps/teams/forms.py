@@ -1249,45 +1249,20 @@ class EditProjectForm(forms.Form):
         project.save()
         return self.project
 
-class DeleteProjectForm(ManagementForm):
+class DeleteProjectForm(forms.Form):
     name = "delete_project"
     label = _("Delete Project")
 
-    def __init__(self, team, queryset, selection, data=None, files=None, **kwargs):
-        super(DeleteProjectForm, self).__init__(
-            team, queryset, selection, data=data, files=None, **kwargs)
+    def __init__(self, team, data=None, **kwargs):
+        super(DeleteProjectForm, self).__init__(data, **kwargs)
+        if data:
+            self.project = data['project']
 
-    def perform_submit(self, projects):
-        self.error_count = 0
-        self.deleted_count = 0
-
-        for project in projects:
-            try:
-                project.delete()
-                self.removed_count += 1
-            except Exception as e:
-                logger.warn(e, exc_info=True)
-                self.error_count += 1
-
-    def message(self):
-        if self.removed_count:
-            return fmt(self.ungettext('Project has been deleted',
-                                      '%(count)s project has been deleted',
-                                      '%(count)s projects have been deleted',
-                                      self.deleted_count), count=self.deleted_count)
-        else:
-            return None
-
-    def error_messages(self):
-        errors = []
-        if self.error_count:
-            errors.append(fmt(self.ungettext(
-                "Project could not be deleted",
-                "%(count)s project could not be deleted",
-                "%(count)s projects could not be deleted",
-                self.error_count), count=self.error_count))
-        return errors
-
+    def save(self):
+        try:
+            self.project.delete()
+        except Exception as e:
+            logger.warn(e, exc_info=True)
 
 class AddProjectManagerForm(forms.Form):
     member = UserAutocompleteField()
