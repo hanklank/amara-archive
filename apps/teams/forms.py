@@ -954,6 +954,11 @@ class GeneralSettingsForm(forms.ModelForm):
         self.initial_settings = self.instance.get_settings()
         self.initial_video_visibility = self.instance.video_visibility
 
+        self.fields['subtitles_public'].label_additional_classes = " subtitleVisibilityLabel"
+        self.fields['drafts_public'].label_additional_classes = " subtitleVisibilityLabel"
+        self.fields['subtitles_public'].additional_classes = " subtitleVisibilityInput"
+        self.fields['drafts_public'].additional_classes = " subtitleVisibilityInput"
+
         # we dont render this field in the page but still save it in this form
         self.fields['membership_policy'].required = False
 
