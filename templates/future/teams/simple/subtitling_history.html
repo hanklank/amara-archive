@@ -12,7 +12,11 @@
     <tbody>
       {% for history in histories %}
       <tr>
-        <td><a href="{{ history.video_page_url }}">{{ history.video.title_display }}</a></td>
+        <td>
+          <span data-toggle="tooltip" data-placement="top" title="{{ history.video.title_display }}">
+            <a href="{{ history.video_page_url }}">{{ history.video.title_display }}</a>
+          </span>
+        </td>
         <td class="simpleDashboardHistoryLanguageLink"><a href="{{ history.language_page_url }}">{{ history.language }}</a></td>
         <td class="simpleDashboardHistoryDuration hidden-md visible-lg">{{ history.video.duration|format_duration }}</td>
         <td class="simpleDashboardHistoryDate">{{ history.date }}</td>
