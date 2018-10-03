@@ -193,7 +193,7 @@ def ensure_user(request):
     if not hasattr(request, 'user'):
         request.user = AnonymousUser()
 
-def handler500(request, exception):
+def handler500(request):
     ensure_user(request)
     return render(request, '500.html', status=500)
 
