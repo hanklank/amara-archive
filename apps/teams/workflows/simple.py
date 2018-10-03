@@ -36,6 +36,7 @@ from teams.workflows import TeamWorkflow
 from ui import CTA, SplitCTA, Link
 from utils.memoize import memoize
 from utils.breadcrumbs import BreadCrumb
+from utils.chunkedqs import chunkedqs
 from utils.pagination import AmaraPaginatorFuture
 from utils.translation import get_language_label
 from .subtitleworkflows import TeamVideoWorkflow
@@ -172,7 +173,7 @@ def get_dashboard_videos(team, user, main_project):
     if main_project:
         qs = qs.filter(teamvideo__project=main_project)
 
-    for video in qs:
+    for video in chunkedqs(qs, MAX_DASHBOARD_VIDEOS * 3):
         cta_languages = [l for l in user_languages if l not in video.complete_or_writelocked_language_codes()]
 
         if (cta_languages):
