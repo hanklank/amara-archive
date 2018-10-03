@@ -173,7 +173,7 @@ def get_dashboard_videos(team, user, main_project):
     if main_project:
         qs = qs.filter(teamvideo__project=main_project)
 
-    for video in chunkedqs(qs, MAX_DASHBOARD_VIDEOS * 3):
+    for video in chunkedqs(qs, MAX_DASHBOARD_VIDEOS_TO_CHECK * 2):
         cta_languages = [l for l in user_languages if l not in video.complete_or_writelocked_language_codes()]
 
         if (cta_languages):
