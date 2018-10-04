@@ -43,11 +43,14 @@ def batch_qs(qs, batch_size=1000):
      work properly with ordered querysets
 
     Please be careful when using this:
-    
+
     Note that you'll want to order the queryset, as ordering is not guaranteed by the 
     database and you might end up iterating over some items twice, and some not at all. 
     Also, if your database is being written to in between the time you start and finish 
     your script, you might miss some items or process them twice.
+
+    Don't use this for sensitive transactions, i.e. don't use this when you will
+    be modifying results from the queryset
 
     Slight modification of https://djangosnippets.org/snippets/1170/
 
