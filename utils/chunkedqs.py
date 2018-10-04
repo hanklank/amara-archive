@@ -20,6 +20,8 @@ def chunkedqs(queryset, size=1000):
     """
     iterate through a queryset one chunk at a time
 
+    note that this will not properly work with ordered querysets
+
     Adapted from https://djangosnippets.org/snippets/1949/
     """
     last_pk = -1
@@ -31,3 +33,16 @@ def chunkedqs(queryset, size=1000):
                 last_pk = obj.pk
         else:
             return
+
+def batch_qs(qs, batch_size=1000):
+    """
+    Iterate through a queryset in batches (similar to chunkedqs)
+    The difference of this with chunkedqs is that this should
+     work properly with ordered querysets
+
+    Slight modification of https://djangosnippets.org/snippets/1170/
+    """
+    total = qs.count()
+    for start in range(0, total, batch_size):
+        end = min(start + batch_size, total)
+        yield qs[start:end]
