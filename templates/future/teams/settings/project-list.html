@@ -1,31 +1,30 @@
 {% load i18n forms dropdown %}
 {% if page %}
-<ul id="projectSettings-listView" class="listView listView-projects" data-target="#projectSettings-actionBar">
-  <li>
-    <p class="name"><b>Title</b></p>
-    <p class="description"><b>Description</b></p>
-  </li>
+<ul class="listView projects">
+  <div class="listView-header">{% trans "Title" %}</div>
+  <div class="listView-header">{% trans "Description" %}</div>
+  <div class="listView-header"></div>
 
   {% for project in page %}
-  <li id="project-{{project.slug}}" value="{{project.id}}">
-    <p class="name">{{ project.name }}</p><p class="description">{{ project.description }}</p>
-    <div class="pull-right listView-actions">
-      {% dropdown-button-icon "project-context-menu" "listView-action" data_project=project.id %}
-    </div>
-  </li>
+  <div>{{ project.name }}</div>
+  <div>{{ project.description }}</div>
+  <div class="listView-actions">
+    {% dropdown-button-icon "project-context-menu" "listView-action" data_selection=project.id %}
+  </div>
   {% endfor %}
+
+  {% dropdown "project-context-menu" %}
+  {% dropdown-js-item _("Edit project") 'listview-form' 'edit' %}
+  {% dropdown-js-item _("Delete") 'listview-form' 'delete' %}
+  {% enddropdown %}
 </ul>
 {% include "future/paginator.html" %}
-{% dropdown "project-context-menu" %}
-{% dropdown-js-item _("Edit project") 'listview-form' 'edit' %}
-{% dropdown-js-item _("Delete") 'listview-form' 'delete' %}
-{% enddropdown %}
 
 <div id="projectSettings-actionBar" class="actionBar">
   <form class="actionBar-form ajaxForm" method="GET">
-    <button class="button cta" type="submit" name="form" value="edit">Edit project</button>
-    <button class="button cta" type="submit" name="form" value="delete">Delete</button>
-    <button class="button borderless actionBar-deselect">Deselect</button>
+    <button class="button cta" type="submit" name="form" value="edit">{% trans "Edit project" %}</button>
+    <button class="button cta" type="submit" name="form" value="delete">{% trans "Delete" %}</button>
+    <button class="button borderless actionBar-deselect">{% trans "Deselect" %}</button>
   </form>
 </div>
 {% else %}

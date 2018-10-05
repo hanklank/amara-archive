@@ -66,13 +66,14 @@ from teams.workflows import TeamWorkflow
 from ui.forms import (FiltersForm, ManagementForm, AmaraChoiceField,
                       AmaraMultipleChoiceField, AmaraRadioSelect, SearchField,
                       AmaraClearableFileInput, AmaraFileInput, HelpTextList,
-                      MultipleLanguageField, AmaraImageField, ContentHeaderSearchBar)
+                      MultipleLanguageField, AmaraImageField,
+                      ContentHeaderSearchBar)
 from ui.forms import LanguageField as NewLanguageField
 from utils.html import clean_html
 from utils import send_templated_email
 from utils.forms import (ErrorableModelForm, get_label_for_value,
                          UserAutocompleteField, LanguageField,
-                         LanguageDropdown, Dropdown )
+                         LanguageDropdown, Dropdown)
 from utils.panslugify import pan_slugify
 from utils.translation import get_language_choices, get_language_label
 from utils.text import fmt
@@ -1619,9 +1620,10 @@ class MemberFiltersForm(forms.Form):
         ('any', _('Any language')),
     ] + get_language_choices()
 
-    q = SearchField(label=_('Search'), required=False)
+    q = SearchField(label=_('Search'), required=False,
+                    widget=ContentHeaderSearchBar)
 
-    role = AmaraChoiceField(choices=[
+    role = AmaraChoiceField(label=_('Select role'), choices=[
         ('any', _('All roles')),
         (TeamMember.ROLE_ADMIN, _('Admins')),
         (TeamMember.ROLE_MANAGER, _('Managers')),
@@ -1629,11 +1631,11 @@ class MemberFiltersForm(forms.Form):
         (TeamMember.ROLE_CONTRIBUTOR, _('Contributors')),        
     ], initial='any', required=False, filter=True)
     language = AmaraChoiceField(choices=LANGUAGE_CHOICES,
-                                 label=_('Language spoken'),
+                                 label=_('Select language'),
                                  initial='any', required=False, filter=True)
-    sort = AmaraChoiceField(label="", choices=[
-        ('recent', _('Date joined, most recent')),
-        ('oldest', _('Date joined, oldest')),
+    sort = AmaraChoiceField(label=_('Change sort'), choices=[
+        ('recent', _('Newest joined')),
+        ('oldest', _('Oldest joined')),
     ], initial='recent', required=False)
 
     def __init__(self, get_data=None):
