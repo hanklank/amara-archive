@@ -35,25 +35,22 @@ import pytest
 from amara.signals import before_tests
 import startup
 
+def is_one_path_a_parent_of_another(path1, path2):
+    return path1.startswith(path2) or path2.startswith(path1)
+
 class AmaraPlugin(object):
     def __init__(self):
-        self.ignore_paths = [
-            py.path.local('guitests'),
+        self.test_paths = [
+            config.path for config in apps.get_app_configs()
+            if 'guitests' not in config.name
         ]
-        self.test_paths = [config.path for config in apps.get_app_configs()]
         self.test_paths.extend(
             os.path.abspath(p) for p in ['libs/babelsubs', 'libs/unilangs']
         )
 
-    def is_one_path_a_parent_of_another(self, path1, path2):
-        return path1.startswith(path2) or path2.startswith(path1)
-
     def pytest_ignore_collect(self, path, config):
-        for ignore_path in self.ignore_paths:
-            if path == ignore_path:
-                return True
         for test_path in self.test_paths:
-            if self.is_one_path_a_parent_of_another(path.strpath, test_path):
+            if is_one_path_a_parent_of_another(path.strpath, test_path):
                 return False
         return True
 
@@ -113,9 +110,34 @@ class AmaraPlugin(object):
     def redis_connection(self):
         return get_redis_connection('default')
 
+class AmaraGUITestsPlugin(object):
+    def __init__(self):
+        self.test_paths = [
+            config.path for config in apps.get_app_configs()
+            if 'guitests' in config.name
+        ]
+
+    def pytest_ignore_collect(self, path, config):
+        for test_path in self.test_paths:
+            if is_one_path_a_parent_of_another(path.strpath, test_path):
+                return False
+        return True
+
+    @pytest.mark.trylast
+    def pytest_configure(self, config):
+        reporter = config.pluginmanager.getplugin('terminalreporter')
+        reporter.startdir = py.path.local('/run/pytest/')
+
 if __name__ == '__main__':
     startup.startup()
     test_type = sys.argv[1] # run type, either 'tests' or 'guitests'
     pytest_args = sys.argv[2:] # send all args after that to pytest
 
-    sys.exit(pytest.main(pytest_args, plugins=[AmaraPlugin()]))
+    if test_type == 'tests':
+        plugin = AmaraPlugin()
+    elif test_type == 'guitests':
+        plugin = AmaraGUITestsPlugin()
+    else:
+        print "Unknown test type: {}".format(test_type)
+        sys.exit(1)
+    sys.exit(pytest.main(pytest_args, plugins=[plugin]))
