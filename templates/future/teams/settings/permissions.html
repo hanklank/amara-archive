@@ -29,6 +29,7 @@
     <thead>
       <tr>
         <th>{{ heading }}</th>
+        <th>{% trans "Admins" %}</th>
         <th>{% trans "Managers" %}</th>
         <th>{% trans "Contributors" %}</th>
       </tr>
@@ -40,11 +41,13 @@
         <td>{{ heading }}</td>
         <td></td>
         <td></td>
+        <td></td>
       </tr>
     {% endif %}
       {% for row in rows %}
       <tr{% if row.setting_name %} class="team-permissionsTableDynamicRow" data-setting-name="{{ row.setting_name }}"{% endif %}>
         <td>{{ row.label }}</td>
+        <td>{% if row.admins %}<span class="fa fa-check text-lime"></span>{% else %}<span class="fa fa-times text-amaranth"></span>{% endif %}</td>
         <td>{% if row.managers %}<span class="fa fa-check text-lime"></span>{% else %}<span class="fa fa-times text-amaranth"></span>{% endif %}</td>
         <td>{% if row.contributors %}<span class="fa fa-check text-lime"></span>{% else %}<span class="fa fa-times text-amaranth"></span>{% endif %}</td>
       </tr>

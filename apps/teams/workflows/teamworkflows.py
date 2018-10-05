@@ -330,7 +330,6 @@ class TeamPermissionsRow(object):
         self.contributors = contributors
         self.setting_name = setting_name
 
-
     @classmethod
     def from_setting(cls, label, form, setting_name):
         value = form[setting_name].value()
