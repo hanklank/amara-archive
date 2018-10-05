@@ -27,6 +27,7 @@ from django.utils.translation import gettext as _
 from styleguide import forms
 from styleguide.styleguide import StyleGuide
 from ui.ajax import AJAXResponseRenderer
+from utils.pagination import AmaraPaginatorFuture
 
 # add your form class here if you need to test form processing on a styleguide
 # section
@@ -36,7 +37,15 @@ forms_by_section = {
     'switches': forms.SwitchForm,
     'content-header': forms.ContentHeader,
     'filter-box': forms.FilterBox,
+    'split-button': forms.SplitButton,
 }
+
+extra_context_func_map = {}
+def extra_context_func(section_id):
+    def wrapper(func):
+        extra_context_func_map[section_id] = func
+        return func
+    return wrapper
 
 _cached_styleguide = None
 def get_styleguide():
@@ -58,12 +67,18 @@ def section(request, section_id):
     styleguide = get_styleguide()
     section = styleguide.sections[section_id]
 
-    return render(request, section.template_name, {
+    context = {
         'styleguide': styleguide,
         'section': section,
         'active_section': section_id,
         'form': get_form_for_section(request, section_id),
-    })
+    }
+
+    extra_context = extra_context_func_map.get(section_id)
+    if extra_context:
+        context.update(extra_context(request, section_id))
+
+    return render(request, section.template_name, context)
 
 def get_form_for_section(request, section_id):
     FormClass = forms_by_section.get(section_id)
@@ -147,3 +162,12 @@ def filter_box(request):
         return response_renderer.render()
     else:
         return render(request, 'styleguide/filter-box.html', context)
+
+@extra_context_func('content-footer')
+def content_footer_extra(request, section_id):
+    paginator = AmaraPaginatorFuture(range(100), 20)
+    page = paginator.get_page(request)
+    return {
+        'paginator': paginator,
+        'page': page
+    }
