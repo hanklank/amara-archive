@@ -37,6 +37,7 @@ forms_by_section = {
     'switches': forms.SwitchForm,
     'content-header': forms.ContentHeader,
     'filter-box': forms.FilterBox,
+    'split-button': forms.SplitButton,
 }
 
 extra_context_func_map = {}
