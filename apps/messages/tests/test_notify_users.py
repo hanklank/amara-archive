@@ -70,9 +70,6 @@ def test_send_email(mock_send_mail):
     notify.notify_users(notify.Notifications.ROLE_CHANGED, [user],
                         'Test subject', 'tests/test-message.html', {})
 
-    # test that we send an email and not a message
-    assert mock_send_mail.called
-    assert Message.objects.for_user(user).count() == 0
 
 def test_text_rendering(mock_send_mail):
     user = UserFactory(notify_by_email=True)
@@ -92,14 +89,18 @@ really really really really really really really really really long
 line.
 """
 
-
-
 def test_message(mock_send_mail):
-    user = UserFactory(notify_by_email=False)
+    user = UserFactory(notify_by_message=True)
     notify.notify_users(notify.Notifications.ROLE_CHANGED, [user],
                         'Test subject', 'tests/test-message.html', {})
-    # test that we send an message and not an email
-    assert not mock_send_mail.called
+    # test that we send an message
     assert Message.objects.for_user(user).count() == 1
     last_message = Message.objects.for_user(user).order_by('-id')[:1].get()
     assert last_message.subject == 'Test subject'
+
+def test_notify_by_message_unset(mock_send_mail):
+    user = UserFactory(notify_by_message=False)
+    notify.notify_users(notify.Notifications.ROLE_CHANGED, [user],
+                        'Test subject', 'tests/test-message.html', {})
+    # test that we don't send a message
+    assert Message.objects.for_user(user).count() == 0
