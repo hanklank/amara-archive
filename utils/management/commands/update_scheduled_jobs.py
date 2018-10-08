@@ -11,16 +11,14 @@ from utils import dates
 logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
-    help = 'Run the RQ Schedule'
+    help = 'Update the RQ Schedule'
     args = '<queue>'
 
     def handle(self, *args, **options):
         scheduler = django_rq.get_scheduler('default', interval=5)
-        self.setup_schedule(scheduler)
-        scheduler.run()
-
-    def setup_schedule(self, scheduler):
+        print 'updating scheduled jobs'
         now = dates.utcnow()
+        self.current_jobs = []
         self.cancel_old_periodic_jobs(scheduler)
 
         for job_info in settings.REPEATING_JOBS:
@@ -29,7 +27,16 @@ class Command(BaseCommand):
     def cancel_old_periodic_jobs(self, scheduler):
         for job in list(scheduler.get_jobs()):
             if 'cron_string' in job.meta or 'interval' in job.meta:
-                scheduler.cancel(job)
+                self.check_existing_job(scheduler, job)
+
+    def check_existing_job(self, scheduler, job):
+        for job_info in settings.REPEATING_JOBS:
+            if self.job_matches(job_info, job):
+                print 'keeping: ', job
+                self.current_jobs.append(job_info)
+                return
+        print 'cancelling: ', job
+        scheduler.cancel(job)
 
     def schedule_job(self, now, scheduler, job_info):
         try:
@@ -37,6 +44,10 @@ class Command(BaseCommand):
         except KeyError:
             raise ValueError('"job" key required: {}'.format(job_info))
 
+        for current_job_info in self.current_jobs:
+            if current_job_info == job_info:
+                return
+        print 'scheduling: ', job_info
 
         if 'crontab' in job_info:
             if 'period' in job_info:
@@ -61,3 +72,15 @@ class Command(BaseCommand):
         module_name, _, variable_name = job_name.rpartition('.')
         mod = importlib.import_module(module_name)
         return getattr(mod, variable_name)
+
+    def job_matches(self, job_info, job):
+        if job.func != self.get_job_func(job_info['job']):
+            return False
+
+        if 'cron_string' in job.meta:
+            return self.cron_string(**job_info['crontab']) == job.meta['cron_string']
+        elif 'interval' in job.meta:
+            return job.meta['interval'] == job_info['period'].total_seconds()
+        else:
+            raise ValueError("job meta doesn't have cron_string or "
+                             "period: {}".format(job))
