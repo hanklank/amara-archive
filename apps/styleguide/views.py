@@ -36,6 +36,7 @@ forms_by_section = {
     'switches': forms.SwitchForm,
     'content-header': forms.ContentHeader,
     'filter-box': forms.FilterBox,
+    'split-button': forms.SplitButton,
 }
 
 _cached_styleguide = None
