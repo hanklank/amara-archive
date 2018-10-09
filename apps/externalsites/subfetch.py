@@ -148,5 +148,6 @@ def find_youtube_account(video_id, possible_accounts):
             if account.channel_id == video_info.channel_id:
                 return account
         return None
-    except google.APIError:
+    except google.APIError as e:
+        logger.warn("find_youtube_account() error for video id {}: {}".format(video_id, e))
         return None
