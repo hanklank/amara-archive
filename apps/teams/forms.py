@@ -1847,25 +1847,6 @@ class ChangeMemberRoleForm(ManagementForm):
             team_owners = member.team.members.owners()
             return (len(team_owners) <= 1)
 
-    def update_proj_lang_management(self, member):
-        # TODO make this work for making previous pm/lm's to be a pm/lm of a
-        # different set of projects/languages
-
-        # crude implementation is to delete all pm/lm permissions and then 
-        # create the permissions specified in the modal
-        # for optimization
-        member.remove_as_proj_lang_manager()
-
-        projects = self.cleaned_data['projects']
-        languages = self.cleaned_data['languages']
-
-        if projects:
-            for project in projects:
-                member.make_project_manager(project)
-        if languages:
-            for language in languages:
-                member.make_language_manager(language)       
-
     def perform_submit(self, members):
         self.error_count = 0
         self.only_owner_count = 0
@@ -1885,11 +1866,12 @@ class ChangeMemberRoleForm(ManagementForm):
                 else:
                     try:
                         if role == TeamMember.ROLE_PROJ_LANG_MANAGER:
-                            member.change_role(TeamMember.ROLE_CONTRIBUTOR)
-                            self.update_proj_lang_management(member)
+                            member.change_role(
+                                self.user, TeamMember.ROLE_CONTRIBUTOR,
+                                self.cleaned_data.get('projects'),
+                                self.cleaned_data.get('languages'))
                         else:
-                            member.remove_as_proj_lang_manager()
-                            member.change_role(role)
+                            member.change_role(self.user, role)
                         self.changed_count += 1
                     except Exception as e:
                         logger.error(e, exc_info=True)
