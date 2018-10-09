@@ -353,6 +353,10 @@ def video(request, video_id, video_url=None, title=None):
         'custom_sidebar': customization.sidebar,
         'header': customization.header,
         'use_old_messages': True,
+        'video_urls': [
+            (vurl, get_sync_account(video, vurl))
+            for vurl in video.get_video_urls()
+        ],
     })
 
 def create_subtitles(request, video_id):
@@ -483,6 +487,10 @@ def urls_tab_replacement_data(request, video):
             'video': video,
             'allow_delete': True,
             'allow_make_primary': True,
+            'video_urls': [
+                (vurl, get_sync_account(video, vurl))
+                for vurl in video.get_video_urls()
+            ],
             'create_url_form': NewCreateVideoUrlForm(video, request.user),
         })
 

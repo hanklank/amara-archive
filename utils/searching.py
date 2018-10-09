@@ -49,7 +49,7 @@ def get_terms(query):
     return [t for t in terms if t]
 
 # regex to remove chars that cause issues in queries
-term_filter = re.compile(r'[<>]', re.UNICODE)
+term_filter = re.compile(r'[<>@]', re.UNICODE)
 
 def apply_term_filter(terms):
     return [term_filter.sub('', t) for t in terms]

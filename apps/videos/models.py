@@ -167,13 +167,13 @@ EXISTS(
         # Terms with less chars are not indexed, so they will never match anything.
         terms = get_terms(query)
         if len(terms) == 1 and len(terms[0]) > 2:
-            return self.filter(index__text__search=query)
+            return self.filter(index__text__search=terms[0])
         else:
             terms = [t for t in get_terms(query) if len(t) > 2]
             if len(terms) > MAX_VIDEO_SEARCH_TERMS:
                 terms = terms[:MAX_VIDEO_SEARCH_TERMS]
-            query = u' '.join(u'+"{}"'.format(t) for t in terms)
-            return self.filter(index__text__search=query)
+            new_query = u' '.join(u'+"{}"'.format(t) for t in terms)
+            return self.filter(index__text__search=new_query)
 
     def add_num_completed_languages(self):
         sql = ("""
@@ -979,6 +979,13 @@ class Video(models.Model):
         return self.primary_audio_language_code or None
 
     @property
+    def readable_language(self):
+        if self.primary_audio_language_code:
+            return translation.get_language_label(self.primary_audio_language_code)
+        else:
+            return None
+
+    @property
     def filename(self):
         """Return a filename-safe version of this video's string representation.
 
@@ -1124,6 +1131,12 @@ class Video(models.Model):
     def complete_languages(self):
         return [
             l for l in self.all_subtitle_languages() if l.subtitles_complete
+        ]
+
+    def complete_or_writelocked_language_codes(self):
+        return [
+            l.language_code for l in self.all_subtitle_languages() if l.subtitles_complete 
+                                                                   or l.is_writelocked
         ]
 
     def incomplete_languages_sorted(self):
