@@ -51,10 +51,9 @@ from teams.permissions_const import (
     TEAM_PERMISSIONS, PROJECT_PERMISSIONS, ROLE_OWNER, ROLE_ADMIN, ROLE_MANAGER,
     ROLE_CONTRIBUTOR, ROLE_PROJ_LANG_MANAGER
 )
+from teams import behaviors
 from teams import stats
 from teams import tasks
-from teams import workflows
-from teams import behaviors
 from teams.exceptions import ApplicationInvalidException
 from teams.notifications import BaseNotification
 from teams.signals import (member_leave, api_subtitles_approved,
@@ -337,6 +336,7 @@ class Team(models.Model):
 
     @property
     def new_workflow(self):
+        from teams import workflows
         if not hasattr(self, '_new_workflow'):
             self._new_workflow = workflows.TeamWorkflow.get_workflow(self)
         return self._new_workflow
@@ -1628,6 +1628,8 @@ class TeamMember(models.Model):
     projects_managed = models.ManyToManyField(Project,
                                               related_name='managers')
 
+    cache = ModelCacheManager()
+
     objects = TeamMemberManager()
 
     def __unicode__(self):
@@ -1643,6 +1645,28 @@ class TeamMember(models.Model):
     def delete(self):
         super(TeamMember, self).delete()
         Team.cache.invalidate_by_pk(self.team_id)
+
+    def get_role_summary(self):
+        if self.is_a_language_manager():
+            if self.is_a_project_manager():
+                return _('Project/Language Manager')
+            else:
+                return _('Language Manager')
+        elif self.is_a_project_manager():
+            return _('Project Manager')
+        return self.get_role_display()
+
+    def get_projects_managed_display(self):
+        return fmt(
+            _('Project manager for: %(projects)s'),
+            projects=', '.join(p.name for p in self.get_projects_managed())
+        )
+
+    def get_languages_managed_display(self):
+        return fmt(
+            _('Language manager for: %(languages)s'),
+            languages=', '.join(p.get_code_display() for p in self.get_languages_managed())
+        )
 
     def leave_team(self):
         member_leave.send(sender=self)
@@ -1781,6 +1805,9 @@ class TeamMember(models.Model):
     def remove_as_proj_lang_manager(self):
         self.remove_as_language_manager()
         self.remove_as_project_manager()
+
+    def calc_subtitles_completed(self):
+        return TeamSubtitlesCompleted.objects.filter(member=self).count()
 
     class Meta:
         unique_together = (('team', 'user'),)
@@ -3970,3 +3997,22 @@ class Partner(models.Model):
 
     def is_admin(self, user):
         return user in self.admins.all()
+
+class TeamSubtitlesCompleted(models.Model):
+    """
+    Track the number of subtitles completed for a team by team members.
+    """
+    member = models.ForeignKey(TeamMember)
+    video = models.ForeignKey(Video)
+    language_code = models.CharField(max_length=16,
+                                     choices=translation.ALL_LANGUAGE_CHOICES)
+
+    class Meta:
+        unique_together = [
+            ('member', 'video', 'language_code'),
+        ]
+
+    @classmethod
+    def add(cls, member, video, language_code):
+        cls.objects.get_or_create(member=member, video=video,
+                                  language_code=language_code)

@@ -78,6 +78,8 @@
   - actionBar
   - id: content-header
     title: Content header
+  - id: content-footer
+    title: Content footer
   - selectList
   - pagination
   - hangingLink
