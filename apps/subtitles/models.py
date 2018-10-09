@@ -437,6 +437,20 @@ class SubtitleLanguage(models.Model):
         self._translation_source_version_cache = {}
         self._frozen = False
 
+    def get_soft_limits(self):
+        """
+        Get soft limits for the editor.
+
+        These are things like characters per second (CPS) where we display
+        warnings if the user exceeds them
+        """
+        return {
+            'lines': self.soft_limit_lines or 2,
+            'cpl': self.soft_limit_cpl or 42,
+            'cps': self.soft_limit_cps or 21,
+            'timing': self.soft_limit_timing or 700,
+        }
+
     # Writelocking
     @property
     def is_writelocked(self):

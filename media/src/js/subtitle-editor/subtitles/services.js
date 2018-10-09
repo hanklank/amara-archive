@@ -331,4 +331,33 @@ var angular = angular || null;
             },
         };
     }]);
+
+    module.factory('SubtitleSoftLimits', ["EditorData", "gettext", "ngettext", "interpolate", function(EditorData, gettext, ngettext, interpolate) {
+	var warningMessages = {};
+
+        warningMessages.lines = interpolate(ngettext(
+                    'Avoid more than %(count)s line per subtitle; split the subtitle into two.',
+                    'Avoid more than %(count)s lines per subtitle; split the subtitle into two.',
+                    EditorData.softLimits.lines), { count: EditorData.softLimits.lines}, true);
+
+        warningMessages.timing = interpolate(gettext(
+                    'Briefly displayed subtitles are hard to read; the duration should be more than %(milliseconds)sms.'),
+                {milliseconds: EditorData.softLimits.timing}, true);
+
+        warningMessages.cps = interpolate(gettext(
+                    "Reading rate shouldn't exceed %(count)s characters / sec; lengthen duration, reduce text or split the subtitle."),
+                {count: EditorData.softLimits.cps}, true);
+
+        warningMessages.cpl = interpolate(gettext(
+                    "Line length shouldn't exceed %(count)s characters; add a line break if necessary."),
+                {count: EditorData.softLimits.cpl}, true);
+
+        return {
+            lines: EditorData.softLimits.lines,
+            timing: EditorData.softLimits.timing,
+            cps: EditorData.softLimits.cps,
+            cpl: EditorData.softLimits.cpl,
+            warningMessages: warningMessages
+        };
+    }]);
 }).call(this);
