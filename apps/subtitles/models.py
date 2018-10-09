@@ -373,6 +373,11 @@ class SubtitleLanguage(models.Model):
     # been changed to be a standalone language.
     is_forked = models.BooleanField(default=False)
 
+    soft_limit_lines = models.IntegerField(null=True, blank=True, default=None)
+    soft_limit_timing = models.IntegerField(null=True, blank=True, default=None)
+    soft_limit_cps = models.IntegerField(null=True, blank=True, default=None)
+    soft_limit_cpl = models.IntegerField(null=True, blank=True, default=None)
+
     # Writelocking
     writelock_time = models.DateTimeField(null=True, blank=True,
                                           editable=False)

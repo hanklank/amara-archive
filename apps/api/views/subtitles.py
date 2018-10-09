@@ -94,6 +94,15 @@ Creating subtitle languages
     :<json boolean is_original: Alias for is_primary_audio_language
         **(deprecated)**
     :<json boolean is_complete: Alias for subtitles_complete  **(deprecated)**
+    :<json integer soft_limit_lines: Controls the max number of lines per
+        subtitle.  A warning is shown in the editor if this limit is exceeded.
+    :<json integer soft_limit_timings: Controls min duration of subtitles in
+        milliseconds.  A warning is shown in the editor if this limit is
+        exceeded.
+    :<json integer soft_limit_cpl: Controls the max characters per line for
+        subtitles.  A warning is shown in the editor if this limit is exceeded.
+    :<json integer soft_limit_cps: Controls the max characters per second for
+        subtitles.  A warning is shown in the editor if this limit is exceeded.
 
 .. _subtitles_resource:
 
@@ -358,6 +367,10 @@ class SubtitleLanguageSerializer(serializers.Serializer):
     is_primary_audio_language = serializers.BooleanField(required=False)
     is_rtl = serializers.BooleanField(read_only=True)
     is_translation = serializers.SerializerMethodField()
+    soft_limit_lines = serializers.IntegerField(required=False)
+    soft_limit_timing = serializers.IntegerField(required=False)
+    soft_limit_cps = serializers.IntegerField(required=False)
+    soft_limit_cpl = serializers.IntegerField(required=False)
     published = serializers.BooleanField(read_only=True,
                                          source='has_public_version')
     original_language_code = serializers.SerializerMethodField()
@@ -447,7 +460,11 @@ class SubtitleLanguageSerializer(serializers.Serializer):
         language = SubtitleLanguage.objects.create(
             video=self.context['video'],
             language_code=validated_data['language_code'])
-        return self.update(language, validated_data)
+        try:
+            return self.update(language, validated_data)
+        except IntegrityError:
+            self.fail('language-exists',
+                      language_code=language.language_code)
 
     def update(self, language, validated_data):
         subtitles_complete = validated_data.get(
@@ -460,11 +477,12 @@ class SubtitleLanguageSerializer(serializers.Serializer):
         video = self.context['video']
         if subtitles_complete is not None:
             language.subtitles_complete = subtitles_complete
-            try:
-                language.save()
-            except IntegrityError:
-                self.fail('language-exists',
-                          language_code=language.language_code)
+        language.soft_limit_lines = validated_data.get('soft_limit_lines')
+        language.soft_limit_timing = validated_data.get('soft_limit_timing')
+        language.soft_limit_cpl = validated_data.get('soft_limit_cpl')
+        language.soft_limit_cps = validated_data.get('soft_limit_cps')
+
+        language.save()
         if primary_audio_language is not None:
             video.primary_audio_language_code = language.language_code
             video.save()
