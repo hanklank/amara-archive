@@ -67,13 +67,14 @@ from teams.workflows import TeamWorkflow
 from ui.forms import (FiltersForm, ManagementForm, AmaraChoiceField,
                       AmaraMultipleChoiceField, AmaraRadioSelect, SearchField,
                       AmaraClearableFileInput, AmaraFileInput, HelpTextList,
-                      MultipleLanguageField, AmaraImageField, SwitchInput, DependentBooleanField)
+                      MultipleLanguageField, AmaraImageField, SwitchInput, DependentBooleanField,
+                      ContentHeaderSearchBar)
 from ui.forms import LanguageField as NewLanguageField
 from utils.html import clean_html
 from utils import send_templated_email, enum
 from utils.forms import (ErrorableModelForm, get_label_for_value,
                          UserAutocompleteField, LanguageField,
-                         LanguageDropdown, Dropdown )
+                         LanguageDropdown, Dropdown)
 from utils.panslugify import pan_slugify
 from utils.translation import get_language_choices, get_language_label
 from utils.text import fmt
@@ -1768,9 +1769,10 @@ class MemberFiltersForm(forms.Form):
         ('any', _('Any language')),
     ] + get_language_choices()
 
-    q = SearchField(label=_('Search'), required=False)
+    q = SearchField(label=_('Search'), required=False,
+                    widget=ContentHeaderSearchBar)
 
-    role = AmaraChoiceField(choices=[
+    role = AmaraChoiceField(label=_('Select role'), choices=[
         ('any', _('All roles')),
         (TeamMember.ROLE_ADMIN, _('Admins')),
         (TeamMember.ROLE_MANAGER, _('Managers')),
@@ -1778,11 +1780,11 @@ class MemberFiltersForm(forms.Form):
         (TeamMember.ROLE_CONTRIBUTOR, _('Contributors')),        
     ], initial='any', required=False, filter=True)
     language = AmaraChoiceField(choices=LANGUAGE_CHOICES,
-                                 label=_('Language spoken'),
+                                 label=_('Select language'),
                                  initial='any', required=False, filter=True)
-    sort = AmaraChoiceField(label="", choices=[
-        ('recent', _('Date joined, most recent')),
-        ('oldest', _('Date joined, oldest')),
+    sort = AmaraChoiceField(label=_('Change sort'), choices=[
+        ('recent', _('Newest joined')),
+        ('oldest', _('Oldest joined')),
     ], initial='recent', required=False)
 
     def __init__(self, get_data=None):
@@ -2011,25 +2013,6 @@ class ChangeMemberRoleForm(ManagementForm):
             team_owners = member.team.members.owners()
             return (len(team_owners) <= 1)
 
-    def update_proj_lang_management(self, member):
-        # TODO make this work for making previous pm/lm's to be a pm/lm of a
-        # different set of projects/languages
-
-        # crude implementation is to delete all pm/lm permissions and then 
-        # create the permissions specified in the modal
-        # for optimization
-        member.remove_as_proj_lang_manager()
-
-        projects = self.cleaned_data['projects']
-        languages = self.cleaned_data['languages']
-
-        if projects:
-            for project in projects:
-                member.make_project_manager(project)
-        if languages:
-            for language in languages:
-                member.make_language_manager(language)       
-
     def perform_submit(self, members):
         self.error_count = 0
         self.only_owner_count = 0
@@ -2049,11 +2032,12 @@ class ChangeMemberRoleForm(ManagementForm):
                 else:
                     try:
                         if role == TeamMember.ROLE_PROJ_LANG_MANAGER:
-                            member.change_role(TeamMember.ROLE_CONTRIBUTOR)
-                            self.update_proj_lang_management(member)
+                            member.change_role(
+                                self.user, TeamMember.ROLE_CONTRIBUTOR,
+                                self.cleaned_data.get('projects'),
+                                self.cleaned_data.get('languages'))
                         else:
-                            member.remove_as_proj_lang_manager()
-                            member.change_role(role)
+                            member.change_role(self.user, role)
                         self.changed_count += 1
                     except Exception as e:
                         logger.error(e, exc_info=True)
