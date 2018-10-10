@@ -27,6 +27,7 @@ from rest_framework.reverse import reverse
 from rest_framework.test import APIClient, APIRequestFactory
 import babelsubs
 import mock
+import pytest
 
 from api.tests.utils import format_datetime_field, user_field_data
 from api.views.subtitles import (SubtitleLanguageSerializer,
@@ -304,6 +305,12 @@ class SubtitleLanguageViewset(TestCase):
         assert_equal(serializer_context['show_private_versions'],
                      self.viewset.show_private_versions)
         assert_equal(serializer_context['video'], self.video)
+
+def test_change_soft_limits():
+    pass
+
+def test_change_soft_limits_permissions():
+    pass
 
 class SubtitlesSerializerTest(TestCase):
     def setUp(self):
