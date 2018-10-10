@@ -23,6 +23,7 @@ from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe, SafeUnicode
 from django.utils.translation import ugettext_lazy as _
 from django import forms
+from django.forms import fields as django_fields
 from django.forms import widgets as django_widgets
 
 from utils import translation
@@ -41,18 +42,37 @@ class HelpTextList(SafeUnicode):
         return SafeUnicode.__new__(cls, u''.join(output))
 
 class AmaraChoiceFieldMixin(object):
+    """
+    choice_help_text is a dictionary of value:help_text entries
+    -- can be used for example if you want all choices of a radio button group
+       to have help texts individually
+
+    dynamic_choice_help_text is also a dictionary of value:help_text entries
+    -- use this is if you want a selector's help text to change depending on which 
+       option is selected
+    """
     def __init__(self, allow_search=True, filter=False, max_choices=None,
-                 choice_help_text=None, *args, **kwargs):
+                 choice_help_text=None, dynamic_choice_help_text=None,
+                 *args, **kwargs):
         self.filter = filter
         if choice_help_text:
             self.choice_help_text = dict(choice_help_text)
         else:
             self.choice_help_text = {}
+
+        if dynamic_choice_help_text:
+            self.dynamic_choice_help_text = dict(dynamic_choice_help_text)
+        else:
+            self.dynamic_choice_help_text = {}
+
         super(AmaraChoiceFieldMixin, self).__init__(*args, **kwargs)
         if not allow_search:
             self.set_select_data('nosearchbox')
         if max_choices:
             self.set_select_data('max-allowed-choices', max_choices)
+
+        if self.dynamic_choice_help_text:
+            self.set_select_data('dynamic-choice-help-texts', self.dynamic_choice_help_text)
 
     def _get_choices(self):
         return self._choices
@@ -95,10 +115,14 @@ class AmaraChoiceFieldMixin(object):
 
     def widget_attrs(self, widget):
         if isinstance(widget, forms.Select):
+            widget_class = 'select'
+            if self.dynamic_choice_help_text:
+                widget_class += ' dynamicHelpText'
+
             if self.filter:
-                return { 'class': 'select selectFilter' }
-            else:
-                return { 'class': 'select' }
+                widget_class += ' selectFilter'
+            
+            return { 'class': widget_class }
         else:
             return {}
 
@@ -263,9 +287,38 @@ class AmaraImageField(forms.ImageField):
         super(AmaraImageField, self).__init__(**kwargs)
         self.widget.preview_size = preview_size
 
+class DependentBooleanField(forms.MultiValueField):
+    """
+    Displays a several checkboxes, each one depending on the previous.
+
+    See the multiField styleguide entry for how we use this
+    """
+
+    def __init__(self, choices, **kwargs):
+        self.choices = choices
+        fields = [
+            django_fields.BooleanField(required=False)
+            for c in choices
+        ]
+        widget = widgets.DependentCheckboxes(choices)
+        super(DependentBooleanField, self).__init__(
+            widget=widget, fields=fields, require_all_fields=False, **kwargs)
+
+    def compress(self, data_list):
+        for choice, checked in reversed(zip(self.choices, data_list)):
+            if checked:
+                return choice[0]
+        if self.required:
+            # required fields make the first choice always checked and
+            # disabled.  That means we won't see it in the POST data, but
+            # we should return it here.
+            return self.choices[0][0]
+        return None
+
 __all__ = [
     'AmaraChoiceField', 'AmaraMultipleChoiceField', 'LanguageField',
     'MultipleLanguageField', 'SearchField', 'HelpTextList',
     'UploadOrPasteField', 'AmaraImageField', 'MultipleAutoCompleteField',
+    'DependentBooleanField',
 ]
 

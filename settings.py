@@ -177,6 +177,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'auth.middleware.AmaraAuthenticationMiddleware',
+    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'openid_consumer.middleware.OpenIDMiddleware',
     'middleware.P3PHeaderMiddleware',
@@ -397,7 +398,9 @@ STATIC_MEDIA_USES_S3 = USE_AMAZON_S3 = False
 STATIC_MEDIA_COMPRESSED = True
 STATIC_MEDIA_EXPERIMENTAL_EDITOR_BUCKET = 's3.staging.amara.org'
 
-# django-storages
+# django-storages related settings
+PRIVATE_STORAGE_BUCKET = os.environ.get('AMARA_PRIVATE_STORAGE_BUCKET')
+PRIVATE_STORAGE_PREFIX = os.environ.get('AMARA_PRIVATE_STORAGE_PREFIX')
 AWS_DEFAULT_ACL = None
 
 AVATAR_MAX_SIZE = 500*1024
