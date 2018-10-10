@@ -1329,9 +1329,9 @@ def make_permissions_table(form, team):
             _('Review team member applications'), True, False, False))
     management_rows.extend([
         TeamPermissionsRow(_('Change team member roles'),
-                           True, True, False),
+                           True, False, False),
         TeamPermissionsRow(_('Remove users from team'),
-                           True, True, False),
+                           True, False, False),
     ])
     table = [
         (_('Video Management'), [

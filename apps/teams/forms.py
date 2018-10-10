@@ -1108,7 +1108,11 @@ class NewPermissionsForm(forms.Form):
         self.team = team
         self.initial_settings = team.get_settings()
         super(NewPermissionsForm, self).__init__(**kwargs)
-        self.initial['video_policy'] = team.video_policy
+        if team.video_policy == Team.VP_MEMBER:
+            # need to special case this one, since it's not an option
+            self.initial['video_policy'] = Team.VP_MANAGER
+        else:
+            self.initial['video_policy'] = team.video_policy
         if self.team.is_by_invitation():
             self.initial['membership_policy'] = team.membership_policy
             self.fields['membership_policy'].help_text = self.invite_help_text()
