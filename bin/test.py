@@ -28,6 +28,7 @@ import tempfile
 from django.apps import apps
 from django.conf import settings
 from django_redis import get_redis_connection
+import mock
 import py.path
 import pytest
 
@@ -105,6 +106,22 @@ class AmaraPlugin(object):
     def undo_set_debug_to_false(self, db):
         # pytest-django sets this to False, undo it.
         settings.DEBUG = True
+
+    @pytest.fixture
+    def patch_for_test(self):
+        """
+        Call mock.patch to monkeypatch a function, then undo it at the end of
+        the test
+        """
+        patchers = []
+        def func(*args, **kwargs):
+            patcher = mock.patch(*args, **kwargs)
+            obj = patcher.start()
+            patchers.append(patcher)
+            return obj
+        yield func
+        for patcher in patchers:
+            patcher.stop()
 
     @pytest.fixture
     def redis_connection(self):

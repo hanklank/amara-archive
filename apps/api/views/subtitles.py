@@ -315,6 +315,7 @@ from babelsubs.storage import SubtitleSet
 from utils.http import data_from_url
 from utils.subtitles import load_subtitles
 import videos.tasks
+import teams.permissions
 
 logger = logging.getLogger(__name__)
 
@@ -367,10 +368,10 @@ class SubtitleLanguageSerializer(serializers.Serializer):
     is_primary_audio_language = serializers.BooleanField(required=False)
     is_rtl = serializers.BooleanField(read_only=True)
     is_translation = serializers.SerializerMethodField()
-    soft_limit_lines = serializers.IntegerField(required=False)
-    soft_limit_timing = serializers.IntegerField(required=False)
-    soft_limit_cps = serializers.IntegerField(required=False)
-    soft_limit_cpl = serializers.IntegerField(required=False)
+    soft_limit_lines = serializers.IntegerField(required=False, allow_null=True)
+    soft_limit_timing = serializers.IntegerField(required=False, allow_null=True)
+    soft_limit_cps = serializers.IntegerField(required=False, allow_null=True)
+    soft_limit_cpl = serializers.IntegerField(required=False, allow_null=True)
     published = serializers.BooleanField(read_only=True,
                                          source='has_public_version')
     original_language_code = serializers.SerializerMethodField()
@@ -518,6 +519,24 @@ class SubtitleLanguageViewSet(mixins.CreateModelMixin,
         workflow = self.video.get_workflow()
         return workflow.user_can_view_private_subtitles(self.request.user,
                                                         language_code)
+
+    def perform_create(self, serializer):
+        self.check_soft_limit_permissions(serializer)
+        return serializer.save()
+
+    def perform_update(self, serializer):
+        self.check_soft_limit_permissions(serializer)
+        return serializer.save()
+
+    def check_soft_limit_permissions(self, serializer):
+        if not any(key.startswith('soft_limit')
+                   for key in serializer.validated_data):
+            return
+        team = self.video.get_team()
+        if team and not teams.permissions.can_set_soft_limits(
+                team, self.request.user, self.video,
+                self.kwargs['language_code']):
+            raise PermissionDenied()
 
     def get_serializer_context(self):
         return {
