@@ -19,7 +19,7 @@ elif [ "$ACTION" = "worker" ]; then
     exec manage rqworker high default low
 elif [ "$ACTION" = "scheduler" ]; then
     echo "Running scheduler..."
-    exec manage scheduler
+    exec manage rqscheduler -i 5
 elif [ "$ACTION" = "update_translations" ]; then
     echo "Updating translations..."
     exec /usr/local/bin/update_translations $2

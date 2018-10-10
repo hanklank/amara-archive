@@ -28,7 +28,6 @@ import tempfile
 from django.apps import apps
 from django.conf import settings
 from django_redis import get_redis_connection
-from mockredis.client import MockRedis
 import py.path
 import pytest
 
@@ -69,6 +68,7 @@ class AmaraPlugin(object):
         before_tests.send(config)
 
     def patch_mockredis(self):
+        from mockredis.client import MockRedis
         # Patch for mockredis returning a boolean when it should return 1 or 0.
         # (See https://github.com/locationlabs/mockredis/issues/147)
         def exists(self, key):

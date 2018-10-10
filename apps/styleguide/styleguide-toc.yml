@@ -10,7 +10,8 @@
   - lists
   - alerts
   - announcements
-  - progressbars
+  - id: progress-bar
+    title: Progress bars
   - indicators
   - tabs
   - id: tables
@@ -55,6 +56,8 @@
   - buttonField
   - searchbar
   - selects
+  - id: dynamic-help-text
+    title: Dynamic Help Text
 
 - - Modals / Dialogs
   - id: modals

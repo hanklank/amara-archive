@@ -35,6 +35,7 @@ forms_by_section = {
     'multi-field': forms.MultiFieldForm,
     'image-upload': forms.ImageUpload,
     'switches': forms.SwitchForm,
+    'dynamic-help-text': forms.DynamicHelpTextForm,
     'content-header': forms.ContentHeader,
     'filter-box': forms.FilterBox,
     'split-button': forms.SplitButton,
