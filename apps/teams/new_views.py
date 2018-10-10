@@ -1326,7 +1326,9 @@ def settings_projects(request, team):
         ],
     }
 
-    if form_name:
+    if form_name == 'add':
+        return settings_add_project_form(request, team)
+    elif form_name:
         return settings_projects_form(request, team, form_name, projects, page)
 
     if not form_name and request.is_ajax():
@@ -1340,11 +1342,39 @@ def settings_projects(request, team):
 
     return render(request, "future/teams/settings/projects.html", context)
 
+def settings_add_project_form(request, team):
+    response_renderer = AJAXResponseRenderer(request)
+
+    if request.method == 'POST':
+        try:
+            form = forms.ProjectForm(team, data=request.POST)
+        except Exception as e:
+            logger.error(e, exc_info=True)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _('Project added'))
+            response_renderer.reload_page()
+            return response_renderer.render()
+    else:
+        try:
+            form = forms.ProjectForm(team)
+        except Exception as e:
+            logger.error(e, exc_info=True)
+
+    template_name = 'future/teams/settings/forms/project-add.html'
+    context = {'form': form, 'team': team}
+
+    response_renderer.show_modal(template_name, context)
+    return response_renderer.render()
+
 def settings_projects_form(request, team, form_name, projects, page):
-    if form_name == 'add':
-        FormClass = forms.ProjectForm
-        form_message = _('Project added')
-    elif form_name == 'edit':
+    try:
+        selection = int(request.GET['selection'])
+        project = projects.get(id=selection)
+    except:
+        return HttpResponseBadRequest()
+
+    if form_name == 'edit':
         FormClass = forms.EditProjectForm
         form_message = _('Project updated')
     elif form_name == 'delete':
@@ -1355,7 +1385,7 @@ def settings_projects_form(request, team, form_name, projects, page):
 
     if request.method == 'POST':
         try:
-            form = FormClass(team, data=request.POST)
+            form = FormClass(team, project, data=request.POST)
         except Exception as e:
             logger.error(e, exc_info=True)
         if form.is_valid():
@@ -1365,13 +1395,12 @@ def settings_projects_form(request, team, form_name, projects, page):
             return response_renderer.render()
     else:
         try:
-            form = FormClass(team)
+            form = FormClass(team, project)
         except Exception as e:
             logger.error(e, exc_info=True)
 
-    # TODO: add modal templates, context
     template_name = 'future/teams/settings/forms/project-{}.html'.format(form_name)
-    context = {'form': form, 'team': team}
+    context = {'form': form, 'team': team, 'project': project}
 
     response_renderer.show_modal(template_name, context)
     return response_renderer.render()
