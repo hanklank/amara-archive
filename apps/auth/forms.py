@@ -205,7 +205,8 @@ class CustomPasswordResetForm(forms.Form):
              email_template_name='registration/password_reset_email.html',
              html_email_template_name=None,
              use_https=False, token_generator=default_token_generator,
-             from_email=None, request=None):
+             from_email=None, request=None,
+             **opts):
         """
         Generates a one-use only link for resetting password and sends to the
         user.

@@ -62,19 +62,56 @@ class AmaraProjectSelectMultiple(widgets.SelectMultiple):
     pass
 
 class AmaraRadioSelect(widgets.RadioSelect):
+    def __init__(self, inline=False, 
+                 dynamic_choice_help_text=None, dynamic_choice_help_text_initial=None, 
+                 *args, **kwargs):
+        super(AmaraRadioSelect, self).__init__(*args, **kwargs)
+        self.inline = inline
+
+        try:
+            self.widget_classes = kwargs['attrs']['class']
+        except KeyError:
+            self.widget_classes = ''
+
+        if dynamic_choice_help_text:
+            self.dynamic_choice_help_text = dict(dynamic_choice_help_text)
+            self.widget_classes += ' dynamicHelpTextRadio'
+        else:
+            self.dynamic_choice_help_text = {}
+
+        if dynamic_choice_help_text_initial:
+            self.dynamic_choice_help_text_initial = dynamic_choice_help_text_initial   
+
     def render(self, name, value, attrs=None):
+        div_class = 'radio'
+        li_class = ''
+        ul_class = ''
+        if self.inline:
+            div_class += ' div-radio-inline'
+            li_class = 'li-radio-inline'
+
+        if self.dynamic_choice_help_text:
+            ul_class = 'radio-dynamic-help-text'        
+
         if value is None:
             value = ''
-        output = [u'<ul>']
+        output = [u'<ul class="{}">'.format(ul_class)]
         for i, choice in enumerate(self.choices):
             input_id = '{}_{}'.format(attrs['id'], i)
             output.extend([
-                u'<li><div class="radio">',
+                u'<li class="{}"><div class="{}">'.format(li_class, div_class),
                 self.render_input(name, value, choice, input_id),
                 self.render_label(name, value, choice, input_id),
                 u'</div></li>',
             ])
         output.append(u'</ul>')
+
+        if self.dynamic_choice_help_text:
+            output.append(u'<div class="helpBlock dynamicHelpTextContainer">')
+            if self.dynamic_choice_help_text_initial:
+                output.append(self.dynamic_choice_help_text_initial)
+            output.append(u'</div>')
+
         return mark_safe(u''.join(output))
 
     def render_input(self, name, value, choice, input_id):
@@ -83,9 +120,14 @@ class AmaraRadioSelect(widgets.RadioSelect):
             'type': 'radio',
             'name': name,
             'value': force_unicode(choice[0]),
+            'class': self.widget_classes
         }
         if choice[0] == value:
             attrs['checked'] = 'checked'
+
+        if self.dynamic_choice_help_text:
+            attrs['data-dynamic-help-text'] = self.dynamic_choice_help_text[choice[0]]
+
         return u'<input{}>'.format(flatatt(attrs))
 
     def render_label(self, name, value, choice, input_id):
@@ -99,6 +141,16 @@ class SearchBar(widgets.TextInput):
                          '<label class="sr-only">{}</label>'
                          '{}'
                          '</div>'.format(_('Search'), input))
+
+class ContentHeaderSearchBar(widgets.TextInput):
+    def render(self, name, value, attrs=None):
+        attrs['class'] = 'contentHeader-searchBar'
+        input = super(ContentHeaderSearchBar, self).render(name, value, attrs)
+        return format_html(
+            '<div class="contentHeader-search">'
+            '<label class="sr-only">{}</label>' +
+            unicode(input) +
+            '</div>', _('Search'))
 
 class AmaraFileInput(widgets.FileInput):
     template_name = "widget/file_input.html"
@@ -202,8 +254,62 @@ class SwitchInput(widgets.CheckboxInput):
             'attrs': flatatt(attrs),
         }))
 
+class DependentCheckboxes(widgets.MultiWidget):
+    # TODO Make this work with switches as well as checkboxes
+    template_name = 'ui/dependent-choices.html'
+
+    def __init__(self, choices):
+        self.choices = choices
+        super(DependentCheckboxes, self).__init__(
+            [widgets.CheckboxInput() for choice in choices])
+
+    def decompress(self, value):
+        saw_value = False
+
+        rv = []
+
+        for choice_value, choice_label in reversed(self.choices):
+            if choice_value == value or saw_value:
+                rv.append(True)
+                saw_value = True
+            else:
+                rv.append(False)
+        rv.reverse()
+        return rv
+
+    def get_context(self, name, value, attrs):
+        # We handle the required attribute specially.  Don't make the
+        # checkboxes required.  Instead make the first checkbox checked and
+        # disabled.
+        required = attrs['required']
+        attrs['required'] = False
+
+        context = super(DependentCheckboxes, self).get_context(
+            name, value, attrs)
+
+        self.add_checked_to_subwidgets(context['widget']['subwidgets'], value)
+        if required:
+            context['widget']['subwidgets'][0]['attrs'].update({
+                'disabled': 'disabled',
+                'checked': 'checked'
+            })
+
+
+        context['widget']['subwidgets_and_labels'] = [
+            (choice[1], subwidget)
+            for choice, subwidget in zip(self.choices, context['widget']['subwidgets'])
+        ]
+        return context
+
+    def add_checked_to_subwidgets(self, subwidgets, value):
+        saw_value = False
+        for choice, widget in reversed(zip(self.choices, subwidgets)):
+            if choice[0] == value or saw_value:
+                widget['attrs']['checked'] = 'checked'
+                saw_value = True
+
 __all__ = [
-    'AmaraRadioSelect', 'SearchBar', 'AmaraFileInput',
-    'AmaraClearableFileInput', 'UploadOrPasteWidget',
-    'AmaraImageInput', 'SwitchInput',
+    'AmaraRadioSelect', 'SearchBar', 'ContentHeaderSearchBar',
+    'AmaraFileInput', 'AmaraClearableFileInput', 'UploadOrPasteWidget',
+    'AmaraImageInput', 'SwitchInput', 'DependentCheckboxes',
 ]
