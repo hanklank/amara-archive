@@ -10,7 +10,8 @@
   - lists
   - alerts
   - announcements
-  - progressbars
+  - id: progress-bar
+    title: Progress bars
   - indicators
   - tabs
   - id: tables
@@ -22,6 +23,7 @@
   - generalLayout
   - textCenter
   - blockCenter
+  - width100
 
 - - Avatars, Icons, Steps
   - avatars
@@ -32,6 +34,8 @@
   - buttonTags
   - buttonOptions
   - asyncButton
+  - id: split-button
+    title: Split Buttons
 
 - - Forms
   - forms
@@ -52,6 +56,8 @@
   - buttonField
   - searchbar
   - selects
+  - id: dynamic-help-text
+    title: Dynamic Help Text
 
 - - Modals / Dialogs
   - id: modals
@@ -73,6 +79,10 @@
   - id: filter-box
     title: Filter Box
   - actionBar
+  - id: content-header
+    title: Content header
+  - id: content-footer
+    title: Content footer
   - selectList
   - pagination
   - hangingLink

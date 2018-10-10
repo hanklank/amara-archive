@@ -27,8 +27,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
 from django.db.models.signals import post_save
 from django.urls import reverse
-from django.utils.html import escape, urlize
+from django.utils.html import escape
 from django.db.models import Q
+import bleach
 
 from auth.models import CustomUser as User
 MESSAGE_MAX_LENGTH = getattr(settings,'MESSAGE_MAX_LENGTH', 1000)
@@ -103,6 +104,7 @@ class Message(models.Model):
     user = models.ForeignKey(User)
     subject = models.CharField(max_length=100, blank=True)
     content = models.TextField(blank=True, max_length=MESSAGE_MAX_LENGTH)
+    html_formatted = models.BooleanField(default=False)
     author = models.ForeignKey(User, blank=True, null=True, related_name='sent_messages')
     read = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
@@ -182,6 +184,9 @@ class Message(models.Model):
         return json.dumps(data)
 
     def get_content(self):
+        if self.html_formatted:
+            return self.content
+
         content = []
 
         if self.content:
@@ -189,12 +194,7 @@ class Message(models.Model):
                 escaped_content = self.content
             else:
                 escaped_content = escape(self.content)
-            try:
-                my_content_with_links = urlize(escaped_content)
-            except ValueError:
-                # urlize() throws a value error on some input.  In that case,
-                # just skip the call.  See #2162
-                my_content_with_links = escaped_content
+            my_content_with_links = bleach.linkify(escaped_content)
             content.append(my_content_with_links.replace('\n', '<br />'))
             content.append('\n')
 
