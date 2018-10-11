@@ -77,4 +77,4 @@ def send_invitation_message(invite):
                 team=unicode(invite.team))
 
     notify_users(Notifications.TEAM_INVITATION, [invite.user], title,
-                 'messages/team-invitation.html', context, send_email=True)
+                 'messages/team-invitation.html', context)
