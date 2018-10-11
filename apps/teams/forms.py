@@ -896,10 +896,12 @@ class GeneralSettingsForm(forms.ModelForm):
     ])
 
     square_logo = AmaraImageField(label=_('Team Logo'),
+                                  validators=[MaxFileSizeValidator(settings.AVATAR_MAX_SIZE)],
                                   preview_size=(100, 100),
                                   help_text=_('Recommended size 100 x 100 px'),
                                   required=False)
     logo = AmaraImageField(label=_('Team Banner Image'),
+                           validators=[MaxFileSizeValidator(settings.AVATAR_MAX_SIZE)],
                            preview_size=(280, 100),
                            help_text=_('Recommended size 940 x 235 px'),
                            required=False)
