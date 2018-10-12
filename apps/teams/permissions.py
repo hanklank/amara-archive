@@ -1081,5 +1081,5 @@ def can_set_soft_limits(team, user, video, language_code):
     """Can a user set soft limits for a video's subtitles?
 
     """
-    member = team_video.team.get_member(user)
+    member = team.get_member(user)
     return member and member.is_admin()
