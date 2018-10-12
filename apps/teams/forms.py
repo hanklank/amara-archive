@@ -2523,6 +2523,28 @@ class DeleteVideosForm(VideoManagementForm):
                                 count=self.other_team_duplicate_url_errors))
         return messages
 
+class DeleteVideosFormSimple(DeleteVideosForm):
+    DELETE_CHOICES = (
+        ('', _('Just remove from team')),
+        ('yes', _('Delete entirely')),
+    )
+    DELETE_HELP_TEXT = (
+        ('', _('Remove the video(s) from team into the public area of '
+               'Amara.  All existing subtitles will remain on site and '
+               'can be edited by any user.')),
+        ('yes', mark_safe(_('Permanently delete the video(s) and all associated '
+                  'subtitles from Amara. '
+                  '<em>Important: </em> this action is irreversible, so use it '
+                  'with care.'))),
+    )
+
+
+    delete = AmaraChoiceField(
+        label='', choices=DELETE_CHOICES,
+        choice_help_text=DELETE_HELP_TEXT, required=False, initial='',
+        widget=AmaraRadioSelect,
+    )
+
 class MoveVideosForm(VideoManagementForm):
     name = 'move'
     label = _('Move')
