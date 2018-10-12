@@ -335,14 +335,25 @@ var angular = angular || null;
     module.factory('SubtitleSoftLimits', ["EditorData", "gettext", "ngettext", "interpolate", function(EditorData, gettext, ngettext, interpolate) {
         var warningMessages = {};
 
+        function format_ms(value) {
+            // forman min/max duration for display
+            if(value < 1000) {
+                return value + ' ' + gettext('milliseconds');
+            } else if (value % 1000 == 0) {
+                return (value / 1000) + ' ' + gettext('seconds');
+            } else {
+                return Math.floor(value / 1000) + '.' + Math.round(value % 1000 / 100) + ' ' + gettext('seconds');
+            }
+        }
+
         warningMessages.lines = interpolate(ngettext(
                     'Avoid more than %(count)s line per subtitle; split the subtitle into two.',
                     'Avoid more than %(count)s lines per subtitle; split the subtitle into two.',
                     EditorData.softLimits.lines), { count: EditorData.softLimits.lines}, true);
 
-        warningMessages.timing = interpolate(gettext(
-                    'Briefly displayed subtitles are hard to read; the duration should be more than %(milliseconds)sms.'),
-                {milliseconds: EditorData.softLimits.timing}, true);
+        warningMessages.minDuration = interpolate(gettext(
+                    'Briefly displayed subtitles are hard to read; the duration should be more than %(milliseconds)s.'),
+                {milliseconds: format_ms(EditorData.softLimits.minDuration)}, true);
 
         warningMessages.cps = interpolate(gettext(
                     "Reading rate shouldn't exceed %(count)s characters / sec; lengthen duration, reduce text or split the subtitle."),
@@ -359,8 +370,11 @@ var angular = angular || null;
                     "Avoid more than %(count)s lines per subtitle.",
                     EditorData.softLimits.lines), { count: EditorData.softLimits.lines}, true);
 
-        guidelines.timing = interpolate(gettext('Subtitles should at least %(milliseconds)sms.'),
-                {milliseconds: EditorData.softLimits.timing}, true);
+        guidelines.minDuration = interpolate(gettext('Subtitles should at least %(milliseconds)s.'),
+                {milliseconds: format_ms(EditorData.softLimits.min_duration)}, true);
+
+        guidelines.maxDuration = interpolate(gettext('Split subtitles longer than %(milliseconds)s.'),
+                {milliseconds: format_ms(EditorData.softLimits.max_duration)}, true);
 
         guidelines.cps = interpolate(gettext("Reading rate shouldn't exceed %(count)s characters / sec."),
                 {count: EditorData.softLimits.cps}, true);
@@ -370,7 +384,8 @@ var angular = angular || null;
 
         return {
             lines: EditorData.softLimits.lines,
-            timing: EditorData.softLimits.timing,
+            minDuration: EditorData.softLimits.min_duration,
+            maxDuration: EditorData.softLimits.max_duration,
             cps: EditorData.softLimits.cps,
             cpl: EditorData.softLimits.cpl,
             warningMessages: warningMessages,

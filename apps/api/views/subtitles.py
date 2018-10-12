@@ -96,9 +96,11 @@ Creating subtitle languages
     :<json boolean is_complete: Alias for subtitles_complete  **(deprecated)**
     :<json integer soft_limit_lines: Controls the max number of lines per
         subtitle.  A warning is shown in the editor if this limit is exceeded.
-    :<json integer soft_limit_timings: Controls min duration of subtitles in
-        milliseconds.  A warning is shown in the editor if this limit is
+    :<json integer soft_limit_min_duration: Controls min duration of subtitles
+        in milliseconds.  A warning is shown in the editor if this limit is
         exceeded.
+    :<json integer soft_limit_max_duration: Controls max duration of subtitles
+        in milliseconds.  This controls the message in the guidelines dialog.
     :<json integer soft_limit_cpl: Controls the max characters per line for
         subtitles.  A warning is shown in the editor if this limit is exceeded.
     :<json integer soft_limit_cps: Controls the max characters per second for
@@ -369,7 +371,10 @@ class SubtitleLanguageSerializer(serializers.Serializer):
     is_rtl = serializers.BooleanField(read_only=True)
     is_translation = serializers.SerializerMethodField()
     soft_limit_lines = serializers.IntegerField(required=False, allow_null=True)
-    soft_limit_timing = serializers.IntegerField(required=False, allow_null=True)
+    soft_limit_min_duration = serializers.IntegerField(required=False,
+                                                       allow_null=True)
+    soft_limit_max_duration = serializers.IntegerField(required=False,
+                                                       allow_null=True)
     soft_limit_cps = serializers.IntegerField(required=False, allow_null=True)
     soft_limit_cpl = serializers.IntegerField(required=False, allow_null=True)
     published = serializers.BooleanField(read_only=True,
@@ -479,7 +484,10 @@ class SubtitleLanguageSerializer(serializers.Serializer):
         if subtitles_complete is not None:
             language.subtitles_complete = subtitles_complete
         language.soft_limit_lines = validated_data.get('soft_limit_lines')
-        language.soft_limit_timing = validated_data.get('soft_limit_timing')
+        language.soft_limit_min_duration = validated_data.get(
+            'soft_limit_min_duration')
+        language.soft_limit_max_duration = validated_data.get(
+            'soft_limit_max_duration')
         language.soft_limit_cpl = validated_data.get('soft_limit_cpl')
         language.soft_limit_cps = validated_data.get('soft_limit_cps')
 

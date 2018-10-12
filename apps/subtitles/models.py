@@ -374,7 +374,8 @@ class SubtitleLanguage(models.Model):
     is_forked = models.BooleanField(default=False)
 
     soft_limit_lines = models.IntegerField(null=True, blank=True, default=None)
-    soft_limit_timing = models.IntegerField(null=True, blank=True, default=None)
+    soft_limit_min_duration = models.IntegerField(null=True, blank=True, default=None)
+    soft_limit_max_duration = models.IntegerField(null=True, blank=True, default=None)
     soft_limit_cps = models.IntegerField(null=True, blank=True, default=None)
     soft_limit_cpl = models.IntegerField(null=True, blank=True, default=None)
 
@@ -448,7 +449,8 @@ class SubtitleLanguage(models.Model):
             'lines': self.soft_limit_lines or 2,
             'cpl': self.soft_limit_cpl or 42,
             'cps': self.soft_limit_cps or 21,
-            'timing': self.soft_limit_timing or 700,
+            'min_duration': self.soft_limit_min_duration or 700,
+            'max_duration': self.soft_limit_max_duration or 7000,
         }
 
     # Writelocking

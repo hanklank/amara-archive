@@ -297,9 +297,11 @@ Creating subtitle languages
     :<json boolean is_complete: Alias for subtitles_complete  **(deprecated)**
     :<json integer soft_limit_lines: Controls the max number of lines per
         subtitle.  A warning is shown in the editor if this limit is exceeded.
-    :<json integer soft_limit_timings: Controls min duration of subtitles in
-        milliseconds.  A warning is shown in the editor if this limit is
+    :<json integer soft_limit_min_duration: Controls min duration of subtitles
+        in milliseconds.  A warning is shown in the editor if this limit is
         exceeded.
+    :<json integer soft_limit_max_duration: Controls max duration of subtitles
+        in milliseconds.  This controls the message in the guidelines dialog.
     :<json integer soft_limit_cpl: Controls the max characters per line for
         subtitles.  A warning is shown in the editor if this limit is exceeded.
     :<json integer soft_limit_cps: Controls the max characters per second for
