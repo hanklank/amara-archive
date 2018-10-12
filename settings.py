@@ -241,13 +241,13 @@ STARTUP_MODULES = [
 # Queue settings
 RQ_QUEUES = {
     'default': {
-        'USE_REDIS_CACHE': 'default',
+        'USE_REDIS_CACHE': 'storage',
     },
     'high': {
-        'USE_REDIS_CACHE': 'default',
+        'USE_REDIS_CACHE': 'storage',
     },
     'low': {
-        'USE_REDIS_CACHE': 'default',
+        'USE_REDIS_CACHE': 'storage',
     }
 }
 RUN_JOBS_EAGERLY = False
@@ -403,7 +403,7 @@ PRIVATE_STORAGE_BUCKET = os.environ.get('AMARA_PRIVATE_STORAGE_BUCKET')
 PRIVATE_STORAGE_PREFIX = os.environ.get('AMARA_PRIVATE_STORAGE_PREFIX')
 AWS_DEFAULT_ACL = None
 
-AVATAR_MAX_SIZE = 500*1024
+AVATAR_MAX_SIZE = 1024*1024
 THUMBNAILS_SIZE = (
     (100, 100),
     (50, 50),
@@ -424,7 +424,17 @@ CACHES = {
         "OPTIONS": {
             "PARSER_CLASS": "redis.connection.HiredisParser",
         },
-    }
+    },
+    'storage': {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://{}:{}/{}".format(
+            os.environ.get('REDIS_HOST', 'redis'),
+            os.environ.get('REDIS_PORT', 6379),
+            1),
+        "OPTIONS": {
+            "PARSER_CLASS": "redis.connection.HiredisParser",
+        },
+    },
 }
 
 
