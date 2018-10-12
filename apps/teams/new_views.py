@@ -83,6 +83,7 @@ ACTIONS_PER_PAGE = 20
 VIDEOS_PER_PAGE = 12
 VIDEOS_PER_PAGE_MANAGEMENT = 20
 MEMBERS_PER_PAGE = 10
+PROJECTS_PER_PAGE = 10
 
 '''
 Maximum number of videos in the welcome page (non-member team landing page)
@@ -284,7 +285,6 @@ def members_public(request, slug):
     return render(request, 'future/teams/members/members.html', context)
 
 def manage_members_form(request, team, form_name, members, page):
-
     try:
         selection = request.GET['selection'].split('-')
     except StandardError:
@@ -1304,57 +1304,78 @@ def settings_projects(request, team):
     if team.is_old_style():
         return old_views.settings_projects(request, team)
 
-    projects = Project.objects.for_team(team)
+    form_name = request.GET.get('form', None)
+    filters_form = forms.ProjectFiltersForm(request.GET)
+    projects = filters_form.update_qs(Project.objects.for_team(team))
 
-    form = request.POST.get('form')
+    paginator = AmaraPaginatorFuture(projects, PROJECTS_PER_PAGE)
+    page = paginator.get_page(request)
+    next_page, prev_page = paginator.make_next_previous_page_links(page, request)
 
-    if request.method == 'POST' and form == 'add':
-        add_form = forms.ProjectForm(team, data=request.POST)
-
-        if add_form.is_valid():
-            add_form.save()
-            messages.success(request, _('Project added.'))
-            return HttpResponseRedirect(
-                reverse('teams:settings_projects', args=(team.slug,))
-            )
-    else:
-        add_form = forms.ProjectForm(team)
-
-    if request.method == 'POST' and form == 'edit':
-        edit_form = forms.EditProjectForm(team, data=request.POST)
-
-        if edit_form.is_valid():
-            edit_form.save()
-            messages.success(request, _('Project updated.'))
-            return HttpResponseRedirect(
-                reverse('teams:settings_projects', args=(team.slug,))
-            )
-    else:
-        edit_form = forms.EditProjectForm(team)
-
-    if request.method == 'POST' and form == 'delete':
-        try:
-            project = projects.get(id=request.POST['project'])
-        except Project.DoesNotExist:
-            pass
-        else:
-            project.delete()
-            messages.success(request, _('Project deleted.'))
-            return HttpResponseRedirect(
-                reverse('teams:settings_projects', args=(team.slug,))
-            )
-
-    return render(request, "new-teams/settings-projects.html", {
+    context = {
         'team': team,
         'projects': projects,
-        'add_form': add_form,
-        'edit_form': edit_form,
+        'filters_form': filters_form,
+        'paginator': paginator,
+        'page': page,
+        'next': next_page,
+        'previous': prev_page,
         'breadcrumbs': [
             BreadCrumb(team, 'teams:dashboard', team.slug),
             BreadCrumb(_('Settings'), 'teams:settings_basic', team.slug),
             BreadCrumb(_('Projects')),
         ],
-    })
+    }
+
+    if form_name:
+        return settings_projects_form(request, team, form_name, projects, page)
+
+    if not form_name and request.is_ajax():
+        response_renderer = AJAXResponseRenderer(request)
+        response_renderer.replace(
+            '#project-list-all',
+            'future/teams/settings/project-list.html',
+            context
+        )
+        return response_renderer.render()
+
+    return render(request, "future/teams/settings/projects.html", context)
+
+def settings_projects_form(request, team, form_name, projects, page):
+    if form_name == 'add':
+        FormClass = forms.ProjectForm
+        form_message = _('Project added')
+    elif form_name == 'edit':
+        FormClass = forms.EditProjectForm
+        form_message = _('Project updated')
+    elif form_name == 'delete':
+        FormClass = forms.DeleteProjectForm
+        form_message = _('Project deleted')
+
+    response_renderer = AJAXResponseRenderer(request)
+
+    if request.method == 'POST':
+        try:
+            form = FormClass(team, data=request.POST)
+        except Exception as e:
+            logger.error(e, exc_info=True)
+        if form.is_valid():
+            form.save()
+            messages.success(request, form_message)
+            response_renderer.reload_page()
+            return response_renderer.render()
+    else:
+        try:
+            form = FormClass(team)
+        except Exception as e:
+            logger.error(e, exc_info=True)
+
+    # TODO: add modal templates, context
+    template_name = 'future/teams/settings/forms/project-{}.html'.format(form_name)
+    context = {'form': form, 'team': team}
+
+    response_renderer.show_modal(template_name, context)
+    return response_renderer.render()
 
 @team_settings_view
 def edit_project(request, team, project_slug):
