@@ -1351,7 +1351,7 @@ class InviteForm(forms.Form):
 class ProjectForm(forms.ModelForm):
     class Meta:
         model = Project
-        fields = ('name', 'description', 'workflow_enabled')
+        fields = ('name', 'description')
 
     def __init__(self, team, data=None, **kwargs):
         super(ProjectForm, self).__init__(data, **kwargs)
@@ -1359,6 +1359,9 @@ class ProjectForm(forms.ModelForm):
 
     def clean_name(self):
         name = self.cleaned_data['name']
+        if len(name) >= 255:
+            raise forms.ValidationError(
+                _(u"Name is too long; Max Length is 255 characters"))
 
         same_name_qs = self.team.project_set.filter(slug=pan_slugify(name))
         if self.instance.id is not None:
@@ -1368,6 +1371,14 @@ class ProjectForm(forms.ModelForm):
             raise forms.ValidationError(
                 _(u"There's already a project with this name"))
         return name
+
+    def clean_description(self):
+        description = self.cleaned_data['description']
+        if len(description) >= 2048:
+            raise forms.ValidationError(
+                    _(u"Description is too long; Max length is 2048 characters"))
+
+        return description
 
     def save(self):
         project = super(ProjectForm, self).save(commit=False)
@@ -1391,11 +1402,19 @@ class EditProjectForm(forms.Form):
 
     def clean(self):
         if self.cleaned_data.get('name'):
-            self.check_duplicate_name()
+            self.check_name()
+        if self.cleaned_data.get('description'):
+            self.check_description()
         return self.cleaned_data
 
-    def check_duplicate_name(self):
+    def check_name(self):
         name = self.cleaned_data['name']
+
+        if len(name) >= 255:
+            self._errors['name'] = self.error_class([
+                _(u"Name is too long; Max Length is 255 characters")
+            ])
+            del self.cleaned_data['name']
 
         same_name_qs = (
             self.team.project_set
@@ -1408,6 +1427,15 @@ class EditProjectForm(forms.Form):
                 _(u"There's already a project with this name")
             ])
             del self.cleaned_data['name']
+
+    def check_description(self):
+        description = self.cleaned_data['description']
+
+        if len(description) >= 2048:
+            self._errors['description'] = self.error_class([
+                _(u"Name is too long; Max Length is 255 characters")
+            ])
+            del self.cleaned_data['description']
 
     def save(self):
         try:
