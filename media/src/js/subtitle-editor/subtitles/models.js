@@ -128,7 +128,7 @@ var angular = angular || null;
                 return true;
             if ((type == "characterRate" || type == undefined) && (this.characterRate() > SubtitleSoftLimits.cps))
                 return true;
-            if ((type == "timing" || type == undefined) && ((this.startTime > -1) && (this.endTime > -1) && (this.endTime - this.startTime < SubtitleSoftLimits.timing)))
+            if ((type == "timing" || type == undefined) && ((this.startTime > -1) && (this.endTime > -1) && (this.endTime - this.startTime < SubtitleSoftLimits.minDuration)))
                 return true;
             if (type == "longline" || type == undefined) {
                 var counts = this.characterCountPerLine();

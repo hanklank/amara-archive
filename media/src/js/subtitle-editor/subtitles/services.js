@@ -353,7 +353,7 @@ var angular = angular || null;
 
         warningMessages.minDuration = interpolate(gettext(
                     'Briefly displayed subtitles are hard to read; the duration should be more than %(milliseconds)s.'),
-                {milliseconds: format_ms(EditorData.softLimits.minDuration)}, true);
+                {milliseconds: format_ms(EditorData.softLimits.min_duration)}, true);
 
         warningMessages.cps = interpolate(gettext(
                     "Reading rate shouldn't exceed %(count)s characters / sec; lengthen duration, reduce text or split the subtitle."),

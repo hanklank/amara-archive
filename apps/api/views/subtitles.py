@@ -370,13 +370,16 @@ class SubtitleLanguageSerializer(serializers.Serializer):
     is_primary_audio_language = serializers.BooleanField(required=False)
     is_rtl = serializers.BooleanField(read_only=True)
     is_translation = serializers.SerializerMethodField()
-    soft_limit_lines = serializers.IntegerField(required=False, allow_null=True)
-    soft_limit_min_duration = serializers.IntegerField(required=False,
-                                                       allow_null=True)
-    soft_limit_max_duration = serializers.IntegerField(required=False,
-                                                       allow_null=True)
-    soft_limit_cps = serializers.IntegerField(required=False, allow_null=True)
-    soft_limit_cpl = serializers.IntegerField(required=False, allow_null=True)
+    soft_limit_lines = serializers.IntegerField(
+        required=False, min_value=1, allow_null=True)
+    soft_limit_min_duration = serializers.IntegerField(
+        required=False, min_value=1, allow_null=True)
+    soft_limit_max_duration = serializers.IntegerField(
+        required=False, min_value=1, allow_null=True)
+    soft_limit_cps = serializers.IntegerField(
+        required=False, min_value=1, allow_null=True)
+    soft_limit_cpl = serializers.IntegerField(
+        required=False, min_value=1, allow_null=True)
     published = serializers.BooleanField(read_only=True,
                                          source='has_public_version')
     original_language_code = serializers.SerializerMethodField()
