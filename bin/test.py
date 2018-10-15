@@ -92,6 +92,7 @@ class AmaraPlugin(object):
     def pytest_runtest_teardown(self, item, nextitem):
         self.patcher.reset_mocks()
         get_redis_connection("default").flushdb()
+        get_redis_connection("storage").flushdb()
 
     def pytest_unconfigure(self, config):
         self.patcher.unpatch_functions()
@@ -125,7 +126,7 @@ class AmaraPlugin(object):
 
     @pytest.fixture
     def redis_connection(self):
-        return get_redis_connection('default')
+        return get_redis_connection('storage')
 
 class AmaraGUITestsPlugin(object):
     def __init__(self):
