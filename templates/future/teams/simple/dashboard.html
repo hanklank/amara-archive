@@ -1,5 +1,5 @@
 {% extends "future/teams/base.html" %}
-{% load i18n %}
+{% load i18n teams_tags %}
 {% block body-extra %} class="dashboard"{% endblock %}
 {% block content %}
 <main id="dashboard" class="pageContent">
@@ -20,19 +20,23 @@
     </div>
   </section>
 
-  {% if dashboard_history %}
   <section class="pageSection">
     <div class="container">
       <div class="row">
         <div class="col-xs-12">
-          <div id="assignments_history" class="content">
-            {% include "future/teams/simple/subtitling_history.html" with histories=dashboard_history %}
-          </div>
+          <header class="dashboardHeader">
+            <h2>{% trans "Subtitling history" %}</h2>
+            {% if member_history %}<a class="small" href="{{ member_profile_url }}">{% trans "See all" %}</a>{% endif %}
+          </header>
+          {% if member_history %}
+          {% include member_history_template %}
+          {% else %}
+          <div class="zero-state">{% trans "No subtitling history yet." %}</div>
+          {% endif %}
         </div>
       </div>
     </div>
   </section>
-  {% endif %}
 
   <section class="pageSection">
     <div class="container">

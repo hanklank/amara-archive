@@ -44,12 +44,15 @@ from collections import namedtuple
 
 from django.urls import reverse
 from django.shortcuts import render
+from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.utils.translation import ungettext, ugettext as _
 
+from videos.models import Video
 from subtitles.models import SubtitleLanguage
 from teams import experience
 from utils.behaviors import DONT_OVERRIDE
+from utils.pagination import AmaraPaginatorFuture
 from utils.text import fmt
 
 class TeamWorkflow(object):
@@ -74,6 +77,7 @@ class TeamWorkflow(object):
       All workflows should allow the user to change membership_policy and
       video_policy in their workflow settings page.
     """
+
     def __init__(self, team):
         self.team = team
 
@@ -245,6 +249,30 @@ class TeamWorkflow(object):
               .order_by('-id'))
         page_data['videos']= qs[:5]
         return render(request, 'new-teams/language-page.html', page_data)
+
+    def fetch_member_history(self, user, query=None):
+        """
+        Fetch the member subtitling history data for the dashboard/profile
+        page
+
+        This method should return a queryset of items to display.  The items
+        can be any django model.  They will get rendered by the template in
+        the member_history_template attribute.
+        """
+        member = self.team.get_member(user)
+        qs = member.teamsubtitlescompleted_set.all().order_by('-id')
+        if query:
+            qs = qs.filter(video__in=Video.objects.search(query))
+        return qs
+
+    member_history_template = 'future/teams/member-subtitling-history.html'
+    """
+    Template that can render the results from member_history.  It will be
+    passed the following variables:
+        - team: Team the history is for
+        - user: User the history is for
+        - member_history: Single page from the queryset returned by fetch_member_history()
+    """
 
     def get_exerience_column_label(self):
         """
