@@ -4095,6 +4095,7 @@ class TeamSubtitlesCompleted(models.Model):
     video = models.ForeignKey(Video)
     language_code = models.CharField(max_length=16,
                                      choices=translation.ALL_LANGUAGE_CHOICES)
+    created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = [
