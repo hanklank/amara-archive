@@ -570,7 +570,14 @@ def member_profile(request, team, username):
         member = TeamMember.objects.get(team=team, user=user)
     except (User.DoesNotExist, TeamMember.DoesNotExist):
         raise Http404
-    return team.new_workflow.member_view(request, team, member)
+
+    team.new_workflow.add_experience_to_members([member])
+
+    return render(request, 'future/teams/members/profile.html', {
+        'team': team,
+        'user': user,
+        'member': member
+    })
 
 @team_view
 def add_members(request, team):
