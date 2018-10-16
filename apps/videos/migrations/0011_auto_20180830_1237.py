@@ -7,7 +7,7 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('videos', '0009_video_search_text'),
+        ('videos', '0010_merge_20181012_1358'),
     ]
 
     operations = [
