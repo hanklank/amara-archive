@@ -67,10 +67,16 @@
       {% endif %}
     </dl>
 
-    <div class="memberProfile-actions">
-      <a class="button cta block" href="{% url "profiles:profile" user.username %}"><span class="fas fa-eye"></span> {% trans "View User Profile" %}</a>
-      <a class="button cta block" href="{% url "messages:new"  %}?user={{ user.username }}"><span class="fas fa-envelope"></span> {% trans "Send Message" %}</a>
-    </div>
+    <ul class="memberProfile-actions blockButtonList">
+      <li><a class="button cta blockLeft" href="{% url "profiles:profile" user.username %}"><span class="fas fa-eye"></span> {% trans "View User Profile" %}</a></li>
+      <li><a class="button cta blockLeft" href="{% url "messages:new"  %}?user={{ user.username }}"><span class="fas fa-envelope"></span> {% trans "Send Message" %}</a></li>
+      {% if enabled_forms.role %}
+      <li><a class="button cta blockLeft ajaxLink" href="?form=role"><span class="fas fa-user-edit"></span> {% trans "Edit role" %}</a></li>
+      {% endif %}
+      {% if enabled_forms.remove %}
+      <li><a class="button cta blockLeft ajaxLink" href="?form=remove"><span class="fas fa-trash"></span> {% trans "Remove member" %}</a></li>
+      {% endif %}
+    </ul>
 
   </div>
 </section>

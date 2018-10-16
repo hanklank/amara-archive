@@ -284,9 +284,11 @@ def members_public(request, slug):
     }
     return render(request, 'future/teams/members/members.html', context)
 
-def manage_members_form(request, team, form_name, members, page):
+def manage_members_form(request, team, form_name, members, page=None,
+                        selection=None):
     try:
-        selection = request.GET['selection'].split('-')
+        if selection is None:
+            selection = request.GET['selection'].split('-')
     except StandardError:
         return HttpResponseBadRequest()
     if form_name == 'role':
@@ -296,15 +298,18 @@ def manage_members_form(request, team, form_name, members, page):
     else:
         raise Http404()
 
-    # Don't count the current user for the all_selected var, since they cannot
-    # select their own entry
-    enabled_checkbox_count = len([
-        member for member in page
-        if member.user_id != request.user.id
-    ])
+    if page is None:
+        all_selected = False
+    else:
+        # Don't count the current user for the all_selected var, since they cannot
+        # select their own entry
+        enabled_checkbox_count = len([
+            member for member in page
+            if member.user_id != request.user.id
+        ])
+        all_selected = len(selection) >= enabled_checkbox_count
 
     is_owner = team.is_owner(request.user)
-    all_selected = len(selection) >= enabled_checkbox_count
     # filter out the current user from the full queryset
     members = members.exclude(user=request.user)
 
@@ -328,6 +333,7 @@ def manage_members_form(request, team, form_name, members, page):
                              is_owner=is_owner, team=team)
         except Exception as e:
             logger.error(e, exc_info=True)
+            return HttpResponseBadRequest()
 
     template_name = 'future/teams/members/forms/{}.html'.format(form_name)
     modal_context.update({
@@ -344,6 +350,10 @@ def manage_members_form(request, team, form_name, members, page):
     response_renderer = AJAXResponseRenderer(request)
     response_renderer.show_modal(template_name, modal_context)
     return response_renderer.render()
+
+def manage_members_form_single_user(request, team, form_name, member):
+    return manage_members_form(request, team, form_name, team.members,
+                               selection=[member.id])
 
 @with_old_view(old_views.applications)
 @team_view
@@ -563,6 +573,8 @@ def language_page(request, team, language_code):
 
 @team_view
 def member_profile(request, team, username):
+    form_name = request.GET.get('form', None)
+
     if team.is_old_style():
         raise Http404
     try:
@@ -571,12 +583,24 @@ def member_profile(request, team, username):
     except (User.DoesNotExist, TeamMember.DoesNotExist):
         raise Http404
 
+    enabled_forms = {}
+    if request.user != user:
+        if permissions.can_edit_member(team, request.user):
+            enabled_forms['role'] = True
+        if permissions.can_remove_member(team, request.user):
+            enabled_forms['remove'] = True
+
+    if form_name and form_name in enabled_forms:
+        return manage_members_form_single_user(
+            request, team, form_name, member)
+
     team.new_workflow.add_experience_to_members([member])
 
     return render(request, 'future/teams/members/profile.html', {
         'team': team,
         'user': user,
-        'member': member
+        'member': member,
+        'enabled_forms': enabled_forms,
     })
 
 @team_view
