@@ -274,7 +274,7 @@ class TeamWorkflow(object):
         - member_history: Single page from the queryset returned by fetch_member_history()
     """
 
-    def get_exerience_column_label(self):
+    def get_experience_column_label(self):
         """
         Team members page label for the experience coluumn.
         """
@@ -293,7 +293,7 @@ class TeamWorkflow(object):
         """
         subtitles_completed = experience.get_subtitles_completed(page)
         for member, count in zip(page, subtitles_completed):
-            member.experience = TeamExperience(_('Subtitles completed'), count)
+            member.experience_count = count
 
     # map type codes to subclasses
     _type_code_map = {}
@@ -362,7 +362,7 @@ Attributes:
     url: URL for the page
 """
 
-TeamExperience = namedtuple('TeamExperience', 'label count')
+TeamExperience = namedtuple('TeamExperience', 'label icon count')
 """Used to list experience counts on the members directory
 
 By default, we show subtitles completed, but other workflows might want to

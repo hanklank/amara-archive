@@ -53,17 +53,17 @@
       </dd>
 
       {% if member.experience_extra %}
-      <dt>{{ member.experience.label }} ({{ member.experience.count}}):</dt>
+      <dt>{{ team.new_workflow.get_experience_column_label }} ({{ member.experience_count}}):</dt>
       <dd>
-        <ul class="bullets">
+      <ul>
           {% for experience in member.experience_extra %}
-          <li>{{ experience.label }}: {{ experience.count }}</li>
+          <li><span class="icon {{ experience.icon }}"></span> {% blocktrans with count=experience.count items=experience.label %}{{ count }} {{ items }}{% endblocktrans %}</li>
           {% endfor %}
         </ul>
       </dd>
       {% else %}
-      <dt>{{ member.experience.label }}:</dt>
-      <dd>{{ member.experience.count }}</dd>
+      <dt>{{ team.new_workflow.get_experience_column_label }}:</dt>
+      <dd>{{ member.experience_count }}</dd>
       {% endif %}
     </dl>
 
