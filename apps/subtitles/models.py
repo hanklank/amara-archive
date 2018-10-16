@@ -52,8 +52,15 @@ from utils.text import fmt
 from utils import translation
 
 WRITELOCK_EXPIRATION = 30 # 30 seconds
+DEFAULT_SOFT_LIMIT_LINES = 2
+DEFAULT_SOFT_LIMIT_CPL = 42
+DEFAULT_SOFT_LIMIT_CPS = 21
+DEFAULT_SOFT_LIMIT_MIN_DURATION = 700
+DEFAULT_SOFT_LIMIT_MAX_DURATION = 7000
 
 logger = logging.getLogger(__name__)
+
+
 
 # Utility functions -----------------------------------------------------------
 def mapcat(fn, iterable):
@@ -446,11 +453,16 @@ class SubtitleLanguage(models.Model):
         warnings if the user exceeds them
         """
         return {
-            'lines': self.soft_limit_lines or 2,
-            'cpl': self.soft_limit_cpl or 42,
-            'cps': self.soft_limit_cps or 21,
-            'min_duration': self.soft_limit_min_duration or 700,
-            'max_duration': self.soft_limit_max_duration or 7000,
+            'lines': (self.soft_limit_lines or
+                      DEFAULT_SOFT_LIMIT_LINES),
+            'cpl': (self.soft_limit_cpl or
+                    DEFAULT_SOFT_LIMIT_CPL),
+            'cps': (self.soft_limit_cps or
+                    DEFAULT_SOFT_LIMIT_CPS),
+            'min_duration': (self.soft_limit_min_duration or
+                             DEFAULT_SOFT_LIMIT_MIN_DURATION),
+            'max_duration': (self.soft_limit_max_duration or
+                             DEFAULT_SOFT_LIMIT_MAX_DURATION),
         }
 
     # Writelocking
