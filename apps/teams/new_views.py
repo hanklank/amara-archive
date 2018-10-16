@@ -82,6 +82,7 @@ logger = logging.getLogger('teams.views')
 ACTIONS_PER_PAGE = 20
 VIDEOS_PER_PAGE = 12
 VIDEOS_PER_PAGE_MANAGEMENT = 20
+HISTORY_PER_PAGE_PROFILE = 20
 MEMBERS_PER_PAGE = 10
 PROJECTS_PER_PAGE = 10
 
@@ -573,8 +574,6 @@ def language_page(request, team, language_code):
 
 @team_view
 def member_profile(request, team, username):
-    form_name = request.GET.get('form', None)
-
     if team.is_old_style():
         raise Http404
     try:
@@ -582,26 +581,45 @@ def member_profile(request, team, username):
         member = TeamMember.objects.get(team=team, user=user)
     except (User.DoesNotExist, TeamMember.DoesNotExist):
         raise Http404
+    team.new_workflow.add_experience_to_members([member])
 
+    # Handle the management forms
+    form_name = request.GET.get('form', None)
     enabled_forms = {}
     if request.user != user:
         if permissions.can_edit_member(team, request.user):
             enabled_forms['role'] = True
         if permissions.can_remove_member(team, request.user):
             enabled_forms['remove'] = True
-
     if form_name and form_name in enabled_forms:
         return manage_members_form_single_user(
             request, team, form_name, member)
 
-    team.new_workflow.add_experience_to_members([member])
-
-    return render(request, 'future/teams/members/profile.html', {
+    # Handle the history table
+    history_form = forms.MemberProfileSearch(get_data=request.GET)
+    if history_form.is_valid():
+        query = history_form.cleaned_data['q']
+    else:
+        query = None
+    member_history = team.new_workflow.fetch_member_history(user, query)
+    paginator = AmaraPaginatorFuture(member_history, HISTORY_PER_PAGE_PROFILE)
+    context = {
         'team': team,
         'user': user,
         'member': member,
         'enabled_forms': enabled_forms,
-    })
+        'paginator': paginator,
+        'page': paginator.get_page(request),
+        'history_filters': history_form,
+    }
+
+    if request.is_ajax():
+        renderer = AJAXResponseRenderer(request)
+        renderer.replace('#member-history',
+                         'future/teams/members/profile-history.html', context)
+        return renderer.render()
+    else:
+        return render(request, 'future/teams/members/profile.html', context)
 
 @team_view
 def add_members(request, team):

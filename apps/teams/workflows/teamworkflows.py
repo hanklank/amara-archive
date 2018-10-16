@@ -46,7 +46,7 @@ from django.urls import reverse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
-from django.utils.translation import ungettext, ugettext as _
+from django.utils.translation import ungettext, ugettext as _, ugettext_lazy
 
 from videos.models import Video
 from subtitles.models import SubtitleLanguage
@@ -273,6 +273,8 @@ class TeamWorkflow(object):
         - user: User the history is for
         - member_history: Single page from the queryset returned by fetch_member_history()
     """
+
+    member_history_header = ugettext_lazy('Completed Subtitles')
 
     def get_experience_column_label(self):
         """

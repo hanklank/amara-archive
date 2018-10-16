@@ -2712,3 +2712,7 @@ class MoveVideosForm(VideoManagementForm):
                 count=self.video_policy_errors,
                 team=self.cleaned_data['new_team']))
         return messages
+
+class MemberProfileSearch(FiltersForm):
+    q = SearchField(label=_('Search by video'), required=False,
+                    widget=ContentHeaderSearchBar)

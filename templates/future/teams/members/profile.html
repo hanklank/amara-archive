@@ -77,7 +77,14 @@
       <li><a class="button cta blockLeft ajaxLink" href="?form=remove"><span class="fas fa-trash"></span> {% trans "Remove member" %}</a></li>
       {% endif %}
     </ul>
-
   </div>
+</section>
+<section>
+  <div class="contentHeader">
+    <div class="contentHeader-title">{{ team.new_workflow.member_history_header }}</div>
+    {{ history_filters.q }}
+  </div>
+
+  <div id="member-history">{% include "future/teams/members/profile-history.html" %}</div>
 </section>
 {% endblock %}

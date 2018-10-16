@@ -1,5 +1,11 @@
 {% load i18n ui %}
+{% if member_history %}
 <div class="listView memberSubtitlesCompleted">
+  {% if show_history_headers %}
+  <div class="listView-header memberSubtitlesCompleted-video">{% trans "Video" %}</div>
+  <div class="listView-header memberSubtitlesCompleted-language">{% trans "Language" %}</div>
+  <div class="listView-header memberSubtitlesCompleted-date">{% trans "Completed" %}</div>
+  {% endif %}
   {% for completed_subtitles in member_history %}
   <div class="memberSubtitlesCompleted-video">
     <a href="{{ completed_subtitles.video.get_absolute_url }}?team={{ team.slug }}">{{ completed_subtitles.video.title_display }}</a>
@@ -8,3 +14,6 @@
   <div class="memberSubtitlesCompleted-date">{{ completed_subtitles.created|date }}</div>
   {% endfor %}
 </div>
+{% else %}
+<div class="zero-state">{% trans "No subtitling history yet." %}</div>
+{% endif %}
