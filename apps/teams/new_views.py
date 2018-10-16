@@ -1316,6 +1316,7 @@ def settings_projects(request, team):
         'team': team,
         'projects': projects,
         'filters_form': filters_form,
+        'settings_tab': 'projects',
         'paginator': paginator,
         'page': page,
         'next': next_page,
