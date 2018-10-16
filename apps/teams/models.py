@@ -1135,7 +1135,7 @@ class Project(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(blank=True)
 
-    name = models.CharField(max_length=255, null=False)
+    name = models.CharField(max_length=50, null=False)
     description = models.TextField(blank=True, null=True, max_length=2048)
     guidelines = models.TextField(blank=True, null=True, max_length=2048)
 

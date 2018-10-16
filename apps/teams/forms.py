@@ -1361,9 +1361,9 @@ class ProjectForm(forms.ModelForm):
 
     def clean_name(self):
         name = self.cleaned_data['name']
-        if len(name) >= 255:
+        if len(name) >= 50:
             raise forms.ValidationError(
-                _(u"Name is too long; Max Length is 255 characters"))
+                _(u"Name is too long; Max length is 50 characters"))
 
         same_name_qs = self.team.project_set.filter(slug=pan_slugify(name))
         if self.instance.id is not None:
@@ -1412,9 +1412,9 @@ class EditProjectForm(forms.Form):
     def check_name(self):
         name = self.cleaned_data['name']
 
-        if len(name) >= 255:
+        if len(name) >= 50:
             self._errors['name'] = self.error_class([
-                _(u"Name is too long; Max Length is 255 characters")
+                _(u"Name is too long; Max length is 50 characters")
             ])
             del self.cleaned_data['name']
 
@@ -1435,7 +1435,7 @@ class EditProjectForm(forms.Form):
 
         if len(description) >= 2048:
             self._errors['description'] = self.error_class([
-                _(u"Name is too long; Max Length is 255 characters")
+                _(u"Description is too long; Max length is 2048 characters")
             ])
             del self.cleaned_data['description']
 
