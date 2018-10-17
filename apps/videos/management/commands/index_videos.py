@@ -31,7 +31,10 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         batch_size = options['batch-size']
-        rate_limit = float(options['rate-limit'])
+        if options['rate-limit']:
+            rate_limit = float(options['rate-limit'])
+        else:
+            rate_limit = None
         start_time = time.time()
         last_id = -1
         count = 0

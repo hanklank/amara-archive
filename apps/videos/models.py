@@ -454,10 +454,12 @@ class Video(models.Model):
         signals.video_deleted.send(sender=self, user=user)
         super(Video, self).delete()
 
-    def update_search_index(self):
+    def update_search_index(self, commit=True):
         """Update this video's search index text."""
 
         self.search_text = self.calc_search_text(MAX_SEACH_TEXT_LENGTH)
+        if commit:
+            self.save()
 
     def calc_search_text(self, max_length=None):
         parts = [
