@@ -1,0 +1,86 @@
+{% extends "future/teams/settings/base.html" %}
+{% load i18n forms modal captureas %}
+
+{% block settings_form %}
+<form>
+<div class="contentHeader">
+  <div class="contentHeader-title">{% trans 'Accounts' %}</div>
+  {{ forms.search }}
+  <button data-target="#add-account" class="contentHeader-addButton modal-show">
+    <span class="fa fa-plus"></span>
+    <span class="contentHeader-addButtonText">{% trans 'Add account' %}</span>
+  </button>
+</div>
+</form>
+
+{% captureas modal_title %}{% trans "Add account" %}{% endcaptureas %}
+{% startmodal "add-account" modal_title %}
+  <div class="modal-tabs">
+    <ul class="nav nav-tabs">
+      <li class="active">
+        <a href="#youtube" data-toggle="tab">{% trans "YouTube" %}</a>
+      </li>
+      <li>
+        <a href="#vimeo" data-toggle="tab">{% trans "Vimeo" %}</a>
+      </li>
+      <li>
+        <a href="#kaltura" data-toggle="tab">{% trans "Kaltura" %}</a>
+      </li>
+      <li>
+        <a href="#brightcove" data-toggle="tab">{% trans "Brightcove" %}</a>
+      </li>
+    </ul>
+  <div class="modal-content">
+      <div class="tab-content">
+        <div id="youtube" class="tab-pane active">
+          <p>{% trans "Click the button below to start the authentication process for adding a YouTube account to your team." %}</p>
+          <form class="ajaxForm" method="post" action="" class="">
+            {% csrf_token %}
+            <input type="hidden" value="username" name="modalTab"/>
+            <div class="text-right">
+              <button class="button borderless modal-close">{% trans "Cancel" %}</button>
+            </div>
+          </form>
+        </div>
+
+        <div id="vimeo" class="tab-pane">
+          <p>{% trans "Click the button below to start the authentication process for adding a Vimeo account to your team." %}</p>
+          <form class="ajaxForm" method="post" action="" class="">
+            {% csrf_token %}
+            <input type="hidden" value="username" name="modalTab"/>
+            <div class="text-right">
+              <button class="button borderless modal-close">{% trans "Cancel" %}</button>
+            </div>
+          </form>
+        </div>
+
+        <div id="kaltura" class="tab-pane">
+          <span class="h4">{% trans "Kaltura acount details" %}</span>
+          <form class="ajaxForm" method="post" action="" class="">
+            {% csrf_token %}
+            <input type="hidden" value="username" name="modalTab"/>
+            <div class="text-right">
+              <button class="button borderless modal-close">{% trans "Cancel" %}</button>
+              <button type="submit" class="button cta"> {% trans 'Save' %}</button>
+            </div>
+          </form>
+        </div>
+
+        <div id="brightcove" class="tab-pane">
+          <span class="h4">{% trans "Brightcove acount details" %}</span>
+          <form class="ajaxForm" method="post" action="" class="">
+            {% csrf_token %}
+            <input type="hidden" value="username" name="modalTab"/>
+            <div class="text-right">
+              <button class="button borderless modal-close">{% trans "Cancel" %}</button>
+              <button type="submit" class="button cta"> {% trans 'Save' %}</button>
+            </div>
+          </form>
+        </div>
+
+      </div> <!-- close .tab-content -->
+    </div> <!-- close .modal-content -->
+  </div> <!-- close .modal-tabs -->
+{% endmodal %}
+
+{% endblock %}

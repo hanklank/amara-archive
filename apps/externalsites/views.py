@@ -86,11 +86,14 @@ def team_settings_tab(request, team):
     if team.is_old_style():
         template_name = 'externalsites/team-settings-tab.html'
     else:
-        template_name = 'externalsites/new-team-settings-tab.html'
+        # template_name = 'externalsites/new-team-settings-tab.html'
+        template_name = 'future/teams/settings/integrations.html'
 
     return render(request, template_name, {
         'team': team,
         'forms': formset,
+        'team_nav': 'settings',
+        'settings_tab': 'integrations',
         'breadcrumbs': [
             BreadCrumb(team, 'teams:dashboard', team.slug),
             BreadCrumb(_('Settings'), 'teams:settings_basic', team.slug),
