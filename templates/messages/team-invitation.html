@@ -6,7 +6,7 @@
 {% if note %}<p>{{ note }}</p>{% endif %}
 
 {% universal_url "teams:accept_invite" invite_pk=invite.pk as accept_link %}
-<p>{% blocktrans %}Accept this invitation and join the team: {{ accept_link }}{% endblocktrans %}</p>
+<p>{% blocktrans %}<a href="{{ accept_link}}">Accept this invitation and join the team</a>{% endblocktrans %}</p>
 
 {% universal_url "teams:deny_invite" invite_pk=invite.pk as decline_link %}
-<p>{% blocktrans %}Decline this invitation: {{ decline_link }}{% endblocktrans %}</p>
+<p>{% blocktrans %}<a href="{{ decline_link }}">Decline this invitation</a>{% endblocktrans %}</p>
