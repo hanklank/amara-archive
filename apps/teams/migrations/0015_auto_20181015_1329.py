@@ -9,7 +9,7 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('teams', '0013_merge_20181010_0956'),
+        ('teams', '0014_auto_20181017_1433'),
     ]
 
     operations = [
@@ -18,10 +18,5 @@ class Migration(migrations.Migration):
             name='created',
             field=models.DateTimeField(auto_now_add=True, default=django.utils.timezone.now),
             preserve_default=False,
-        ),
-        migrations.AlterField(
-            model_name='team',
-            name='membership_policy',
-            field=models.IntegerField(choices=[(4, 'Open'), (1, 'Application'), (3, 'Invitation by any team member'), (2, 'Invitation by manager'), (5, 'Invitation by admin')], default=5, verbose_name='membership policy'),
         ),
     ]
