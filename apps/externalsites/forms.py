@@ -122,7 +122,7 @@ class AddVimeoAccountForm(forms.Form):
     add_button = SubmitButtonField(
         label=ugettext_lazy('Add Vimeo account'),
         required=False,
-        widget=SubmitButtonWidget(attrs={'class': 'small'}))
+        widget=SubmitButtonWidget(attrs={'class': 'button cta'}))
 
     def __init__(self, owner, data=None, **kwargs):
         super(AddVimeoAccountForm, self).__init__(data=data, **kwargs)
@@ -147,7 +147,7 @@ class AddYoutubeAccountForm(forms.Form):
     add_button = SubmitButtonField(
         label=ugettext_lazy('Add YouTube account'),
         required=False,
-        widget=SubmitButtonWidget(attrs={'class': 'small'}))
+        widget=SubmitButtonWidget(attrs={'class': 'button cta'}))
 
     def __init__(self, owner, data=None, **kwargs):
         super(AddYoutubeAccountForm, self).__init__(data=data, **kwargs)

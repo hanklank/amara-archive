@@ -34,9 +34,9 @@
       <div class="tab-content">
         <div id="youtube" class="tab-pane active">
           <p>{% trans "Click the button below to start the authentication process for adding a YouTube account to your team." %}</p>
-          <form class="ajaxForm" method="post" action="" class="">
+          <form method="POST" action="">
             {% csrf_token %}
-            <input type="hidden" value="username" name="modalTab"/>
+            {{ forms.forms.add_youtube.add_button }}
             <div class="text-right">
               <button class="button borderless modal-close">{% trans "Cancel" %}</button>
             </div>
@@ -45,9 +45,9 @@
 
         <div id="vimeo" class="tab-pane">
           <p>{% trans "Click the button below to start the authentication process for adding a Vimeo account to your team." %}</p>
-          <form class="ajaxForm" method="post" action="" class="">
+          <form method="POST" action="">
             {% csrf_token %}
-            <input type="hidden" value="username" name="modalTab"/>
+            {{ forms.forms.add_vimeo.add_button }}
             <div class="text-right">
               <button class="button borderless modal-close">{% trans "Cancel" %}</button>
             </div>
