@@ -1979,8 +1979,8 @@ class ChangeMemberRoleForm(ManagementForm):
                 (TeamMember.ROLE_MANAGER, _('Manager')),
            ], initial='', label=_('Member Role'))
 
-    projects = MultipleProjectField(label=_('Project'), null_label=_('No change'), required=False)
-    languages = MultipleLanguageField(label=_('Subtitle language(s)'), options='null all', required=False)
+    projects = MultipleProjectField(label=_('Projects'), null_label=_('No change'), required=False)
+    languages = MultipleLanguageField(label=_('Languages'), options='null all', required=False)
 
     def __init__(self, user, queryset, selection, all_selected,
                  data=None, files=None, is_owner=False, team=None, **kwargs):
@@ -1989,7 +1989,6 @@ class ChangeMemberRoleForm(ManagementForm):
         self.team = team
         super(ChangeMemberRoleForm, self).__init__(
             queryset, selection, all_selected, data=data, files=files)
-        self.fields['projects'].setup(team)
 
     def clean(self):
         cleaned_data = super(ChangeMemberRoleForm, self).clean()
@@ -2002,6 +2001,16 @@ class ChangeMemberRoleForm(ManagementForm):
         return cleaned_data
 
     def setup_fields(self):
+        if self.team.has_projects:
+            self.fields['projects'].setup(self.team)
+        else:
+            self.fields['role'].choices = [
+                ('', _("Don't change")),
+                (TeamMember.ROLE_CONTRIBUTOR, _('Contributor')),
+                (TeamMember.ROLE_PROJ_LANG_MANAGER, _('Language Manager')),
+                (TeamMember.ROLE_MANAGER, _('Manager'))]
+            del self.fields['projects']
+
         if self.is_owner:
             self.fields['role'].choices += [(TeamMember.ROLE_ADMIN, _('Admin'))]
             self.fields['role'].choices += [(TeamMember.ROLE_OWNER, _('Owner'))]
