@@ -64,6 +64,24 @@ class AccountFormHandler(object):
     def handle_get(self, post_data, context):
         pass
 
+def add_youtube_account_url(owner):
+    path = reverse('externalsites:youtube-add-account')
+    if isinstance(owner, Team):
+        return '%s?team_slug=%s' % (path, owner.slug)
+    elif isinstance(owner, User):
+        return '%s?username=%s' % (path, owner.username)
+    else:
+        raise ValueError("Unknown owner type: %s" % owner)
+
+def add_vimeo_account_url(owner):
+    path = reverse('externalsites:vimeo-add-account')
+    if isinstance(owner, Team):
+        return '%s?team_slug=%s' % (path, owner.slug)
+    elif isinstance(owner, User):
+        return '%s?username=%s' % (path, owner.username)
+    else:
+        raise ValueError("Unknown owner type: %s" % owner)
+
 @settings_page
 def team_settings_tab(request, team):
     if request.method == 'POST':
@@ -91,7 +109,9 @@ def team_settings_tab(request, team):
 
     return render(request, template_name, {
         'team': team,
-        'forms': formset,
+        'formset': formset,
+        'add_youtube_url': add_youtube_account_url(team),
+        'add_vimeo_url': add_vimeo_account_url(team),
         'team_nav': 'settings',
         'settings_tab': 'integrations',
         'breadcrumbs': [

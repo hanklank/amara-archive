@@ -5,7 +5,7 @@
 <form>
 <div class="contentHeader">
   <div class="contentHeader-title">{% trans 'Accounts' %}</div>
-  {{ forms.search }}
+  {{ formset.search }}
   <button data-target="#add-account" class="contentHeader-addButton modal-show">
     <span class="fa fa-plus"></span>
     <span class="contentHeader-addButtonText">{% trans 'Add account' %}</span>
@@ -34,9 +34,9 @@
       <div class="tab-content">
         <div id="youtube" class="tab-pane active">
           <p>{% trans "Click the button below to start the authentication process for adding a YouTube account to your team." %}</p>
-          <form method="POST" action="">
+          <form method="POST">
             {% csrf_token %}
-            {{ forms.forms.add_youtube.add_button }}
+            <a href="{{ add_youtube_url }}" class="button cta">{% trans 'Add YouTube account' %}</a>
             <div class="text-right">
               <button class="button borderless modal-close">{% trans "Cancel" %}</button>
             </div>
@@ -45,9 +45,9 @@
 
         <div id="vimeo" class="tab-pane">
           <p>{% trans "Click the button below to start the authentication process for adding a Vimeo account to your team." %}</p>
-          <form method="POST" action="">
+          <form method="POST">
             {% csrf_token %}
-            {{ forms.forms.add_vimeo.add_button }}
+            <a href="{{ add_vimeo_url }}" class="button cta">{% trans 'Add Vimeo account' %}</a>
             <div class="text-right">
               <button class="button borderless modal-close">{% trans "Cancel" %}</button>
             </div>
@@ -55,10 +55,13 @@
         </div>
 
         <div id="kaltura" class="tab-pane">
-          <span class="h4">{% trans "Kaltura acount details" %}</span>
-          <form class="ajaxForm" method="post" action="" class="">
+          <p>
+            <span class="h4">{% trans "Kaltura acount details" %}</span>
+          </p>
+          <form method="POST">
             {% csrf_token %}
-            <input type="hidden" value="username" name="modalTab"/>
+            {% render_field formset.forms.kaltura.partner_id %}
+            {% render_field formset.forms.kaltura.secret %}
             <div class="text-right">
               <button class="button borderless modal-close">{% trans "Cancel" %}</button>
               <button type="submit" class="button cta"> {% trans 'Save' %}</button>
@@ -67,10 +70,14 @@
         </div>
 
         <div id="brightcove" class="tab-pane">
-          <span class="h4">{% trans "Brightcove acount details" %}</span>
-          <form class="ajaxForm" method="post" action="" class="">
+          <p>
+            <span class="h4">{% trans "Brightcove acount details" %}</span>
+          </p>
+          <form method="POST">
             {% csrf_token %}
-            <input type="hidden" value="username" name="modalTab"/>
+            {% render_field formset.forms.brightcovecms.publisher_id %}
+            {% render_field formset.forms.brightcovecms.client_id %}
+            {% render_field formset.forms.brightcovecms.client_secret %}
             <div class="text-right">
               <button class="button borderless modal-close">{% trans "Cancel" %}</button>
               <button type="submit" class="button cta"> {% trans 'Save' %}</button>

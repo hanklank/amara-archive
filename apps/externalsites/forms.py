@@ -329,12 +329,12 @@ class AccountFormset(forms.Form):
         self.make_form('brightcovecms', BrightcoveCMSAccountForm, owner)
         self.make_form('add_youtube', AddYoutubeAccountForm, owner)
         self.make_form('add_vimeo', AddVimeoAccountForm, owner)
-        for account in models.YouTubeAccount.objects.for_owner(owner):
-            name = 'youtube_%s' % account.id
-            self.make_form(name, YoutubeAccountForm, self.admin_user, account)
-        for account in models.VimeoSyncAccount.objects.for_owner(owner):
-            name = 'vimeo_%s' % account.id
-            self.make_form(name, VimeoAccountForm, self.admin_user, account)
+        # for account in models.YouTubeAccount.objects.for_owner(owner):
+        #     name = 'youtube_%s' % account.id
+        #     self.make_form(name, YoutubeAccountForm, self.admin_user, account)
+        # for account in models.VimeoSyncAccount.objects.for_owner(owner):
+        #     name = 'vimeo_%s' % account.id
+        #     self.make_form(name, VimeoAccountForm, self.admin_user, account)
 
     def make_form(self, name, form_class, *args, **kwargs):
         kwargs['prefix'] = name.replace('_', '-')
