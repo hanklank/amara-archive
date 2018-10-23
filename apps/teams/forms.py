@@ -898,12 +898,12 @@ class GeneralSettingsForm(forms.ModelForm):
     square_logo = AmaraImageField(label=_('Team Logo'),
                                   validators=[MaxFileSizeValidator(settings.AVATAR_MAX_SIZE)],
                                   preview_size=(100, 100),
-                                  help_text=_('Recommended size 100 x 100 px'),
+                                  help_text=_('Recommended size 100 x 100 px. Maximum file size 1 MB.'),
                                   required=False)
     logo = AmaraImageField(label=_('Team Banner Image'),
                            validators=[MaxFileSizeValidator(settings.AVATAR_MAX_SIZE)],
                            preview_size=(280, 100),
-                           help_text=_('Recommended size 940 x 235 px'),
+                           help_text=_('Recommended size 940 x 235 px. Maximum file size 1 MB.'),
                            required=False)
     
     # need to use a different field name because the choices are a little bit
@@ -2599,6 +2599,28 @@ class DeleteVideosForm(VideoManagementForm):
                 self.other_team_duplicate_url_errors),
                                 count=self.other_team_duplicate_url_errors))
         return messages
+
+class DeleteVideosFormSimple(DeleteVideosForm):
+    DELETE_CHOICES = (
+        ('', _('Just remove from team')),
+        ('yes', _('Delete entirely')),
+    )
+    DELETE_HELP_TEXT = (
+        ('', _('Remove the video(s) from team into the public area of '
+               'Amara.  All existing subtitles will remain on site and '
+               'can be edited by any user.')),
+        ('yes', mark_safe(_('Permanently delete the video(s) and all associated '
+                  'subtitles from Amara. '
+                  '<em>Important: </em> this action is irreversible, so use it '
+                  'with care.'))),
+    )
+
+
+    delete = AmaraChoiceField(
+        label='', choices=DELETE_CHOICES,
+        choice_help_text=DELETE_HELP_TEXT, required=False, initial='',
+        widget=AmaraRadioSelect,
+    )
 
 class MoveVideosForm(VideoManagementForm):
     name = 'move'
