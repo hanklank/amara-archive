@@ -10,7 +10,7 @@
   <div class="memberSubtitlesCompleted-video">
     <a href="{{ completed_subtitles.video.get_absolute_url }}?team={{ team.slug }}">{{ completed_subtitles.video.title_display }}</a>
   </div>
-  <div class="memberSubtitlesCompleted-language">{{ completed_subtitles.get_language_code_display }}</div>
+  <div class="memberSubtitlesCompleted-language"><a href="{{ completed_subtitles.get_language_url }}?team={{ team.slug }}">{{ completed_subtitles.get_language_code_display }}</a></div>
   <div class="memberSubtitlesCompleted-date">{{ completed_subtitles.created|date }}</div>
   {% endfor %}
 </div>

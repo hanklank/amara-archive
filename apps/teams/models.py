@@ -4106,3 +4106,9 @@ class TeamSubtitlesCompleted(models.Model):
     def add(cls, member, video, language_code):
         cls.objects.get_or_create(member=member, video=video,
                                   language_code=language_code)
+
+    def get_language_url(self):
+        return reverse('videos:translation_history_legacy', kwargs={
+            'video_id': self.video.video_id,
+            'lang': self.language_code,
+        })
