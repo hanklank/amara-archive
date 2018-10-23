@@ -1003,7 +1003,7 @@ class GeneralSettingsForm(forms.ModelForm):
 
     # subtitle visibility setting are for collab teams only
     def _calc_subtitle_visibility(self):
-        if self.instance.is_collab_team():
+        if self.instance.new_workflow.has_subtitle_visibility_setting:
             if self.instance.collaboration_settings.subtitle_visibility == CollaborationSettings.SUBTITLES_PUBLIC:
                 self.initial['subtitles_public'] = True
                 self.initial['drafts_public'] = True

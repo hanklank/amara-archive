@@ -38,7 +38,7 @@
         <li>
           <a href="{% url "teams:settings_messages" slug=team.slug %}">{% trans "Messages" %}</a>
         </li>
-        {% if team.is_collab_team %}
+        {% if team.new_workflow.has_workflow_settings_page %}
         <li>
           <a href="{% url "teams:settings_workflows" slug=team.slug %}">{% trans "Workflow" %}</a>
         </li>

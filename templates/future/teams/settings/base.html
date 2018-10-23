@@ -15,7 +15,7 @@
               <li{% if settings_tab == "feeds" %} class="active"{% endif %}><a href="{% url "teams:settings_feeds" team.slug %}">{% trans "Feeds" %}</a></li>
               <li{% if settings_tab == "projects" %} class="active"{% endif %}><a href="{% url "teams:settings_projects" team.slug %}">{% trans "Projects" %}</a></li>
 
-              {% if team.is_collab_team %}
+              {% if team.new_workflow.has_workflow_settings_page %}
               <li{% if settings_tab == "workflows" %} class="active"{% endif %}><a href="{% url "teams:settings_workflows" team.slug %}">{% trans "Workflows" %}</a></li>
               {% endif %}
 
