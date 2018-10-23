@@ -1085,8 +1085,14 @@ def manage_videos_context_menu(team, video, enabled_forms):
 
 # Functions to handle the forms on the videos pages
 def get_video_management_forms(team):
+    if team.is_collab_team():
+        delete_form = forms.DeleteVideosForm
+    else:
+        delete_form = forms.DeleteVideosFormSimple
+
     form_list = ManagementFormList([
-        forms.DeleteVideosForm,
+        # forms.DeleteVideosForm,
+        delete_form,
         forms.MoveVideosForm,
         forms.EditVideosForm,
     ])
