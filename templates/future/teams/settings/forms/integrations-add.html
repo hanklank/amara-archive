@@ -46,7 +46,7 @@
         <div id="kaltura" class="tab-pane 
           {% if modal_tab == 'kaltura' %}active{% endif %}">
           <p>
-            <span class="h4">{% trans "Kaltura acount details" %}</span>
+            <span class="h4">{% trans "Kaltura account details" %}</span>
           </p>
           <form class="ajaxForm" method="POST" action="{% url 'externalsites:team-add-external-account' team.slug %}">
             {% csrf_token %}
@@ -56,7 +56,7 @@
             <input type="hidden" value="kaltura" name="modalTab"/>
             <div class="text-right">
               <button class="button borderless modal-close">{% trans "Cancel" %}</button>
-              <button type="submit" class="button cta"> {% trans 'Save' %}</button>
+              <button type="submit" class="button cta"> {% trans 'Save Kaltura account' %}</button>
             </div>
           </form>
         </div>
@@ -64,7 +64,7 @@
         <div id="brightcove" class="tab-pane
           {% if modal_tab == 'brightcove' %}active{% endif %}">
           <p>
-            <span class="h4">{% trans "Brightcove acount details" %}</span>
+            <span class="h4">{% trans "Brightcove account details" %}</span>
           </p>
           <form class="ajaxForm" method="POST" action="{% url 'externalsites:team-add-external-account' team.slug %}">
             {% csrf_token %}
@@ -75,7 +75,7 @@
             <input type="hidden" value="brightcove" name="modalTab"/>
             <div class="text-right">
               <button class="button borderless modal-close">{% trans "Cancel" %}</button>
-              <button type="submit" class="button cta"> {% trans 'Save' %}</button>
+              <button type="submit" class="button cta"> {% trans 'Save Brightcove account' %}</button>
             </div>
           </form>
         </div>

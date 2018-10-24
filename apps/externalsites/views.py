@@ -112,9 +112,6 @@ def team_settings_tab(request, team):
     return render(request, template_name, {
         'team': team,
         'forms': formset,
-        
-        'team_nav': 'settings',
-        'settings_tab': 'integrations',
         'breadcrumbs': [
             BreadCrumb(team, 'teams:dashboard', team.slug),
             BreadCrumb(_('Settings'), 'teams:settings_basic', team.slug),
@@ -122,6 +119,8 @@ def team_settings_tab(request, team):
         ],
 
         # context for futureui integrations settings page
+        'team_nav': 'settings',
+        'settings_tab': 'integrations',
         'add_youtube_url': add_youtube_account_url(team),
         'add_vimeo_url': add_vimeo_account_url(team),
         'kaltura_form': forms.KalturaAccountForm(team),
