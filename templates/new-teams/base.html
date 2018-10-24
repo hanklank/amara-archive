@@ -40,6 +40,9 @@
         </li>
         {% if team.new_workflow.has_workflow_settings_page %}
         <li>
+          <a href="{% url "teams:settings_permissions" team.slug %}">{% trans "Permissions" %}</a>
+        </li>
+        <li>
           <a href="{% url "teams:settings_workflows" slug=team.slug %}">{% trans "Workflow" %}</a>
         </li>
         {% endif %}
