@@ -53,7 +53,7 @@ from teams.models import (
     BillingReport, MembershipNarrowing, Application, TeamVisibility,
     VideoVisibility, EmailInvite, Setting
 )
-from teams import behaviors, permissions, tasks
+from teams import behaviors, notifymembers, permissions, tasks
 from teams.exceptions import ApplicationInvalidException
 from teams.fields import TeamMemberInput, TeamMemberRoleSelect, MultipleProjectField, MultipleUsernameInviteField
 from teams.permissions import (
@@ -1327,13 +1327,8 @@ class InviteForm(forms.Form):
             author=self.user, role=self.cleaned_data['role'],
             note=self.cleaned_data['message'])
         invite.save()
-        self.send_notif_for_invite(invite.pk)
-
+        notifymembers.send_invitation_message(invite)
         return invite
-
-    def send_notif_for_invite(self, invite_pk):
-        from messages import tasks as notifier        
-        notifier.team_invitation_sent.delay(invite_pk)
 
     def process_email_invite(self, email):
         invitees = User.objects.filter(email=email)
