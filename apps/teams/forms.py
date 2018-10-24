@@ -34,6 +34,7 @@ from django.forms.formsets import formset_factory
 from django.forms.utils import ErrorDict
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
+from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import ugettext
@@ -53,7 +54,7 @@ from teams.models import (
     BillingReport, MembershipNarrowing, Application, TeamVisibility,
     VideoVisibility, EmailInvite, Setting
 )
-from teams import behaviors, permissions, tasks
+from teams import behaviors, notifymembers, permissions, tasks
 from teams.exceptions import ApplicationInvalidException
 from teams.fields import TeamMemberInput, TeamMemberRoleSelect, MultipleProjectField, MultipleUsernameInviteField
 from teams.permissions import (
@@ -1088,6 +1089,56 @@ class GeneralSettingsForm(forms.ModelForm):
         }
 
 
+class NewPermissionsForm(forms.Form):
+    membership_policy = DependentBooleanField(
+        label=_('Invite users to the team'), required=True, choices=[
+            (Team.INVITATION_BY_ADMIN, _('Admins')),
+            (Team.INVITATION_BY_MANAGER, _('Managers')),
+            (Team.INVITATION_BY_ALL, _('Any Team Member')),
+        ])
+
+    video_policy = DependentBooleanField(
+        label=_('Add videos, update, or remove videos from team'),
+        required=True, choices=[
+            (Team.VP_ADMIN, _('Admins')),
+            (Team.VP_MANAGER, _('Managers')),
+            # VP_MEMBER is disabled until we add a UI for them to add videos
+            #(Team.VP_MEMBER, _('Managers')),
+        ])
+
+    def __init__(self, team, **kwargs):
+        self.team = team
+        self.initial_settings = team.get_settings()
+        super(NewPermissionsForm, self).__init__(**kwargs)
+        if team.video_policy == Team.VP_MEMBER:
+            # need to special case this one, since it's not an option
+            self.initial['video_policy'] = Team.VP_MANAGER
+        else:
+            self.initial['video_policy'] = team.video_policy
+        if self.team.is_by_invitation():
+            self.initial['membership_policy'] = team.membership_policy
+            self.fields['membership_policy'].help_text = self.invite_help_text()
+        else:
+            del self.fields['membership_policy']
+
+    def invite_help_text(self):
+        general_settings_link = format_html(
+            '<a href="{}">{}</a>',
+            reverse('teams:settings_basic', args=(self.team.slug,)),
+            ugettext(u'General settings'))
+        return mark_safe(fmt(
+            ugettext('Your admission policy is invitation only. You can '
+                     'change your admission policy on the '
+                     '%(general_settings_link)s page.'),
+            general_settings_link=general_settings_link))
+
+    def save(self, user):
+        with transaction.atomic():
+            for name, value in self.cleaned_data.items():
+                setattr(self.team, name, value)
+            self.team.save()
+            self.team.handle_settings_changes(user, self.initial_settings)
+
 class WorkflowForm(forms.ModelForm):
     class Meta:
         model = Workflow
@@ -1327,13 +1378,8 @@ class InviteForm(forms.Form):
             author=self.user, role=self.cleaned_data['role'],
             note=self.cleaned_data['message'])
         invite.save()
-        self.send_notif_for_invite(invite.pk)
-
+        notifymembers.send_invitation_message(invite)
         return invite
-
-    def send_notif_for_invite(self, invite_pk):
-        from messages import tasks as notifier        
-        notifier.team_invitation_sent.delay(invite_pk)
 
     def process_email_invite(self, email):
         invitees = User.objects.filter(email=email)
@@ -2522,6 +2568,28 @@ class DeleteVideosForm(VideoManagementForm):
                 self.other_team_duplicate_url_errors),
                                 count=self.other_team_duplicate_url_errors))
         return messages
+
+class DeleteVideosFormSimple(DeleteVideosForm):
+    DELETE_CHOICES = (
+        ('', _('Just remove from team')),
+        ('yes', _('Delete entirely')),
+    )
+    DELETE_HELP_TEXT = (
+        ('', _('Remove the video(s) from team into the public area of '
+               'Amara.  All existing subtitles will remain on site and '
+               'can be edited by any user.')),
+        ('yes', mark_safe(_('Permanently delete the video(s) and all associated '
+                  'subtitles from Amara. '
+                  '<em>Important: </em> this action is irreversible, so use it '
+                  'with care.'))),
+    )
+
+
+    delete = AmaraChoiceField(
+        label='', choices=DELETE_CHOICES,
+        choice_help_text=DELETE_HELP_TEXT, required=False, initial='',
+        widget=AmaraRadioSelect,
+    )
 
 class MoveVideosForm(VideoManagementForm):
     name = 'move'
