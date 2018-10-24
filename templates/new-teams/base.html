@@ -39,6 +39,9 @@
           <a href="{% url "teams:settings_messages" slug=team.slug %}">{% trans "Messages" %}</a>
         </li>
         <li>
+          <a href="{% url "teams:settings_permissions" team.slug %}">{% trans "Permissions" %}</a>
+        </li>
+        <li>
           <a href="{% url "teams:settings_workflows" slug=team.slug %}">{% trans "Workflow" %}</a>
         </li>
       {% for page in team|extra_settings_pages:request.user %}
