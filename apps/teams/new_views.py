@@ -1411,6 +1411,7 @@ def settings_add_project_form(request, team):
             form = forms.ProjectForm(team)
         except Exception as e:
             logger.error(e, exc_info=True)
+            return HttpResponseBadRequest()
 
     template_name = 'future/teams/settings/forms/project-add.html'
     context = {'form': form, 'team': team}

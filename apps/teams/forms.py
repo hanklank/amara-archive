@@ -1406,9 +1406,6 @@ class ProjectForm(forms.ModelForm):
 
     def clean_name(self):
         name = self.cleaned_data['name']
-        if len(name) >= 50:
-            raise forms.ValidationError(
-                _(u"Name is too long; Max length is 50 characters"))
 
         same_name_qs = self.team.project_set.filter(slug=pan_slugify(name))
         if self.instance.id is not None:
@@ -1419,14 +1416,6 @@ class ProjectForm(forms.ModelForm):
                 _(u"There's already a project with this name"))
         return name
 
-    def clean_description(self):
-        description = self.cleaned_data['description']
-        if len(description) >= 2048:
-            raise forms.ValidationError(
-                    _(u"Description is too long; Max length is 2048 characters"))
-
-        return description
-
     def save(self):
         project = super(ProjectForm, self).save(commit=False)
         project.team = self.team
@@ -1434,8 +1423,8 @@ class ProjectForm(forms.ModelForm):
         return project
 
 class EditProjectForm(forms.Form):
-    name = forms.CharField(required=True)
-    description = forms.CharField(widget=forms.Textarea, required=False)
+    name = forms.CharField(required=True, max_length=50)
+    description = forms.CharField(widget=forms.Textarea, required=False, max_length=2048)
 
     def __init__(self, team, project, data=None, **kwargs):
         super(EditProjectForm, self).__init__(data, **kwargs)
@@ -1457,7 +1446,7 @@ class EditProjectForm(forms.Form):
     def check_name(self):
         name = self.cleaned_data['name']
 
-        if len(name) >= 50:
+        if len(name) > self.fields['name'].max_length:
             self._errors['name'] = self.error_class([
                 _(u"Name is too long; Max length is 50 characters")
             ])
@@ -1478,7 +1467,7 @@ class EditProjectForm(forms.Form):
     def check_description(self):
         description = self.cleaned_data['description']
 
-        if len(description) >= 2048:
+        if len(description) > self.fields['description'].max_length:
             self._errors['description'] = self.error_class([
                 _(u"Description is too long; Max length is 2048 characters")
             ])
