@@ -1995,8 +1995,11 @@ class ChangeMemberRoleForm(ManagementForm):
         role = cleaned_data.get('role')
 
         if (role == TeamMember.ROLE_PROJ_LANG_MANAGER and
-            not (cleaned_data['projects'] or cleaned_data['languages'])):
-                raise forms.ValidationError(_(u"Please select a project or language"))
+            not (cleaned_data.get('projects', None) or cleaned_data.get('languages', None))):
+                if self.fields.get('projects', None):
+                    raise forms.ValidationError(_(u"Please select a project or language"))
+                else:
+                    raise forms.ValidationError(_(u"Please select a language"))
 
         return cleaned_data
 
