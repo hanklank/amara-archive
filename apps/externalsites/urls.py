@@ -30,4 +30,6 @@ urlpatterns = [
     url(r'^google-callback/', views.google_callback, name='google-callback'),
     url(r'^google-login/', views.google_login, name='google-login'),
     url(r'^google-login-confirm/', views.google_login, {'confirmed': False}, name='google-login-confirm'),
+
+    url(r'^team-add-external-account/(?P<slug>[-\w]+)', views.team_add_external_account, name='team-add-external-account'),    
 ]

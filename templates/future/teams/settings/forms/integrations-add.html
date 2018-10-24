@@ -19,7 +19,8 @@
     </ul>
   <div class="modal-content">
       <div class="tab-content">
-        <div id="youtube" class="tab-pane active">
+        <div id="youtube" class="tab-pane
+          {% if modal_tab == 'youtube' %}active{% endif %}">
           <p>{% trans "Click the button below to start the authentication process for adding a YouTube account to your team." %}</p>
           <form method="POST">
             {% csrf_token %}
@@ -30,7 +31,8 @@
           </form>
         </div>
 
-        <div id="vimeo" class="tab-pane">
+        <div id="vimeo" class="tab-pane
+          {% if modal_tab == 'vimeo' %}active{% endif %}">
           <p>{% trans "Click the button below to start the authentication process for adding a Vimeo account to your team." %}</p>
           <form method="POST">
             {% csrf_token %}
@@ -41,14 +43,17 @@
           </form>
         </div>
 
-        <div id="kaltura" class="tab-pane">
+        <div id="kaltura" class="tab-pane 
+          {% if modal_tab == 'kaltura' %}active{% endif %}">
           <p>
             <span class="h4">{% trans "Kaltura acount details" %}</span>
           </p>
-          <form method="POST">
+          <form class="ajaxForm" method="POST" action="{% url 'externalsites:team-add-external-account' team.slug %}">
             {% csrf_token %}
-            {% render_field formset.forms.kaltura.partner_id %}
-            {% render_field formset.forms.kaltura.secret %}
+            {% render_field kaltura_form.enabled %}
+            {% render_field kaltura_form.partner_id %}
+            {% render_field kaltura_form.secret %}
+            <input type="hidden" value="kaltura" name="modalTab"/>
             <div class="text-right">
               <button class="button borderless modal-close">{% trans "Cancel" %}</button>
               <button type="submit" class="button cta"> {% trans 'Save' %}</button>
@@ -56,15 +61,18 @@
           </form>
         </div>
 
-        <div id="brightcove" class="tab-pane">
+        <div id="brightcove" class="tab-pane
+          {% if modal_tab == 'brightcove' %}active{% endif %}">
           <p>
             <span class="h4">{% trans "Brightcove acount details" %}</span>
           </p>
-          <form method="POST">
+          <form class="ajaxForm" method="POST" action="{% url 'externalsites:team-add-external-account' team.slug %}">
             {% csrf_token %}
-            {% render_field formset.forms.brightcovecms.publisher_id %}
-            {% render_field formset.forms.brightcovecms.client_id %}
-            {% render_field formset.forms.brightcovecms.client_secret %}
+            {% render_field brightcove_form.enabled %}
+            {% render_field brightcove_form.publisher_id %}
+            {% render_field brightcove_form.client_id %}
+            {% render_field brightcove_form.client_secret %}
+            <input type="hidden" value="brightcove" name="modalTab"/>
             <div class="text-right">
               <button class="button borderless modal-close">{% trans "Cancel" %}</button>
               <button type="submit" class="button cta"> {% trans 'Save' %}</button>

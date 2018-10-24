@@ -40,6 +40,8 @@ from teams.models import Team
 from teams.permissions import can_change_team_settings, can_resync
 from videos import permissions
 from teams.views import settings_page
+from teams.new_views import team_view
+from ui import AJAXResponseRenderer
 from utils.breadcrumbs import BreadCrumb
 from utils.http import get_url_host
 from utils.text import fmt
@@ -109,9 +111,8 @@ def team_settings_tab(request, team):
 
     return render(request, template_name, {
         'team': team,
-        'formset': formset,
-        'add_youtube_url': add_youtube_account_url(team),
-        'add_vimeo_url': add_vimeo_account_url(team),
+        'forms': formset,
+        
         'team_nav': 'settings',
         'settings_tab': 'integrations',
         'breadcrumbs': [
@@ -119,7 +120,53 @@ def team_settings_tab(request, team):
             BreadCrumb(_('Settings'), 'teams:settings_basic', team.slug),
             BreadCrumb(_('Integrations')),
         ],
+
+        # context for futureui integrations settings page
+        'add_youtube_url': add_youtube_account_url(team),
+        'add_vimeo_url': add_vimeo_account_url(team),
+        'kaltura_form': forms.KalturaAccountForm(team),
+        'brightcove_form': forms.BrightcoveCMSAccountForm(team),
+        'modal_tab': 'youtube',
     })
+
+@team_view
+def team_add_external_account(request, team):
+    modal_tab = ''
+    if request.method == "POST":
+        modal_tab = request.POST.get('modalTab')
+        if modal_tab == 'kaltura':
+            form = forms.KalturaAccountForm(team, request.POST)
+            kaltura_form = form
+            brightcove_form = forms.BrightcoveCMSAccountForm(team)
+            account_str = _('Kaltura')
+        elif modal_tab == 'brightcove':
+            form = forms.BrightcoveCMSAccountForm(team, request.POST)
+            brightcove_form = form
+            kaltura_form = forms.KalturaAccountForm(team)
+            account_str = _('Brightcove')
+
+        if form.is_valid():
+            form.save()
+            if form.cleaned_data.get('enabled', None):
+                messages.success(request, 
+                                 _(u'{} account information has been succesfully saved!'.format(account_str)))
+            else:
+                messages.success(request, 
+                                 _(u'{} account information has been removed.').format(account_str))
+            response_renderer = AJAXResponseRenderer(request)
+            response_renderer.reload_page()
+            return response_renderer.render()
+
+    response_renderer = AJAXResponseRenderer(request)
+    response_renderer.show_modal('future/teams/settings/forms/integrations-add.html', 
+        { 'team': team, 
+          'add_youtube_url': add_youtube_account_url(team),
+          'add_vimeo_url': add_vimeo_account_url(team),
+          'kaltura_form': kaltura_form,
+          'brightcove_form': brightcove_form,
+          'modal_tab': modal_tab,
+        })
+    return response_renderer.render()
 
 @settings_page
 @login_required
