@@ -30,7 +30,7 @@ from django.utils.http import is_safe_url
 from django.utils.translation import ugettext as _
 
 from auth.models import CustomUser as User
-from externalsites import forms
+from externalsites import forms, new_forms
 from externalsites import google, vimeo, tasks
 from externalsites.auth_backends import OpenIDConnectInfo, OpenIDConnectBackend
 from externalsites.exceptions import YouTubeAccountExistsError, VimeoSyncAccountExistsError
@@ -86,6 +86,19 @@ def add_vimeo_account_url(owner):
 
 @settings_page
 def team_settings_tab(request, team):
+    # we don't actually use any code logic from this view for the futureui integrations settings page
+    if not team.is_old_style():
+        return render(request, 'future/teams/settings/integrations.html', {
+            'team': team,
+            'team_nav': 'settings',
+            'settings_tab': 'integrations',
+            'add_youtube_url': add_youtube_account_url(team),
+            'add_vimeo_url': add_vimeo_account_url(team),
+            'kaltura_form': new_forms.KalturaAccountForm(team),
+            'brightcove_form': new_forms.BrightcoveCMSAccountForm(team),
+            'modal_tab': 'youtube',
+        })
+
     if request.method == 'POST':
         formset = forms.AccountFormset(request.user, team, request.POST)
     else:
@@ -106,8 +119,7 @@ def team_settings_tab(request, team):
     if team.is_old_style():
         template_name = 'externalsites/team-settings-tab.html'
     else:
-        # template_name = 'externalsites/new-team-settings-tab.html'
-        template_name = 'future/teams/settings/integrations.html'
+        template_name = 'externalsites/new-team-settings-tab.html'
 
     return render(request, template_name, {
         'team': team,
@@ -117,15 +129,6 @@ def team_settings_tab(request, team):
             BreadCrumb(_('Settings'), 'teams:settings_basic', team.slug),
             BreadCrumb(_('Integrations')),
         ],
-
-        # context for futureui integrations settings page
-        'team_nav': 'settings',
-        'settings_tab': 'integrations',
-        'add_youtube_url': add_youtube_account_url(team),
-        'add_vimeo_url': add_vimeo_account_url(team),
-        'kaltura_form': forms.KalturaAccountForm(team),
-        'brightcove_form': forms.BrightcoveCMSAccountForm(team),
-        'modal_tab': 'youtube',
     })
 
 @team_view
@@ -134,24 +137,20 @@ def team_add_external_account(request, team):
     if request.method == "POST":
         modal_tab = request.POST.get('modalTab')
         if modal_tab == 'kaltura':
-            form = forms.KalturaAccountForm(team, request.POST)
+            form = new_forms.KalturaAccountForm(team, request.POST)
             kaltura_form = form
-            brightcove_form = forms.BrightcoveCMSAccountForm(team)
+            brightcove_form = new_forms.BrightcoveCMSAccountForm(team)
             account_str = _('Kaltura')
         elif modal_tab == 'brightcove':
-            form = forms.BrightcoveCMSAccountForm(team, request.POST)
+            form = new_forms.BrightcoveCMSAccountForm(team, request.POST)
             brightcove_form = form
-            kaltura_form = forms.KalturaAccountForm(team)
+            kaltura_form = new_forms.KalturaAccountForm(team)
             account_str = _('Brightcove')
 
         if form.is_valid():
             form.save()
-            if form.cleaned_data.get('enabled', None):
-                messages.success(request, 
-                                 _(u'{} account information has been succesfully saved!'.format(account_str)))
-            else:
-                messages.success(request, 
-                                 _(u'{} account information has been removed.').format(account_str))
+            messages.success(request, 
+                             _(u'{} account information has been succesfully saved!'.format(account_str)))
             response_renderer = AJAXResponseRenderer(request)
             response_renderer.reload_page()
             return response_renderer.render()
