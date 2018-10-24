@@ -223,6 +223,11 @@ class Team(models.Model):
     SUBTITLE_NAMES = dict(SUBTITLE_CHOICES)
     SUBTITLE_IDS = dict([choice[::-1] for choice in SUBTITLE_CHOICES])
 
+    # subtitle visibility constants
+    SUBTITLES_PUBLIC = 'P'
+    SUBTITLES_PRIVATE = 'H'
+    SUBTITLES_PRIVATE_UNTIL_COMPLETE = 'C'
+
     NOTIFY_DAILY = 'D'
     NOTIFY_HOURLY = 'H'
     NOTIFY_INTERVAL_CHOICES = (
