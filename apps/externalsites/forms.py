@@ -27,7 +27,6 @@ from django.utils.translation import ugettext_lazy
 from auth.models import CustomUser as User
 from teams.models import Team
 from externalsites import models
-from ui.forms import SearchField, ContentHeaderSearchBar
 from utils.forms import SubmitButtonField, SubmitButtonWidget
 from utils.text import fmt
 import videos.tasks
@@ -122,7 +121,7 @@ class AddVimeoAccountForm(forms.Form):
     add_button = SubmitButtonField(
         label=ugettext_lazy('Add Vimeo account'),
         required=False,
-        widget=SubmitButtonWidget(attrs={'class': 'button cta'}))
+        widget=SubmitButtonWidget(attrs={'class': 'small'}))
 
     def __init__(self, owner, data=None, **kwargs):
         super(AddVimeoAccountForm, self).__init__(data=data, **kwargs)
@@ -147,7 +146,7 @@ class AddYoutubeAccountForm(forms.Form):
     add_button = SubmitButtonField(
         label=ugettext_lazy('Add YouTube account'),
         required=False,
-        widget=SubmitButtonWidget(attrs={'class': 'button cta'}))
+        widget=SubmitButtonWidget(attrs={'class': 'small'}))
 
     def __init__(self, owner, data=None, **kwargs):
         super(AddYoutubeAccountForm, self).__init__(data=data, **kwargs)
@@ -308,10 +307,7 @@ class VimeoAccountForm(forms.Form):
     def show_sync_teams(self):
         return len(self['sync_teams'].field.choices) > 0
 
-class AccountFormset(forms.Form):
-    search = SearchField(label='Search', required=False,
-                         widget=ContentHeaderSearchBar)
-
+class AccountFormset(dict):
     """Container for multiple account forms.
 
     For each form in form classes we will instatiate it with a unique prefix
@@ -321,7 +317,6 @@ class AccountFormset(forms.Form):
         super(AccountFormset, self).__init__()
         self.admin_user = admin_user
         self.data = data
-        self.forms = {}
         self.make_forms(owner)
 
     def make_forms(self, owner):
@@ -329,35 +324,35 @@ class AccountFormset(forms.Form):
         self.make_form('brightcovecms', BrightcoveCMSAccountForm, owner)
         self.make_form('add_youtube', AddYoutubeAccountForm, owner)
         self.make_form('add_vimeo', AddVimeoAccountForm, owner)
-        # for account in models.YouTubeAccount.objects.for_owner(owner):
-        #     name = 'youtube_%s' % account.id
-        #     self.make_form(name, YoutubeAccountForm, self.admin_user, account)
-        # for account in models.VimeoSyncAccount.objects.for_owner(owner):
-        #     name = 'vimeo_%s' % account.id
-        #     self.make_form(name, VimeoAccountForm, self.admin_user, account)
+        for account in models.YouTubeAccount.objects.for_owner(owner):
+            name = 'youtube_%s' % account.id
+            self.make_form(name, YoutubeAccountForm, self.admin_user, account)
+        for account in models.VimeoSyncAccount.objects.for_owner(owner):
+            name = 'vimeo_%s' % account.id
+            self.make_form(name, VimeoAccountForm, self.admin_user, account)
 
     def make_form(self, name, form_class, *args, **kwargs):
         kwargs['prefix'] = name.replace('_', '-')
         kwargs['data'] = self.data
-        self.forms[name] = form_class(*args, **kwargs)
+        self[name] = form_class(*args, **kwargs)
 
     def youtube_forms(self):
-        return [form for name, form in self.forms.items()
+        return [form for name, form in self.items()
                 if name.startswith('youtube_')]
 
     def vimeo_forms(self):
-        return [form for name, form in self.forms.items()
+        return [form for name, form in self.items()
                 if name.startswith('vimeo_')]
 
     def is_valid(self):
-        return all(form.is_valid() for form in self.forms.values())
+        return all(form.is_valid() for form in self.values())
 
     def save(self):
-        for form in self.forms.values():
+        for form in self.values():
             form.save()
 
     def redirect_path(self):
-        for form in self.forms.values():
+        for form in self.values():
             if hasattr(form, 'redirect_path'):
                 redirect_path = form.redirect_path()
                 if redirect_path is not None:
