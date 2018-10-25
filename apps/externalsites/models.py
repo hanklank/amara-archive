@@ -740,6 +740,15 @@ class YouTubeAccount(ExternalAccount):
         self.last_import_video_id = video_ids[0]
         self.save()
 
+    def imports_to_owner_team(self):
+        return (self.type == self.TYPE_TEAM and 
+                self.import_team_id and
+                self.import_team_id == self.owner_id)
+
+    def imports_to_other_team(self):
+        return (self.type == self.TYPE_TEAM and 
+                self.import_team_id)
+
 account_models = [
     KalturaAccount,
     BrightcoveCMSAccount,

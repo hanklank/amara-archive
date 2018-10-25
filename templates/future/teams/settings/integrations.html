@@ -5,13 +5,14 @@
 <form>
 <div class="contentHeader">
   <div class="contentHeader-title">{% trans 'Accounts' %}</div>
-
   <button data-target="#add-account" class="contentHeader-addButton modal-show">
     <span class="fa fa-plus"></span>
     <span class="contentHeader-addButtonText">{% trans 'Add account' %}</span>
   </button>
 </div>
 </form>
+
+{% include "future/teams/settings/integrations-list.html" %}
 
 {% include "future/teams/settings/forms/integrations-add.html" %}
 

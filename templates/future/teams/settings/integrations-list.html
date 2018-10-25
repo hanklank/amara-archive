@@ -1,0 +1,73 @@
+{% load i18n dropdown %}
+
+
+<div class="listView integrationList">
+  {% if yt_accounts %}
+  <div class="listView-header integrationList-channel">{% trans 'YouTube channels' %}</div>
+  <div class="listView-header listView-actions"></div>
+  {% for yt in yt_accounts %}
+    <div class="integrationList-channel">{{ yt.username }}
+      <div class="listView-secondaryRow visible" style="padding-top:0px">
+        <ul>
+          {% if yt.sync_subtitles %}
+            <li>{% trans 'Exports subtitles from Amara to YouTube' %} </li>
+          {% endif %}
+          {% if yt.sync_teams.count %}
+            <li>{% trans 'Exports subtitles from Amara to YouTube for other teams' %} </li>
+          {% endif %}
+          {% if yt.fetch_initial_subtitles %}
+            <li>{% trans 'Imports subtitles from YouTube when videos are added to Amara' %} </li>
+          {% endif %}
+          {% if yt.imports_to_owner_team %}
+            <li>{% trans 'Imports videos to this team' %} </li>
+          {% elif yt.imports_to_other_team %}
+            <li>
+              {% blocktrans with team=yt.import_team %}
+                Imports videos to {{ team }}
+              {% endblocktrans %}
+            </li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+    <div class="listView-actions">
+      <button class="listView-action"><span class="fa fa-edit"></span></button>
+      <button class="listView-action"><span class="fa fa-trash"></span></button>
+      {% dropdown-button-icon "context-menu" "listView-action" %}
+    </div>      
+  {% endfor %}
+  {% endif %}
+
+  {% if vimeo_accounts %}
+  <div class="listView-header integrationList-channel">{% trans 'Vimeo channels' %}</div>
+  <div class="listView-header listView-actions"></div>
+
+  {% for vimeo in vimeo_accounts %}
+    <div class="integrationList-channel">{{ vimeo.username }}
+      <div class="listView-secondaryRow visible" style="padding-top:0px">
+        <ul>
+          {% if yt.sync_subtitles %}
+            <li>{% trans 'Exports subtitles from Amara to Vimeo' %} </li>
+          {% endif %}
+          {% if yt.sync_teams.count %}
+            <li>{% trans 'Exports subtitles from Amara to Vimeo for other teams' %} </li>
+          {% endif %}
+          {% if yt.fetch_initial_subtitles %}
+            <li>{% trans 'Imports subtitles from Vimeo when videos are added to Amara' %} </li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+    <div class="listView-actions">
+      <button class="listView-action"><span class="fa fa-edit"></span></button>
+      <button class="listView-action"><span class="fa fa-trash"></span></button>
+      {% dropdown-button-icon "context-menu" "listView-action" %}
+    </div>      
+  {% endfor %}
+  {% endif %}
+
+  {% dropdown "context-menu" %}
+  {% dropdown-js-item _('Edit') 'listview-form' 'edit' %}
+  {% dropdown-js-item _('Remove') 'listview-form' 'remove' %}
+  {% enddropdown %}
+</div>

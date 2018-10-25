@@ -86,10 +86,14 @@ def add_vimeo_account_url(owner):
 
 @settings_page
 def team_settings_tab(request, team):
-    # we don't actually use any code logic from this view for the futureui integrations settings page
     if not team.is_old_style():
+        yt_accounts = YouTubeAccount.objects.for_owner(team)
+        vimeo_accounts = VimeoSyncAccount.objects.for_owner(team)
+
         return render(request, 'future/teams/settings/integrations.html', {
             'team': team,
+            'yt_accounts': yt_accounts,
+            'vimeo_accounts': vimeo_accounts,
             'team_nav': 'settings',
             'settings_tab': 'integrations',
             'add_youtube_url': add_youtube_account_url(team),
