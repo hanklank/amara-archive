@@ -87,21 +87,7 @@ def add_vimeo_account_url(owner):
 @settings_page
 def team_settings_tab(request, team):
     if not team.is_old_style():
-        yt_accounts = YouTubeAccount.objects.for_owner(team)
-        vimeo_accounts = VimeoSyncAccount.objects.for_owner(team)
-
-        return render(request, 'future/teams/settings/integrations.html', {
-            'team': team,
-            'yt_accounts': yt_accounts,
-            'vimeo_accounts': vimeo_accounts,
-            'team_nav': 'settings',
-            'settings_tab': 'integrations',
-            'add_youtube_url': add_youtube_account_url(team),
-            'add_vimeo_url': add_vimeo_account_url(team),
-            'kaltura_form': new_forms.KalturaAccountForm(team),
-            'brightcove_form': new_forms.BrightcoveCMSAccountForm(team),
-            'modal_tab': 'youtube',
-        })
+        return team_externalsites(request, team)
 
     if request.method == 'POST':
         formset = forms.AccountFormset(request.user, team, request.POST)
@@ -133,6 +119,26 @@ def team_settings_tab(request, team):
             BreadCrumb(_('Settings'), 'teams:settings_basic', team.slug),
             BreadCrumb(_('Integrations')),
         ],
+    })
+
+# no need to wrap this view function since the calling view is already wrapped
+def team_externalsites(request, team):
+    form_name = request.GET.get('form', None)
+
+    yt_accounts = YouTubeAccount.objects.for_owner(team)
+    vimeo_accounts = VimeoSyncAccount.objects.for_owner(team)
+
+    return render(request, 'future/teams/settings/integrations.html', {
+        'team': team,
+        'yt_accounts': yt_accounts,
+        'vimeo_accounts': vimeo_accounts,
+        'team_nav': 'settings',
+        'settings_tab': 'integrations',
+        'add_youtube_url': add_youtube_account_url(team),
+        'add_vimeo_url': add_vimeo_account_url(team),
+        'kaltura_form': new_forms.KalturaAccountForm(team),
+        'brightcove_form': new_forms.BrightcoveCMSAccountForm(team),
+        'modal_tab': 'youtube',
     })
 
 @team_view

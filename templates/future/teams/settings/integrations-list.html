@@ -7,7 +7,7 @@
   <div class="listView-header listView-actions"></div>
   {% for yt in yt_accounts %}
     <div class="integrationList-channel">{{ yt.username }}
-      <div class="listView-secondaryRow visible" style="padding-top:0px">
+      <div class="listView-secondaryRow visible">
         <ul>
           {% if yt.sync_subtitles %}
             <li>{% trans 'Exports subtitles from Amara to YouTube' %} </li>
@@ -33,7 +33,7 @@
     <div class="listView-actions">
       <button class="listView-action"><span class="fa fa-edit"></span></button>
       <button class="listView-action"><span class="fa fa-trash"></span></button>
-      {% dropdown-button-icon "context-menu" "listView-action" %}
+      {% dropdown-button-icon "context-menu" "listView-action" data_selection=yt.pk %}
     </div>      
   {% endfor %}
   {% endif %}
@@ -44,7 +44,7 @@
 
   {% for vimeo in vimeo_accounts %}
     <div class="integrationList-channel">{{ vimeo.username }}
-      <div class="listView-secondaryRow visible" style="padding-top:0px">
+      <div class="listView-secondaryRow visible">
         <ul>
           {% if yt.sync_subtitles %}
             <li>{% trans 'Exports subtitles from Amara to Vimeo' %} </li>
@@ -61,7 +61,7 @@
     <div class="listView-actions">
       <button class="listView-action"><span class="fa fa-edit"></span></button>
       <button class="listView-action"><span class="fa fa-trash"></span></button>
-      {% dropdown-button-icon "context-menu" "listView-action" %}
+      {% dropdown-button-icon "context-menu" "listView-action" data_selection=vimeo.pk %}
     </div>      
   {% endfor %}
   {% endif %}
