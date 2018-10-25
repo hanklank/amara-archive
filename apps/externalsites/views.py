@@ -24,7 +24,7 @@ from django.contrib.auth.views import redirect_to_login
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.urls import reverse
-from django.http import HttpResponseRedirect, Http404
+from django.http import HttpResponseRedirect, Http404, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.http import is_safe_url
 from django.utils.translation import ugettext as _
@@ -124,6 +124,37 @@ def team_settings_tab(request, team):
 # no need to wrap this view function since the calling view is already wrapped
 def team_externalsites(request, team):
     form_name = request.GET.get('form', None)
+    context = {}
+
+    if form_name:
+        try:
+            account_pk = request.GET['selection']
+        except KeyError:
+            return HttpResponseBadRequest()
+
+        if request.method == 'POST':
+
+        else:
+            if form_name == 'edit-youtube':
+                account = YouTubeAccount.objects.get(pk=account_pk)
+                form = forms.YoutubeAccountForm(request.user, account)
+                context['account_type_label'] = _('YouTube')
+                context['account_type'] = YouTubeAccount.account_type
+                context['account_name'] = account.username
+            elif form_name == 'edit-vimeo':
+                account = VimeoSyncAccount.objects.get(pk=account_pk)
+                form = forms.VimeoSyncAccountForm(request.user, account)
+                context['account_type_label'] = _('Vimeo')
+                context['account_type'] = VimeoSyncAccount.account_type
+                context['account_name'] = account.username
+
+        context['form'] = form
+        context['team'] = team
+        context['account_pk'] = account.pk
+
+        response_renderer = AJAXResponseRenderer(request)
+        response_renderer.show_modal('future/teams/settings/forms/integrations-edit.html', context)
+        return response_renderer.render()
 
     yt_accounts = YouTubeAccount.objects.for_owner(team)
     vimeo_accounts = VimeoSyncAccount.objects.for_owner(team)
@@ -140,6 +171,19 @@ def team_externalsites(request, team):
         'brightcove_form': new_forms.BrightcoveCMSAccountForm(team),
         'modal_tab': 'youtube',
     })
+
+@team_view
+def team_edit_external_account(request, team):
+    if request.method == "POST":
+        try:
+            account_type = request.POST.get('accountType')
+            account_pk = request.POST.get('accountPk')
+        except KeyError:
+            return HttpResponseBadRequest()
+        if account_type == YouTubeAccount.account_type:
+            account = YoutubeAccount.objects.get(pk=account_pk)
+            form = YoutubeAccountForm(request.user, account, request.POST)
+        # TODO continue here
 
 @team_view
 def team_add_external_account(request, team):
@@ -164,6 +208,8 @@ def team_add_external_account(request, team):
             response_renderer = AJAXResponseRenderer(request)
             response_renderer.reload_page()
             return response_renderer.render()
+    else:
+        return HttpResponseBadRequest()
 
     response_renderer = AJAXResponseRenderer(request)
     response_renderer.show_modal('future/teams/settings/forms/integrations-add.html', 

@@ -1,0 +1,30 @@
+{% load i18n forms modal captureas %}
+
+{% captureas modal_title %}
+  {% blocktrans %}
+    Edit {{ account_type_label }} integration
+  {% endblocktrans %}
+{% endcaptureas %}
+
+{% startmodal "edit-account" modal_title %}
+
+<form class="ajaxForm" method="POST" action="{% url 'externalsites:team-edit-external-account' team.slug">
+  <h4 class="modal-header">
+    {% blocktrans %}
+      Linked account: {{ account_name }}
+    {% endblocktrans %}
+  </h4>
+  <div class="modal-content">
+    <input type="hidden" value="{{ account_type }}" name="accountType"/>
+    <input type="hidden" value="{{ account_pk }}" name="accountPk"/>
+    {% render_field form.sync_subtitles %}
+    {% render_field form.fetch_initial_subtitles %}
+
+  </div>
+  <div class="modal-footer">
+    <button class="button borderless modal-close">Cancel</button>
+    <button class="button cta" type="submit">Save</button>
+  </div>
+</form>
+
+{% endmodal %}
