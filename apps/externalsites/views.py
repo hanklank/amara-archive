@@ -164,17 +164,25 @@ def team_edit_external_account(request, team, form_name=None):
 
         if account_type == YouTubeAccount.account_type:
             account = YouTubeAccount.objects.get(pk=account_pk)
-            account_name = account.username
+            account_name = account.username + ' '
             form = forms.YoutubeAccountForm(request.user, account, request.POST)
         elif account_type == VimeoSyncAccount.account_type:
             account = VimeoSyncAccount.objects.get(pk=account_pk)
-            account_name = account.username
+            account_name = account.username + ' '
             form = forms.VimeoAccountForm(request.user, account, request.POST)
+        elif account_type == KalturaAccount.account_type:
+            account = KalturaAccount.objects.get(pk=account_pk)
+            account_name = ''
+            form = new_forms.KalturaAccountForm(team, request.POST)
+        elif account_type == BrightcoveCMSAccount.account_type:
+            account = BrightcoveCMSAccount.objects.get(pk=account_pk)
+            account_name = ''
+            form = new_forms.BrightcoveCMSAccountForm(team, request.POST)
             
         if form.is_valid():
             form.save()
             messages.success(request, 
-                _(u'{} {} settings updated.'.format(account._meta.verbose_name, account_name)))
+                _(u'{} {}settings updated'.format(account._meta.verbose_name, account_name)))
             response_renderer = AJAXResponseRenderer(request)
             response_renderer.reload_page()
             return response_renderer.render()
@@ -193,6 +201,16 @@ def team_edit_external_account(request, team, form_name=None):
             form = forms.VimeoAccountForm(request.user, account)
             context['title_type_label'] = _('Vimeo')
             context['account_name'] = account.username
+        elif form_name == 'edit-kaltura':
+            account = KalturaAccount.objects.get(pk=account_pk)
+            form = new_forms.KalturaAccountForm(team)
+            context['title_type_label'] = _('Kaltura')
+            context['account_name'] = account.partner_id
+        elif form_name == 'edit-brightcove':
+            account = BrightcoveCMSAccount.objects.get(pk=account_pk)
+            form = new_forms.BrightcoveCMSAccountForm(team)
+            context['title_type_label'] = _('Brightcove CMS')
+            context['account_name'] = account.client_id
 
     context['form'] = form
     context['team'] = team
