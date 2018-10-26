@@ -1,6 +1,5 @@
 {% load i18n dropdown %}
 
-
 <div class="listView integrationList">
   {% if yt_accounts %}
   <div class="listView-header integrationList-channel">{% trans 'YouTube channels' %}</div>
@@ -34,14 +33,9 @@
       <button class="listView-action"><span class="fa fa-edit"></span></button>
       <button class="listView-action"><span class="fa fa-trash"></span></button>
       {% dropdown-button-icon "context-menu-youtube" "listView-action" data_selection=yt.pk %}
+      {% include 'future/teams/settings/_integrations_context_menu.html' with menu_id="context-menu-youtube" form_name="edit-youtube" %}
     </div>      
-  {% endfor %}
-
-  {% dropdown "context-menu-youtube" %}
-  {% dropdown-js-item _('Edit') 'listview-form' 'edit-youtube' %}
-  {% dropdown-js-item _('Remove') 'listview-form' 'remove' %}
-  {% enddropdown %}
-
+  {% endfor %}  
   {% endif %}
 
   {% if vimeo_accounts %}
@@ -52,13 +46,13 @@
     <div class="integrationList-channel">{{ vimeo.username }}
       <div class="listView-secondaryRow visible">
         <ul>
-          {% if yt.sync_subtitles %}
+          {% if vimeo.sync_subtitles %}
             <li>{% trans 'Exports subtitles from Amara to Vimeo' %} </li>
           {% endif %}
-          {% if yt.sync_teams.count %}
+          {% if vimeo.sync_teams.count %}
             <li>{% trans 'Exports subtitles from Amara to Vimeo for other teams' %} </li>
           {% endif %}
-          {% if yt.fetch_initial_subtitles %}
+          {% if vimeo.fetch_initial_subtitles %}
             <li>{% trans 'Imports subtitles from Vimeo when videos are added to Amara' %} </li>
           {% endif %}
         </ul>
@@ -68,15 +62,10 @@
       <button class="listView-action"><span class="fa fa-edit"></span></button>
       <button class="listView-action"><span class="fa fa-trash"></span></button>
       {% dropdown-button-icon "context-menu-vimeo" "listView-action" data_selection=vimeo.pk %}
+      {% include 'future/teams/settings/_integrations_context_menu.html' with menu_id="context-menu-vimeo" form_name="edit-vimeo" %}
     </div>      
   {% endfor %}
-
-  {% dropdown "context-menu-vimeo" %}
-  {% dropdown-js-item _('Edit') 'listview-form' 'edit-vimeo' %}
-  {% dropdown-js-item _('Remove') 'listview-form' 'remove' %}
-  {% enddropdown %}
-
-  {% endif %}
+  {% endif %}  
 
   {% if kaltura_accounts %}
   <div class="listView-header integrationList-channel">{% trans 'Kaltura account' %}</div>
@@ -89,15 +78,10 @@
     <div class="listView-actions">
       <button class="listView-action"><span class="fa fa-edit"></span></button>
       <button class="listView-action"><span class="fa fa-trash"></span></button>
-      {% dropdown-button-icon "context-menu-vimeo" "listView-action" data_selection=kaltura.pk %}
+      {% dropdown-button-icon "context-menu-kaltura" "listView-action" data_selection=kaltura.pk %}
+      {% include 'future/teams/settings/_integrations_context_menu.html' with menu_id="context-menu-kaltura" form_name="edit-kaltura" %}
     </div>      
   {% endfor %}
-
-  {% dropdown "context-menu-kaltura" %}
-  {% dropdown-js-item _('Edit') 'listview-form' 'edit-kaltura' %}
-  {% dropdown-js-item _('Remove') 'listview-form' 'remove' %}
-  {% enddropdown %}
-
   {% endif %}
 
   {% if brightcove_accounts %}
@@ -111,17 +95,10 @@
     <div class="listView-actions">
       <button class="listView-action"><span class="fa fa-edit"></span></button>
       <button class="listView-action"><span class="fa fa-trash"></span></button>
-      {% dropdown-button-icon "context-menu-vimeo" "listView-action" data_selection=brightcove.pk %}
+      {% dropdown-button-icon "context-menu-brightcove" "listView-action" data_selection=brightcove.pk %}
+      {% include 'future/teams/settings/_integrations_context_menu.html' with menu_id="context-menu-brightcove" form_name="edit-brightcove" %}
     </div>      
   {% endfor %}
-
-  {% dropdown "context-menu-kaltura" %}
-  {% dropdown-js-item _('Edit') 'listview-form' 'edit-brightcove' %}
-  {% dropdown-js-item _('Remove') 'listview-form' 'remove' %}
-  {% enddropdown %}
-
   {% endif %}
-
   
-
 </div>
