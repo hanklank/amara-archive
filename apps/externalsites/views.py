@@ -34,7 +34,8 @@ from externalsites import forms, new_forms
 from externalsites import google, vimeo, tasks
 from externalsites.auth_backends import OpenIDConnectInfo, OpenIDConnectBackend
 from externalsites.exceptions import YouTubeAccountExistsError, VimeoSyncAccountExistsError
-from externalsites.models import get_sync_account, YouTubeAccount, SyncHistory, VimeoSyncAccount
+from externalsites.models import (get_sync_account, SyncHistory, YouTubeAccount,
+                                  VimeoSyncAccount, BrightcoveCMSAccount, KalturaAccount)
 from localeurl.utils import universal_url
 from teams.models import Team
 from teams.permissions import can_change_team_settings, can_resync
@@ -131,11 +132,15 @@ def team_externalsites(request, team):
 
     yt_accounts = YouTubeAccount.objects.for_owner(team)
     vimeo_accounts = VimeoSyncAccount.objects.for_owner(team)
+    kaltura_accounts = KalturaAccount.objects.for_owner(team)
+    brightcove_accounts = BrightcoveCMSAccount.objects.for_owner(team)
 
     return render(request, 'future/teams/settings/integrations.html', {
         'team': team,
         'yt_accounts': yt_accounts,
         'vimeo_accounts': vimeo_accounts,
+        'kaltura_accounts': kaltura_accounts,
+        'brightcove_accounts': brightcove_accounts,
         'team_nav': 'settings',
         'settings_tab': 'integrations',
         'add_youtube_url': add_youtube_account_url(team),
