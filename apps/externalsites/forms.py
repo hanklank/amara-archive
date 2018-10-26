@@ -27,6 +27,7 @@ from django.utils.translation import ugettext_lazy
 from auth.models import CustomUser as User
 from teams.models import Team
 from externalsites import models
+from ui.forms import AmaraMultipleChoiceField
 from utils.forms import SubmitButtonField, SubmitButtonWidget
 from utils.text import fmt
 import videos.tasks
@@ -170,8 +171,8 @@ class AddYoutubeAccountForm(forms.Form):
 class YoutubeAccountForm(forms.Form):
     remove_button = SubmitButtonField(label=ugettext_lazy('Remove account'),
                                       required=False)
-    sync_teams = forms.MultipleChoiceField(
-        widget=forms.CheckboxSelectMultiple,
+    sync_teams = AmaraMultipleChoiceField(
+        widget=forms.widgets.SelectMultiple,
         required=False)
     import_team = forms.ChoiceField(label='', required=False)
     sync_subtitles = forms.BooleanField(label=ugettext_lazy('Sync subtitles from Amara to YouTube'), required=False)

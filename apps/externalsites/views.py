@@ -127,34 +127,7 @@ def team_externalsites(request, team):
     context = {}
 
     if form_name:
-        try:
-            account_pk = request.GET['selection']
-        except KeyError:
-            return HttpResponseBadRequest()
-
-        if request.method == 'POST':
-
-        else:
-            if form_name == 'edit-youtube':
-                account = YouTubeAccount.objects.get(pk=account_pk)
-                form = forms.YoutubeAccountForm(request.user, account)
-                context['account_type_label'] = _('YouTube')
-                context['account_type'] = YouTubeAccount.account_type
-                context['account_name'] = account.username
-            elif form_name == 'edit-vimeo':
-                account = VimeoSyncAccount.objects.get(pk=account_pk)
-                form = forms.VimeoSyncAccountForm(request.user, account)
-                context['account_type_label'] = _('Vimeo')
-                context['account_type'] = VimeoSyncAccount.account_type
-                context['account_name'] = account.username
-
-        context['form'] = form
-        context['team'] = team
-        context['account_pk'] = account.pk
-
-        response_renderer = AJAXResponseRenderer(request)
-        response_renderer.show_modal('future/teams/settings/forms/integrations-edit.html', context)
-        return response_renderer.render()
+        return team_edit_external_account(request, team, form_name)
 
     yt_accounts = YouTubeAccount.objects.for_owner(team)
     vimeo_accounts = VimeoSyncAccount.objects.for_owner(team)
@@ -173,17 +146,53 @@ def team_externalsites(request, team):
     })
 
 @team_view
-def team_edit_external_account(request, team):
+def team_edit_external_account(request, team, form_name=None):
+    context = {}
+    account = None
+
     if request.method == "POST":
         try:
             account_type = request.POST.get('accountType')
             account_pk = request.POST.get('accountPk')
         except KeyError:
             return HttpResponseBadRequest()
+
         if account_type == YouTubeAccount.account_type:
-            account = YoutubeAccount.objects.get(pk=account_pk)
-            form = YoutubeAccountForm(request.user, account, request.POST)
-        # TODO continue here
+            account = YouTubeAccount.objects.get(pk=account_pk)
+            account_name = account.username
+            form = forms.YoutubeAccountForm(request.user, account, request.POST)
+            
+        if form.is_valid():
+            form.save()
+            messages.success(request, 
+                _(u'{} {} settings updated.'.format(account.verbose_name, account_name)))
+            response_renderer = AJAXResponseRenderer(request)
+            response_renderer.reload_page()
+            return response_renderer.render()
+    else:
+        try:
+            account_pk = request.GET['selection']
+        except KeyError:
+            return HttpResponseBadRequest()   
+        if form_name == 'edit-youtube':
+            account = YouTubeAccount.objects.get(pk=account_pk)
+            form = forms.YoutubeAccountForm(request.user, account)
+            context['title_type_label'] = _('YouTube')
+            context['account_name'] = account.username
+        elif form_name == 'edit-vimeo':
+            account = VimeoSyncAccount.objects.get(pk=account_pk)
+            form = forms.VimeoSyncAccountForm(request.user, account)
+            context['title_type_label'] = _('Vimeo')
+            context['account_name'] = account.username
+
+    context['form'] = form
+    context['team'] = team
+    context['account_pk'] = account.pk
+    context['account_type'] = account.account_type
+
+    response_renderer = AJAXResponseRenderer(request)
+    response_renderer.show_modal('future/teams/settings/forms/integrations-edit.html', context)
+    return response_renderer.render()
 
 @team_view
 def team_add_external_account(request, team):
