@@ -23,7 +23,9 @@
         <input type="hidden" value="{{ account_pk }}" name="accountPk"/>
         {% render_field form.sync_subtitles %}
         {% render_field form.fetch_initial_subtitles %}
-        {% render_field form.sync_teams %}
+        {% if form.sync_teams %}
+          {% render_field form.sync_teams %}
+        {% endif %}
 
         <!-- import metadata is in teams.models.Team.sync_metadata -->
       

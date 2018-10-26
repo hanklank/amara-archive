@@ -185,13 +185,14 @@ class YoutubeAccountForm(forms.Form):
         self.setup_sync_team()
         self.setup_import_team()
         self.setup_account_options()
+        self.fields['sync_teams'].set_select_data('placeholder', _('Set sync teams'))
 
     def setup_account_options(self):
         self['sync_subtitles'].field.initial = self.account.sync_subtitles
         self['fetch_initial_subtitles'].field.initial = self.account.fetch_initial_subtitles
 
     def setup_sync_team(self):
-        choices = []
+        choices = [ ('', _('Clear')) ]
         initial = []
         # allow the admin to uncheck any of the current sync teams
         current_sync_teams = list(self.account.sync_teams.get_queryset())
@@ -256,8 +257,8 @@ class YoutubeAccountForm(forms.Form):
 class VimeoAccountForm(forms.Form):
     remove_button = SubmitButtonField(label=ugettext_lazy('Remove account'),
                                       required=False)
-    sync_teams = forms.MultipleChoiceField(
-        widget=forms.CheckboxSelectMultiple,
+    sync_teams = AmaraMultipleChoiceField(
+        widget=forms.widgets.SelectMultiple,
         required=False)
     sync_subtitles = forms.BooleanField(label=ugettext_lazy('Sync subtitles from Amara to Vimeo'), required=False)
     fetch_initial_subtitles = forms.BooleanField(label=ugettext_lazy('Fetch initial subtitles from Vimeo when videos are submitted to Amara'), required=False)
@@ -268,13 +269,15 @@ class VimeoAccountForm(forms.Form):
         self.admin_user = admin_user
         self.setup_sync_team()
         self.setup_account_options()
+        self.fields['sync_teams'].set_select_data('placeholder', _('Set sync teams'))
+
 
     def setup_account_options(self):
         self['sync_subtitles'].field.initial = self.account.sync_subtitles
         self['fetch_initial_subtitles'].field.initial = self.account.fetch_initial_subtitles
 
     def setup_sync_team(self):
-        choices = []
+        choices = [ ('', _('Clear')) ]
         initial = []
         # allow the admin to uncheck any of the current sync teams
         current_sync_teams = list(self.account.sync_teams.all())

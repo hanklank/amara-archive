@@ -161,11 +161,15 @@ def team_edit_external_account(request, team, form_name=None):
             account = YouTubeAccount.objects.get(pk=account_pk)
             account_name = account.username
             form = forms.YoutubeAccountForm(request.user, account, request.POST)
+        elif account_type == VimeoSyncAccount.account_type:
+            account = VimeoSyncAccount.objects.get(pk=account_pk)
+            account_name = account.username
+            form = forms.VimeoAccountForm(request.user, account, request.POST)
             
         if form.is_valid():
             form.save()
             messages.success(request, 
-                _(u'{} {} settings updated.'.format(account.verbose_name, account_name)))
+                _(u'{} {} settings updated.'.format(account._meta.verbose_name, account_name)))
             response_renderer = AJAXResponseRenderer(request)
             response_renderer.reload_page()
             return response_renderer.render()
@@ -181,7 +185,7 @@ def team_edit_external_account(request, team, form_name=None):
             context['account_name'] = account.username
         elif form_name == 'edit-vimeo':
             account = VimeoSyncAccount.objects.get(pk=account_pk)
-            form = forms.VimeoSyncAccountForm(request.user, account)
+            form = forms.VimeoAccountForm(request.user, account)
             context['title_type_label'] = _('Vimeo')
             context['account_name'] = account.username
 
