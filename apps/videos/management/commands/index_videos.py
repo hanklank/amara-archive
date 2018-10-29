@@ -18,7 +18,7 @@
 
 from django.core.management.base import BaseCommand
 
-from videos.models import Video, VideoIndex
+from videos.models import Video
 import time
 
 class Command(BaseCommand):
@@ -31,7 +31,10 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         batch_size = options['batch-size']
-        rate_limit = float(options['rate-limit'])
+        if options['rate-limit']:
+            rate_limit = float(options['rate-limit'])
+        else:
+            rate_limit = None
         start_time = time.time()
         last_id = -1
         count = 0
@@ -45,7 +48,7 @@ class Command(BaseCommand):
             if not videos:
                 break
             for video in videos:
-                VideoIndex.index_video(video)
+                video.update_search_index()
                 last_id = max(last_id, video.id)
                 count += 1
             current_time = time.time()
