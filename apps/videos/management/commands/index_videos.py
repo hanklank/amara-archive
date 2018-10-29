@@ -55,5 +55,6 @@ class Command(BaseCommand):
             rate = count / (current_time - start_time)
             self.stdout.write('indexed {} videos ({:.2f} videos/sec last_id: {})\n'.format(
                 count, rate, last_id))
+            self.stdout.flush()
             if rate_limit is not None and rate > rate_limit:
                 time.sleep((count / rate_limit) - (current_time - start_time))
