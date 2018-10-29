@@ -516,6 +516,7 @@ class Video(models.Model):
                         visibility_override=version.visibility_override)
         signals.video_title_edited.send(sender=self, user=user,
                                         old_title=self.title)
+        self.update_search_index()
 
     def get_subtitle(self):
         return behaviors.get_video_subtitle(self, self.get_metadata())
