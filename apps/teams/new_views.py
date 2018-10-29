@@ -580,7 +580,10 @@ def member_profile(request, team, username):
         user = User.objects.get(username=username)
         member = TeamMember.objects.get(team=team, user=user)
     except (User.DoesNotExist, TeamMember.DoesNotExist):
-        raise Http404
+        # This happens when a manager removes a member via the profile page,
+        # then we reload.  Redirect back to the members directory
+        return HttpResponseRedirect(reverse('teams:members',
+                                            args=[team.slug]))
     team.new_workflow.add_experience_to_members([member])
 
     # Handle the management forms
