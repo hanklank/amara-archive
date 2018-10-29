@@ -33,7 +33,7 @@
       <button class="listView-action"><span class="fa fa-edit"></span></button>
       <button class="listView-action"><span class="fa fa-trash"></span></button>
       {% dropdown-button-icon "context-menu-youtube" "listView-action" data_selection=yt.pk %}
-      {% include 'future/teams/settings/_integrations_context_menu.html' with menu_id="context-menu-youtube" form_name="edit-youtube" %}
+      {% include 'future/teams/settings/_integrations_context_menu.html' with menu_id="context-menu-youtube" form_name="edit-youtube" remove_form_name="remove-youtube" %}
     </div>      
   {% endfor %}  
   {% endif %}
@@ -62,7 +62,7 @@
       <button class="listView-action"><span class="fa fa-edit"></span></button>
       <button class="listView-action"><span class="fa fa-trash"></span></button>
       {% dropdown-button-icon "context-menu-vimeo" "listView-action" data_selection=vimeo.pk %}
-      {% include 'future/teams/settings/_integrations_context_menu.html' with menu_id="context-menu-vimeo" form_name="edit-vimeo" %}
+      {% include 'future/teams/settings/_integrations_context_menu.html' with menu_id="context-menu-vimeo" form_name="edit-vimeo" remove_form_name="remove-vimeo" %}
     </div>      
   {% endfor %}
   {% endif %}  
@@ -79,7 +79,7 @@
       <button class="listView-action"><span class="fa fa-edit"></span></button>
       <button class="listView-action"><span class="fa fa-trash"></span></button>
       {% dropdown-button-icon "context-menu-kaltura" "listView-action" data_selection=kaltura.pk %}
-      {% include 'future/teams/settings/_integrations_context_menu.html' with menu_id="context-menu-kaltura" form_name="edit-kaltura" %}
+      {% include 'future/teams/settings/_integrations_context_menu.html' with menu_id="context-menu-kaltura" form_name="edit-kaltura" remove_form_name="remove-kaltura" %}
     </div>      
   {% endfor %}
   {% endif %}
@@ -96,7 +96,7 @@
       <button class="listView-action"><span class="fa fa-edit"></span></button>
       <button class="listView-action"><span class="fa fa-trash"></span></button>
       {% dropdown-button-icon "context-menu-brightcove" "listView-action" data_selection=brightcove.pk %}
-      {% include 'future/teams/settings/_integrations_context_menu.html' with menu_id="context-menu-brightcove" form_name="edit-brightcove" %}
+      {% include 'future/teams/settings/_integrations_context_menu.html' with menu_id="context-menu-brightcove" form_name="edit-brightcove" remove_form_name="remove-brightcove" %}
     </div>      
   {% endfor %}
   {% endif %}

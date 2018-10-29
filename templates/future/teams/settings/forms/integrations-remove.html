@@ -1,0 +1,30 @@
+{% load i18n forms modal captureas %}
+
+{% captureas modal_title %}
+  {% blocktrans %}
+    Remove {{ title_type_label }}
+  {% endblocktrans %}
+{% endcaptureas %}
+
+{% startmodal "edit-account" modal_title %}
+
+  <form class="ajaxForm" method="POST" action="{% url 'externalsites:team-edit-external-account' team.slug %}">
+
+    <div class="modal-content">
+        {% blocktrans %}
+          <p>Are you sure that you want to remove the {{ title_type_label }} {{ account_name }} from {{ team }}?</p>
+        {% endblocktrans %}
+        {% csrf_token %}
+        <input type="hidden" value="{{ account_type }}" name="accountType"/>
+        <input type="hidden" value="{{ account_pk }}" name="accountPk"/>
+        <input type="hidden" value="1" name="remove"/> <!-- used to indicate to the view that we will delete an external account) -->
+
+    </div>
+    <div class="modal-footer">
+      <button class="button borderless modal-close">Cancel</button>
+      <button class="button cta" type="submit">Remove</button>
+    </div>
+
+  </form>
+
+{% endmodal %}

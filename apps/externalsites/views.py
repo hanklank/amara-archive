@@ -125,7 +125,6 @@ def team_settings_tab(request, team):
 # no need to wrap this view function since the calling view is already wrapped
 def team_externalsites(request, team):
     form_name = request.GET.get('form', None)
-    context = {}
 
     if form_name:
         return team_edit_external_account(request, team, form_name)
@@ -154,35 +153,43 @@ def team_externalsites(request, team):
 def team_edit_external_account(request, team, form_name=None):
     context = {}
     account = None
+    template = 'future/teams/settings/forms/integrations-edit.html'
 
     if request.method == "POST":
         try:
             account_type = request.POST.get('accountType')
             account_pk = request.POST.get('accountPk')
+            removing = request.POST.get('remove', False)
         except KeyError:
             return HttpResponseBadRequest()
 
         if account_type == YouTubeAccount.account_type:
             account = YouTubeAccount.objects.get(pk=account_pk)
-            account_name = account.username + ' '
             form = forms.YoutubeAccountForm(request.user, account, request.POST)
         elif account_type == VimeoSyncAccount.account_type:
             account = VimeoSyncAccount.objects.get(pk=account_pk)
-            account_name = account.username + ' '
             form = forms.VimeoAccountForm(request.user, account, request.POST)
         elif account_type == KalturaAccount.account_type:
             account = KalturaAccount.objects.get(pk=account_pk)
-            account_name = ''
             form = new_forms.KalturaAccountForm(team, request.POST)
         elif account_type == BrightcoveCMSAccount.account_type:
             account = BrightcoveCMSAccount.objects.get(pk=account_pk)
-            account_name = ''
             form = new_forms.BrightcoveCMSAccountForm(team, request.POST)
+
+        if removing:
+            form = new_forms.RemoveAccountForm(account)
+
+        account_verbose_name = account._meta.verbose_name
             
         if form.is_valid():
             form.save()
-            messages.success(request, 
-                _(u'{} {}settings updated'.format(account._meta.verbose_name, account_name)))
+
+            if removing:
+                messages.success(request, 
+                    _(u'{} removed'.format(account_verbose_name)))
+            else:
+                messages.success(request, 
+                    _(u'{} {} settings updated'.format(account_verbose_name, account.readable_account_name)))
             response_renderer = AJAXResponseRenderer(request)
             response_renderer.reload_page()
             return response_renderer.render()
@@ -191,34 +198,43 @@ def team_edit_external_account(request, team, form_name=None):
             account_pk = request.GET['selection']
         except KeyError:
             return HttpResponseBadRequest()   
+
         if form_name == 'edit-youtube':
             account = YouTubeAccount.objects.get(pk=account_pk)
             form = forms.YoutubeAccountForm(request.user, account)
-            context['title_type_label'] = _('YouTube')
-            context['account_name'] = account.username
         elif form_name == 'edit-vimeo':
             account = VimeoSyncAccount.objects.get(pk=account_pk)
             form = forms.VimeoAccountForm(request.user, account)
-            context['title_type_label'] = _('Vimeo')
-            context['account_name'] = account.username
         elif form_name == 'edit-kaltura':
             account = KalturaAccount.objects.get(pk=account_pk)
             form = new_forms.KalturaAccountForm(team)
-            context['title_type_label'] = _('Kaltura')
-            context['account_name'] = account.partner_id
         elif form_name == 'edit-brightcove':
             account = BrightcoveCMSAccount.objects.get(pk=account_pk)
             form = new_forms.BrightcoveCMSAccountForm(team)
-            context['title_type_label'] = _('Brightcove CMS')
-            context['account_name'] = account.client_id
+
+        if form_name == 'remove-youtube':
+            account = YouTubeAccount.objects.get(pk=account_pk)
+        elif form_name == 'remove-vimeo':
+            account = VimeoSyncAccount.objects.get(pk=account_pk)
+        elif form_name == 'remove-kaltura':
+            account = KalturaAccount.objects.get(pk=account_pk)
+        elif form_name == 'remove-brightcove':
+            account = BrightcoveCMSAccount.objects.get(pk=account_pk)
+
+        if form_name.startswith('remove'):
+            form = new_forms.RemoveAccountForm(account)
+            template = 'future/teams/settings/forms/integrations-remove.html'
+
+        context['account_name'] = account.readable_account_name()
 
     context['form'] = form
     context['team'] = team
     context['account_pk'] = account.pk
     context['account_type'] = account.account_type
+    context['title_type_label'] = account._meta.verbose_name
 
     response_renderer = AJAXResponseRenderer(request)
-    response_renderer.show_modal('future/teams/settings/forms/integrations-edit.html', context)
+    response_renderer.show_modal(template, context)
     return response_renderer.render()
 
 @team_view

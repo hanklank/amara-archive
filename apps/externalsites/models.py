@@ -201,6 +201,12 @@ class ExternalAccount(models.Model):
         """
         return False
 
+    def readable_account_name(self):
+        """Return the human-readable account name of this
+           external account
+        """
+        raise NotImplementedError()
+
     class Meta:
         abstract = True
 
@@ -241,6 +247,9 @@ class KalturaAccount(ExternalAccount):
         kaltura_id = video_url.get_video_type().kaltura_id()
         syncing.kaltura.delete_subtitles(self.partner_id, self.secret,
                                          kaltura_id, language.language_code)
+
+    def readable_account_name(self):
+        return self.partner_id
 
 class BrightcoveAccount(ExternalAccount):
     account_type = 'B'
@@ -403,6 +412,9 @@ class BrightcoveCMSAccount(ExternalAccount):
                                      self.client_secret,
                                      bc_video_id, language)
 
+    def readable_account_name(self):
+        return self.client_id
+
 class VimeoSyncAccountManager(ExternalAccountManager):
     def _get_sync_account_team_video(self, team_video, video_url):
         query = self.filter(type=ExternalAccount.TYPE_TEAM, username=video_url.owner_username)
@@ -543,6 +555,9 @@ class VimeoSyncAccount(ExternalAccount):
     def should_import_videos(self):
         return (self.type == ExternalAccount.TYPE_USER or
                 (self.type == ExternalAccount.TYPE_TEAM and self.import_team))
+
+    def readable_account_name(self):
+        return self.username
 
 class YouTubeAccountManager(ExternalAccountManager):
     def _get_sync_account_team_video(self, team_video, video_url):
@@ -748,6 +763,10 @@ class YouTubeAccount(ExternalAccount):
     def imports_to_other_team(self):
         return (self.type == self.TYPE_TEAM and 
                 self.import_team_id)
+
+    def readable_account_name(self):
+        return self.username
+
 
 account_models = [
     KalturaAccount,

@@ -79,3 +79,13 @@ class BrightcoveCMSAccountForm(AccountForm):
     class Meta:
         model = models.BrightcoveCMSAccount
         fields = ['publisher_id', 'client_id', 'client_secret' ]
+
+class RemoveAccountForm(forms.Form):
+    def __init__(self, account=None, data=None, **kwargs):
+        self.account = account
+
+    def save(self):
+        self.account.delete()
+
+    def is_valid(self):
+        return not self.account is None
