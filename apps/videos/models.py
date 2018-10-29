@@ -459,6 +459,7 @@ class Video(models.Model):
 
         VideoIndex.index_video(self)
         self.search_text = self.calc_search_text(MAX_SEACH_TEXT_LENGTH)
+        self.save()
 
     def calc_search_text(self, max_length=None):
         parts = [
