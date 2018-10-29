@@ -29,12 +29,8 @@
         </ul>
       </div>
     </div>
-    <div class="listView-actions">
-      <button class="listView-action"><span class="fa fa-edit"></span></button>
-      <button class="listView-action"><span class="fa fa-trash"></span></button>
-      {% dropdown-button-icon "context-menu-youtube" "listView-action" data_selection=yt.pk %}
-      {% include 'future/teams/settings/_integrations_context_menu.html' with menu_id="context-menu-youtube" form_name="edit-youtube" remove_form_name="remove-youtube" %}
-    </div>      
+    
+    {% include 'future/teams/settings/_integrations_actions.html' with menu_id="context-menu-youtube" form_name="edit-youtube" remove_form_name="remove-youtube" pk=yt.pk %}
   {% endfor %}  
   {% endif %}
 
@@ -58,12 +54,8 @@
         </ul>
       </div>
     </div>
-    <div class="listView-actions">
-      <button class="listView-action"><span class="fa fa-edit"></span></button>
-      <button class="listView-action"><span class="fa fa-trash"></span></button>
-      {% dropdown-button-icon "context-menu-vimeo" "listView-action" data_selection=vimeo.pk %}
-      {% include 'future/teams/settings/_integrations_context_menu.html' with menu_id="context-menu-vimeo" form_name="edit-vimeo" remove_form_name="remove-vimeo" %}
-    </div>      
+
+    {% include 'future/teams/settings/_integrations_actions.html' with menu_id="context-menu-vimeo" form_name="edit-vimeo" remove_form_name="remove-vimeo" pk=vimeo.pk %}
   {% endfor %}
   {% endif %}  
 
@@ -75,12 +67,8 @@
     <div class="integrationList-channel">{{ kaltura.partner_id }}
       <!-- no secondary info for Kaltura accounts -->
     </div>
-    <div class="listView-actions">
-      <button class="listView-action"><span class="fa fa-edit"></span></button>
-      <button class="listView-action"><span class="fa fa-trash"></span></button>
-      {% dropdown-button-icon "context-menu-kaltura" "listView-action" data_selection=kaltura.pk %}
-      {% include 'future/teams/settings/_integrations_context_menu.html' with menu_id="context-menu-kaltura" form_name="edit-kaltura" remove_form_name="remove-kaltura" %}
-    </div>      
+
+    {% include 'future/teams/settings/_integrations_actions.html' with menu_id="context-menu-kaltura" form_name="edit-kaltura" remove_form_name="remove-kaltura" pk=kaltura.pk %}   
   {% endfor %}
   {% endif %}
 
@@ -92,12 +80,8 @@
     <div class="integrationList-channel">{{ brightcove.client_id }}
       <!-- no secondary info for BrightcoveCMS accounts -->
     </div>
-    <div class="listView-actions">
-      <button class="listView-action"><span class="fa fa-edit"></span></button>
-      <button class="listView-action"><span class="fa fa-trash"></span></button>
-      {% dropdown-button-icon "context-menu-brightcove" "listView-action" data_selection=brightcove.pk %}
-      {% include 'future/teams/settings/_integrations_context_menu.html' with menu_id="context-menu-brightcove" form_name="edit-brightcove" remove_form_name="remove-brightcove" %}
-    </div>      
+
+    {% include 'future/teams/settings/_integrations_actions.html' with menu_id="context-menu-brightcove" form_name="edit-brightcove" remove_form_name="remove-brightcove" pk=brightcove.pk %}     
   {% endfor %}
   {% endif %}
   

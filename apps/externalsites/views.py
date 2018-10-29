@@ -189,7 +189,7 @@ def team_edit_external_account(request, team, form_name=None):
                     _(u'{} removed'.format(account_verbose_name)))
             else:
                 messages.success(request, 
-                    _(u'{} {} settings updated'.format(account_verbose_name, account.readable_account_name)))
+                    _(u'{} {} settings updated'.format(account_verbose_name, account.readable_account_name())))
             response_renderer = AJAXResponseRenderer(request)
             response_renderer.reload_page()
             return response_renderer.render()
