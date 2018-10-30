@@ -35,7 +35,8 @@ from externalsites import google, vimeo, tasks
 from externalsites.auth_backends import OpenIDConnectInfo, OpenIDConnectBackend
 from externalsites.exceptions import YouTubeAccountExistsError, VimeoSyncAccountExistsError
 from externalsites.models import (get_sync_account, SyncHistory, YouTubeAccount,
-                                  VimeoSyncAccount, BrightcoveCMSAccount, KalturaAccount)
+                                  VimeoSyncAccount, BrightcoveCMSAccount, KalturaAccount,
+                                  SyncedSubtitleVersion)
 from localeurl.utils import universal_url
 from teams.models import Team
 from teams.permissions import can_change_team_settings, can_resync
@@ -140,6 +141,11 @@ def team_externalsites(request, team):
     kaltura_accounts = filters_form.kaltura_accounts(kaltura_accounts)
     brightcove_accounts = filters_form.brightcove_accounts(brightcove_accounts)
 
+    # need to get all SyncedSubtitleVersion objects of a team
+    # in order to do that, need to get all external accounts of team
+    # then do SyncedSubtitleVersion.objects.filter()
+    sync_history = SyncedSubtitleVersion.objects.for_owner(team)
+
     context = {
         'team': team,
         'yt_accounts': yt_accounts,
@@ -153,6 +159,7 @@ def team_externalsites(request, team):
         'add_vimeo_url': add_vimeo_account_url(team),
         'kaltura_form': new_forms.KalturaAccountForm(team),
         'brightcove_form': new_forms.BrightcoveCMSAccountForm(team),
+        'sync_history': sync_history,
         'modal_tab': 'youtube',
     }
 

@@ -17,6 +17,15 @@
 {% include "future/teams/settings/integrations-list.html" %}
 </div>
 
+<form>
+<div class="contentHeader">
+  <div class="contentHeader-title">{% trans 'Subtitle Export History' %}</div>
+</div>
+</form>
+{% include "future/teams/settings/sync-history-list.html" %}
+
+
+<!-- modal code for adding integrations -->
 {% include "future/teams/settings/forms/integrations-add.html" %}
 
 {% endblock %}

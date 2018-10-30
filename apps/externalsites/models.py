@@ -207,6 +207,12 @@ class ExternalAccount(models.Model):
         """
         raise NotImplementedError()
 
+    def readable_account_type(self):
+        """Return the human-readable account type of this
+           external account
+        """
+        raise NotImplementedError()
+
     class Meta:
         abstract = True
 
@@ -250,6 +256,9 @@ class KalturaAccount(ExternalAccount):
 
     def readable_account_name(self):
         return self.partner_id
+
+    def readable_account_type(self):
+        return _('Kaltura')
 
 class BrightcoveAccount(ExternalAccount):
     account_type = 'B'
@@ -415,6 +424,9 @@ class BrightcoveCMSAccount(ExternalAccount):
     def readable_account_name(self):
         return self.client_id
 
+    def readable_account_type(self):
+        return _('Brightcove CMS')
+
 class VimeoSyncAccountManager(ExternalAccountManager):
     def _get_sync_account_team_video(self, team_video, video_url):
         query = self.filter(type=ExternalAccount.TYPE_TEAM, username=video_url.owner_username)
@@ -558,6 +570,10 @@ class VimeoSyncAccount(ExternalAccount):
 
     def readable_account_name(self):
         return self.username
+
+
+    def readable_account_type(self):
+        return _('Vimeo')
 
 class YouTubeAccountManager(ExternalAccountManager):
     def _get_sync_account_team_video(self, team_video, video_url):
@@ -767,6 +783,9 @@ class YouTubeAccount(ExternalAccount):
     def readable_account_name(self):
         return self.username
 
+    def readable_account_type(self):
+        return _('YouTube')
+
 
 account_models = [
     KalturaAccount,
@@ -851,6 +870,19 @@ class SyncedSubtitleVersionManager(models.Manager):
                     account_id=account.id,
                     video_url=video_url,
                     language=language).delete()
+
+    def for_owner(self, owner):
+        accounts = []
+        for model in account_models:
+            for account in model.objects.for_owner(owner):
+                accounts.append(account)
+
+        ret_val = []
+        for account in accounts:
+            for ssv in self.filter(account_type=account.account_type,
+                                   account_id=account.id):
+                ret_val.append(ssv)
+        return ret_val
 
 class SyncedSubtitleVersion(models.Model):
     """Stores the subtitle version that is currently synced to an external

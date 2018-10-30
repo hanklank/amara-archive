@@ -1,0 +1,27 @@
+{% load i18n dropdown %}
+
+{% if sync_history %}
+<div class="listView syncHistoryList">
+  
+  <div class="listView-header syncHistoryList-title">{% trans 'Title' %}</div>
+  <div class="listView-header syncHistoryList-channel">{% trans 'Channel' %}</div>
+  <div class="listView-header syncHistoryList-platform">{% trans 'Platform' %}</div>
+  <div class="listView-header syncHistoryList-language">{% trans 'Language' %}</div>
+  <div class="listView-header listView-actions"></div>
+  {% for i in sync_history %}
+    <div class="syncHistoryList-title">{{i.video_url.video.title}}</div>
+    <div class="syncHistoryList-channel">{{i.get_account.readable_account_name}}</div>
+    <div class="syncHistoryList-platform">{{i.get_account.readable_account_type}}</div>
+    <div class="syncHistoryList-language">{{i.language.language_code}}</div>
+    <div class="listView-actions">actions</div>
+  {% endfor %}  
+  
+</div>
+
+{% else %}
+
+<div class="zero-state">
+  {% trans 'No sync history' %}
+</div>
+
+{% endif %}

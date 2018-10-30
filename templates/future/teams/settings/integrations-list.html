@@ -4,7 +4,7 @@
 <div class="listView integrationList">
   {% if yt_accounts %}
   <div class="listView-header integrationList-channel">{% trans 'YouTube channels' %}</div>
-  <div class="listView-header listView-actions"></div>
+  <div class="listView-header listView-actions integrationList-actions"></div>
   {% for yt in yt_accounts %}
     <div class="integrationList-channel">
       <a class="ajaxLink" data-href="{% url 'teams:settings_externalsites' team.slug %}?form=edit-youtube&selection={{ yt.pk }}">
