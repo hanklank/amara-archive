@@ -6,7 +6,10 @@
   <div class="listView-header integrationList-channel">{% trans 'YouTube channels' %}</div>
   <div class="listView-header listView-actions"></div>
   {% for yt in yt_accounts %}
-    <div class="integrationList-channel">{{ yt.username }}
+    <div class="integrationList-channel">
+      <a class="ajaxLink" data-href="{% url 'teams:settings_externalsites' team.slug %}?form=edit-youtube&selection={{ yt.pk }}">
+        {{ yt.username }}
+      </a>
       <div class="listView-secondaryRow visible">
         <ul>
           {% if yt.sync_subtitles %}
@@ -40,7 +43,10 @@
   <div class="listView-header listView-actions"></div>
 
   {% for vimeo in vimeo_accounts %}
-    <div class="integrationList-channel">{{ vimeo.username }}
+    <div class="integrationList-channel">
+      <a class="ajaxLink" data-href="{% url 'teams:settings_externalsites' team.slug %}?form=edit-vimeo&selection={{ vimeo.pk }}">
+        {{ vimeo.username }}
+      </a>
       <div class="listView-secondaryRow visible">
         <ul>
           {% if vimeo.sync_subtitles %}
@@ -65,7 +71,10 @@
   <div class="listView-header listView-actions"></div>
 
   {% for kaltura in kaltura_accounts %}
-    <div class="integrationList-channel">{{ kaltura.partner_id }}
+    <div class="integrationList-channel">
+      <a class="ajaxLink" data-href="{% url 'teams:settings_externalsites' team.slug %}?form=edit-kaltura&selection={{ kaltura.pk }}">
+        {{ kaltura.partner_id }}
+      </a>
       <!-- no secondary info for Kaltura accounts -->
     </div>
 
@@ -78,7 +87,10 @@
   <div class="listView-header listView-actions"></div>
 
   {% for brightcove in brightcove_accounts %}
-    <div class="integrationList-channel">{{ brightcove.client_id }}
+    <div class="integrationList-channel">
+      <a class="ajaxLink" data-href="{% url 'teams:settings_externalsites' team.slug %}?form=edit-brightcove&selection={{ brightcove.pk }}">
+        {{ brightcove.client_id }}
+      </a>
       <!-- no secondary info for BrightcoveCMS accounts -->
     </div>
 
