@@ -16,19 +16,15 @@
 # along with this program.  If not, see
 # http://www.gnu.org/licenses/agpl-3.0.html.
 
-# import json
 from django import forms
-# from django.core import validators
-# from django.urls import reverse
-# from django.forms.utils import ErrorDict
-from django.utils.translation import ugettext_lazy
+from django.db.models import Q
+from django.utils.translation import ugettext as _, ugettext_lazy
 
 from auth.models import CustomUser as User
 from teams.models import Team
 from externalsites import models
-# from utils.forms import SubmitButtonField, SubmitButtonWidget
-# from utils.text import fmt
-# import videos.tasks
+from ui.forms import SearchField, ContentHeaderSearchBar
+
 import logging
 logger = logging.getLogger("forms")
 
@@ -89,3 +85,35 @@ class RemoveAccountForm(forms.Form):
 
     def is_valid(self):
         return not self.account is None
+
+class AccountFiltersForm(forms.Form):
+    q = SearchField(label=_('Search'), required=False,
+                    widget=ContentHeaderSearchBar)
+
+    def __init__(self, owner, get_data=None):
+        super(AccountFiltersForm, self).__init__(get_data)
+        self.owner = owner
+
+    def youtube_accounts(self, qs):
+        if self.is_bound and self.is_valid():
+            q = self.cleaned_data.get('q', '')
+            qs = qs.filter(Q(channel_id__icontains=q) | Q(username__icontains=q))
+        return qs
+
+    def vimeo_accounts(self, qs):
+        if self.is_bound and self.is_valid():
+            q = self.cleaned_data.get('q', '')
+            qs = qs.filter(username__icontains=q)
+        return qs
+
+    def kaltura_accounts(self, qs):
+        if self.is_bound and self.is_valid():
+            q = self.cleaned_data.get('q', '')
+            qs = qs.filter(partner_id__icontains=q)
+        return qs
+
+    def brightcove_accounts(self, qs):
+        if self.is_bound and self.is_valid():
+            q = self.cleaned_data.get('q', '')
+            qs = qs.filter(Q(publisher_id__icontains=q) | Q(client_id__icontains=q))
+        return qs

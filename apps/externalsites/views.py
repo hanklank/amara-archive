@@ -125,6 +125,7 @@ def team_settings_tab(request, team):
 # no need to wrap this view function since the calling view is already wrapped
 def team_externalsites(request, team):
     form_name = request.GET.get('form', None)
+    filters_form = new_forms.AccountFiltersForm(team, request.GET)
 
     if form_name:
         return team_edit_external_account(request, team, form_name)
@@ -134,12 +135,18 @@ def team_externalsites(request, team):
     kaltura_accounts = KalturaAccount.objects.for_owner(team)
     brightcove_accounts = BrightcoveCMSAccount.objects.for_owner(team)
 
-    return render(request, 'future/teams/settings/integrations.html', {
+    yt_accounts = filters_form.youtube_accounts(yt_accounts)
+    vimeo_accounts = filters_form.vimeo_accounts(vimeo_accounts)
+    kaltura_accounts = filters_form.kaltura_accounts(kaltura_accounts)
+    brightcove_accounts = filters_form.brightcove_accounts(brightcove_accounts)
+
+    context = {
         'team': team,
         'yt_accounts': yt_accounts,
         'vimeo_accounts': vimeo_accounts,
         'kaltura_accounts': kaltura_accounts,
         'brightcove_accounts': brightcove_accounts,
+        'filters_form': filters_form,
         'team_nav': 'settings',
         'settings_tab': 'integrations',
         'add_youtube_url': add_youtube_account_url(team),
@@ -147,7 +154,17 @@ def team_externalsites(request, team):
         'kaltura_form': new_forms.KalturaAccountForm(team),
         'brightcove_form': new_forms.BrightcoveCMSAccountForm(team),
         'modal_tab': 'youtube',
-    })
+    }
+
+    if not form_name and request.is_ajax():   
+        response_renderer = AJAXResponseRenderer(request)
+        response_renderer.replace(
+            '#integrations-list', 
+            'future/teams/settings/integrations-list.html',
+            context)        
+        return response_renderer.render()
+
+    return render(request, 'future/teams/settings/integrations.html', context)
 
 @team_view
 def team_edit_external_account(request, team, form_name=None):

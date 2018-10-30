@@ -1,5 +1,6 @@
 {% load i18n dropdown %}
 
+{% if yt_accounts or vimeo_accounts or kaltura_accounts or brightcove_accounts %}
 <div class="listView integrationList">
   {% if yt_accounts %}
   <div class="listView-header integrationList-channel">{% trans 'YouTube channels' %}</div>
@@ -86,3 +87,11 @@
   {% endif %}
   
 </div>
+
+{% else %}
+
+<div class="zero-state">
+  {% trans 'No integration accounts' %}
+</div>
+
+{% endif %}
