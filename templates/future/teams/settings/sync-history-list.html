@@ -12,8 +12,16 @@
     <div class="syncHistoryList-title">{{i.video_url.video.title}}</div>
     <div class="syncHistoryList-channel">{{i.get_account.readable_account_name}}</div>
     <div class="syncHistoryList-platform">{{i.get_account.readable_account_type}}</div>
-    <div class="syncHistoryList-language">{{i.language.language_code}}</div>
-    <div class="listView-actions">actions</div>
+    <div class="syncHistoryList-language">{{i.language.get_language_code_display}}</div>
+    <div class="listView-actions">
+
+      <!-- we put the SubtitleLanguage primary key in the button for simplicity -->
+      <button class="listView-action syncHistoryList-action-sync"
+              data-sl-pk="{{ i.language.pk }}"
+              data-ajax-url="{% url 'externalsites:export-subtitles' %}">
+        <span class="fa fa-cloud-upload-alt"></span>
+      </button>
+    </div>
   {% endfor %}  
   
 </div>

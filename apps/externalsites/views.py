@@ -24,7 +24,7 @@ from django.contrib.auth.views import redirect_to_login
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.urls import reverse
-from django.http import HttpResponseRedirect, Http404, HttpResponseBadRequest
+from django.http import HttpResponseRedirect, Http404, HttpResponseBadRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.http import is_safe_url
 from django.utils.translation import ugettext as _
@@ -36,8 +36,9 @@ from externalsites.auth_backends import OpenIDConnectInfo, OpenIDConnectBackend
 from externalsites.exceptions import YouTubeAccountExistsError, VimeoSyncAccountExistsError
 from externalsites.models import (get_sync_account, SyncHistory, YouTubeAccount,
                                   VimeoSyncAccount, BrightcoveCMSAccount, KalturaAccount,
-                                  SyncedSubtitleVersion)
+                                  SyncedSubtitleVersion, SyncHistory)
 from localeurl.utils import universal_url
+from subtitles.models import SubtitleLanguage
 from teams.models import Team
 from teams.permissions import can_change_team_settings, can_resync
 from videos import permissions
@@ -252,6 +253,7 @@ def team_edit_external_account(request, team, form_name=None):
     context['form'] = form
     context['team'] = team
     context['account'] = account
+    context['account_type_display'] = account.readable_account_type()
 
     response_renderer = AJAXResponseRenderer(request)
     response_renderer.show_modal(template, context)
@@ -330,6 +332,19 @@ def team_settings_sync_errors_tab(request, team):
         template_name = 'externalsites/new-team-settings-sync-errors.html'
 
     return render(request, template_name, context)
+
+# we pass the pk of the SubtitleLanguage object to be exported inside the request
+def export_subtitles(request):
+    try:
+        subtitle_language_pk = request.GET.get('pk')
+    except KeyError:
+        return HttpResponseBadRequest()
+
+    subtitle_language = SubtitleLanguage.objects.get(pk=subtitle_language_pk)
+    if SyncHistory.objects.force_retry_language_for_user(subtitle_language, request.user):
+        return HttpResponse(status=200)
+    else:
+        return HttpResponse(status=500)
 
 @login_required
 def user_profile_sync_errors_tab(request):

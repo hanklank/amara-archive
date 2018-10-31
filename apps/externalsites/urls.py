@@ -31,6 +31,8 @@ urlpatterns = [
     url(r'^google-login/', views.google_login, name='google-login'),
     url(r'^google-login-confirm/', views.google_login, {'confirmed': False}, name='google-login-confirm'),
 
+    url(r'^export-subtitles/', views.export_subtitles, name='export-subtitles'),
+
     url(r'^team-add-external-account/(?P<slug>[-\w]+)', views.team_add_external_account, name='team-add-external-account'),
     url(r'^team-edit-external-account/(?P<slug>[-\w]+)', views.team_edit_external_account, name='team-edit-external-account'),
 ]

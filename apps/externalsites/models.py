@@ -786,7 +786,6 @@ class YouTubeAccount(ExternalAccount):
     def readable_account_type(self):
         return _('YouTube')
 
-
 account_models = [
     KalturaAccount,
     BrightcoveCMSAccount,
