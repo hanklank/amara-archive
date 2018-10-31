@@ -66,10 +66,10 @@
 <section>
   <p>A varient of List View is the always-expanded version.  Here the secondary info is shown by default, without having to expand it.</p>
 
-  <div class="listView styleguide2Example">
+  <div class="listView styleguideExample">
     <div class="listView-header listView-checkbox">{% checkbox "all" id_prefix="selection2-" class="checkAll" data_name="selection2" %}</div>
-    <div class="listView-header styleguide2Example-title">Title</div>
-    <div class="listView-header styleguide2Example-language">Language</div>
+    <div class="listView-header styleguideExample-title">Title</div>
+    <div class="listView-header styleguideExample-language">Language</div>
     <div class="listView-header listView-actions"></div>
 
     {% for i in "x"|rjust:"10" %} {# dirty way to do a for loop #}
@@ -77,8 +77,8 @@
     <div class="listView-checkbox">{% checkbox forloop.counter id_prefix="selection2-" name="selection2" %}</div>
 
     {# To make an always-expanded listview, just add the visible class to the secondary info  #}
-    <div class="styleguide2Example-title">{% lorem 4 w random %}<div class="listView-secondary visible">Some extra info</div></div>
-    <div class="styleguide2Example-language">{% cycle "English" "French" "Spanish" "Japanese" %}<div class="listView-secondary visible">Some extra info</div></div>
+    <div class="styleguideExample-title">{% lorem 4 w random %}<div class="listView-secondary visible">Some extra info</div></div>
+    <div class="styleguideExample-language">{% cycle "English" "French" "Spanish" "Japanese" %}<div class="listView-secondary visible">Some extra info</div></div>
     <div class="listView-actions">
       {% dropdown-button-icon menu_id "listView-action" %}
       {% dropdown menu_id %}
