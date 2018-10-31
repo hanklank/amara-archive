@@ -2,16 +2,19 @@
 
 {% captureas modal_title %}
   {% blocktrans %}
-    Edit {{ title_type_label }} integration
+    Edit {{ account._meta.verbose_name }} integration
   {% endblocktrans %}
 {% endcaptureas %}
 
 {% startmodal "edit-account" modal_title %}
 
   <h4 class="modal-header">
-    {% blocktrans %}
-      Linked account: {{ account_name }}
-    {% endblocktrans %}
+    {% trans 'Linked account: ' %}
+    {% if account.channel_url %}
+      <a href="{{ account.channel_url }}">{{ account.readable_account_name }}</a>
+    {% else %}
+      {{ account.readable_account_name }}
+    {% endif %}
   </h4>
 
   <form class="ajaxForm" method="POST" action="{% url 'externalsites:team-edit-external-account' team.slug %}">
@@ -19,8 +22,8 @@
     <div class="modal-content">
       
         {% csrf_token %}
-        <input type="hidden" value="{{ account_type }}" name="accountType"/>
-        <input type="hidden" value="{{ account_pk }}" name="accountPk"/>
+        <input type="hidden" value="{{ account.account_type }}" name="accountType"/>
+        <input type="hidden" value="{{ account.pk }}" name="accountPk"/>
 
         <!-- not all the external account types have the same fields -->
         <!-- YouTube/Vimeo fields -->

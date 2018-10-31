@@ -249,13 +249,9 @@ def team_edit_external_account(request, team, form_name=None):
             form = new_forms.RemoveAccountForm(account)
             template = 'future/teams/settings/forms/integrations-remove.html'
 
-        context['account_name'] = account.readable_account_name()
-
     context['form'] = form
     context['team'] = team
-    context['account_pk'] = account.pk
-    context['account_type'] = account.account_type
-    context['title_type_label'] = account._meta.verbose_name
+    context['account'] = account
 
     response_renderer = AJAXResponseRenderer(request)
     response_renderer.show_modal(template, context)
