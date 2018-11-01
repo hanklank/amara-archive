@@ -10,10 +10,18 @@
   <div class="listView-header syncHistoryList-date">{% trans 'Export Date' %}</div>
   <div class="listView-header listView-actions"></div>
   {% for sh in page %}
-    <div class="syncHistoryList-title">{{sh.video_url.video.title}}</div>
+    <div class="syncHistoryList-title">
+      <a href="{{ sh.video_url.video.get_absolute_url }}?team={{ team.slug }}">
+        {{sh.video_url.video.title}}
+      </a>
+    </div>
     <div class="syncHistoryList-channel">{{sh.get_account.readable_account_name}}</div>
     <div class="syncHistoryList-platform">{{sh.get_account.readable_account_type}}</div>
-    <div class="syncHistoryList-language">{{sh.language.get_language_code_display}}</div>
+    <div class="syncHistoryList-language">
+      <a href="{{ sh.language.get_absolute_url }}?team={{ team.slug }}">
+        {{sh.language.get_language_code_display}}
+      </a>
+    </div>
     <div class="syncHistoryList-date">{{sh.datetime}}</div>
     <div class="listView-actions">
       {% if sh.result == 'S' %}

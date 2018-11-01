@@ -122,9 +122,6 @@ class SyncHistoryFiltersForm(forms.Form):
     q2 = SearchField(label=_('Search'), required=False,
                     widget=ContentHeaderSearchBar)
 
-    def __init__(self, get_data=None):
-        super(SyncHistoryFiltersForm, self).__init__(get_data)
-
     # this is quite different from how we usually process search queries
     # since we are not actually dealing with a queryset result
     def update_results(self, results):
