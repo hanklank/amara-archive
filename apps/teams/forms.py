@@ -34,6 +34,7 @@ from django.forms.formsets import formset_factory
 from django.forms.utils import ErrorDict
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
+from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import ugettext
@@ -42,7 +43,6 @@ from django.utils.translation import ungettext
 from auth.forms import UserField
 from auth.models import CustomUser as User
 from activity.models import ActivityRecord
-from collab.models import CollaborationSettings
 from messages.models import Message, SYSTEM_NOTIFICATION
 from messages.tasks import send_new_messages_notifications
 from subtitles.forms import SubtitlesUploadForm
@@ -53,7 +53,7 @@ from teams.models import (
     BillingReport, MembershipNarrowing, Application, TeamVisibility,
     VideoVisibility, EmailInvite, Setting
 )
-from teams import behaviors, permissions, tasks
+from teams import behaviors, notifymembers, permissions, tasks
 from teams.exceptions import ApplicationInvalidException
 from teams.fields import TeamMemberInput, TeamMemberRoleSelect, MultipleProjectField, MultipleUsernameInviteField
 from teams.permissions import (
@@ -1003,11 +1003,11 @@ class GeneralSettingsForm(forms.ModelForm):
 
     # subtitle visibility setting are for collab teams only
     def _calc_subtitle_visibility(self):
-        if self.instance.is_collab_team():
-            if self.instance.collaboration_settings.subtitle_visibility == CollaborationSettings.SUBTITLES_PUBLIC:
+        if self.instance.new_workflow.has_subtitle_visibility_setting:
+            if self.instance.collaboration_settings.subtitle_visibility == Team.SUBTITLES_PUBLIC:
                 self.initial['subtitles_public'] = True
                 self.initial['drafts_public'] = True
-            elif self.instance.collaboration_settings.subtitle_visibility == CollaborationSettings.SUBTITLES_PRIVATE_UNTIL_COMPLETE:
+            elif self.instance.collaboration_settings.subtitle_visibility == Team.SUBTITLES_PRIVATE_UNTIL_COMPLETE:
                 self.initial['subtitles_public'] = True
         else:
             del self.fields['subtitles_public']
@@ -1056,13 +1056,13 @@ class GeneralSettingsForm(forms.ModelForm):
             team.membership_policy = self.cleaned_data['membership_policy']
             team.save()
 
-            if self.instance.is_collab_team():
+            if self.instance.new_workflow.has_subtitle_visibility_setting:
                 if self.cleaned_data['drafts_public']:
-                    self.instance.collaboration_settings.subtitle_visibility = CollaborationSettings.SUBTITLES_PUBLIC
+                    self.instance.collaboration_settings.subtitle_visibility = Team.SUBTITLES_PUBLIC
                 elif self.cleaned_data['subtitles_public']:
-                    self.instance.collaboration_settings.subtitle_visibility = CollaborationSettings.SUBTITLES_PRIVATE_UNTIL_COMPLETE
+                    self.instance.collaboration_settings.subtitle_visibility = Team.SUBTITLES_PRIVATE_UNTIL_COMPLETE
                 else:
-                    self.instance.collaboration_settings.subtitle_visibility = CollaborationSettings.SUBTITLES_PRIVATE
+                    self.instance.collaboration_settings.subtitle_visibility = Team.SUBTITLES_PRIVATE
                 self.instance.collaboration_settings.save()
 
             self.instance.handle_settings_changes(user, self.initial_settings)
@@ -1087,6 +1087,56 @@ class GeneralSettingsForm(forms.ModelForm):
           'description': forms.Textarea(attrs={'rows':5}),
         }
 
+
+class NewPermissionsForm(forms.Form):
+    membership_policy = DependentBooleanField(
+        label=_('Invite users to the team'), required=True, choices=[
+            (Team.INVITATION_BY_ADMIN, _('Admins')),
+            (Team.INVITATION_BY_MANAGER, _('Managers')),
+            (Team.INVITATION_BY_ALL, _('Any Team Member')),
+        ])
+
+    video_policy = DependentBooleanField(
+        label=_('Add videos, update, or remove videos from team'),
+        required=True, choices=[
+            (Team.VP_ADMIN, _('Admins')),
+            (Team.VP_MANAGER, _('Managers')),
+            # VP_MEMBER is disabled until we add a UI for them to add videos
+            #(Team.VP_MEMBER, _('Managers')),
+        ])
+
+    def __init__(self, team, **kwargs):
+        self.team = team
+        self.initial_settings = team.get_settings()
+        super(NewPermissionsForm, self).__init__(**kwargs)
+        if team.video_policy == Team.VP_MEMBER:
+            # need to special case this one, since it's not an option
+            self.initial['video_policy'] = Team.VP_MANAGER
+        else:
+            self.initial['video_policy'] = team.video_policy
+        if self.team.is_by_invitation():
+            self.initial['membership_policy'] = team.membership_policy
+            self.fields['membership_policy'].help_text = self.invite_help_text()
+        else:
+            del self.fields['membership_policy']
+
+    def invite_help_text(self):
+        general_settings_link = format_html(
+            '<a href="{}">{}</a>',
+            reverse('teams:settings_basic', args=(self.team.slug,)),
+            ugettext(u'General settings'))
+        return mark_safe(fmt(
+            ugettext('Your admission policy is invitation only. You can '
+                     'change your admission policy on the '
+                     '%(general_settings_link)s page.'),
+            general_settings_link=general_settings_link))
+
+    def save(self, user):
+        with transaction.atomic():
+            for name, value in self.cleaned_data.items():
+                setattr(self.team, name, value)
+            self.team.save()
+            self.team.handle_settings_changes(user, self.initial_settings)
 
 class WorkflowForm(forms.ModelForm):
     class Meta:
@@ -1327,13 +1377,8 @@ class InviteForm(forms.Form):
             author=self.user, role=self.cleaned_data['role'],
             note=self.cleaned_data['message'])
         invite.save()
-        self.send_notif_for_invite(invite.pk)
-
+        notifymembers.send_invitation_message(invite)
         return invite
-
-    def send_notif_for_invite(self, invite_pk):
-        from messages import tasks as notifier        
-        notifier.team_invitation_sent.delay(invite_pk)
 
     def process_email_invite(self, email):
         invitees = User.objects.filter(email=email)
@@ -1353,7 +1398,7 @@ class InviteForm(forms.Form):
 class ProjectForm(forms.ModelForm):
     class Meta:
         model = Project
-        fields = ('name', 'description', 'workflow_enabled')
+        fields = ('name', 'description')
 
     def __init__(self, team, data=None, **kwargs):
         super(ProjectForm, self).__init__(data, **kwargs)
@@ -1378,31 +1423,39 @@ class ProjectForm(forms.ModelForm):
         return project
 
 class EditProjectForm(forms.Form):
-    name = forms.CharField(required=True)
-    description = forms.CharField(widget=forms.Textarea, required=False)
-    workflow_enabled = forms.BooleanField()
+    name = forms.CharField(required=True, max_length=50)
+    description = forms.CharField(widget=forms.Textarea, required=False, max_length=2048)
 
-    def __init__(self, team, data=None, **kwargs):
+    def __init__(self, team, project, data=None, **kwargs):
         super(EditProjectForm, self).__init__(data, **kwargs)
         self.team = team
-        if data:
-            self.project = data['project']
-            self.name = self.project.name
-            self.description = self.project.description
-            self.workflow_enabled = self.project.workflow_enabled
+        self.project = project
+        self.setup_fields()
+
+    def setup_fields(self):
+        self.fields['name'].widget.attrs.update({'value': self.project.name})
+        self.fields['description'].initial = self.project.description
 
     def clean(self):
-        if self.cleaned_data.get('name') and self.cleaned_data.get('project'):
-            self.check_duplicate_name()
+        if self.cleaned_data.get('name'):
+            self.check_name()
+        if self.cleaned_data.get('description'):
+            self.check_description()
         return self.cleaned_data
 
-    def check_duplicate_name(self):
+    def check_name(self):
         name = self.cleaned_data['name']
+
+        if len(name) > self.fields['name'].max_length:
+            self._errors['name'] = self.error_class([
+                _(u"Name is too long; Max length is 50 characters")
+            ])
+            del self.cleaned_data['name']
 
         same_name_qs = (
             self.team.project_set
             .filter(slug=pan_slugify(name))
-            .exclude(id=self.cleaned_data['project'])
+            .exclude(id=self.project.id)
         )
 
         if same_name_qs.exists():
@@ -1411,21 +1464,32 @@ class EditProjectForm(forms.Form):
             ])
             del self.cleaned_data['name']
 
-    def save(self, project):
-        project.name = self.cleaned_data['name']
-        project.description = self.cleaned_data['description']
-        project.workflow_enabled = self.cleaned_data['workflow_enabled']
-        project.save()
+    def check_description(self):
+        description = self.cleaned_data['description']
+
+        if len(description) > self.fields['description'].max_length:
+            self._errors['description'] = self.error_class([
+                _(u"Description is too long; Max length is 2048 characters")
+            ])
+            del self.cleaned_data['description']
+
+    def save(self):
+        try:
+            self.project.name = self.cleaned_data['name']
+            self.project.description = self.cleaned_data['description']
+            self.project.save()
+        except Exception as e:
+            logger.warn(e, exc_info=True)
+
         return self.project
 
 class DeleteProjectForm(forms.Form):
     name = "delete_project"
     label = _("Delete Project")
 
-    def __init__(self, team, data=None, **kwargs):
+    def __init__(self, team, project, data=None, **kwargs):
         super(DeleteProjectForm, self).__init__(data, **kwargs)
-        if data:
-            self.project = data['project']
+        self.project = project
 
     def save(self):
         try:

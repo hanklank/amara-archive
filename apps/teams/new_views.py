@@ -63,7 +63,7 @@ from auth.forms import CustomUserCreationForm
 from messages import tasks as messages_tasks
 from subtitles.models import SubtitleLanguage
 from teams.models import Project
-from teams.workflows import TeamWorkflow
+from teams.workflows import TeamWorkflow, TeamPermissionsRow
 from ui import (
     AJAXResponseRenderer, ManagementFormList, render_management_form_submit,
     AjaxLink, ContextMenu)
@@ -1036,13 +1036,12 @@ def manage_videos_context_menu(team, video, enabled_forms):
 
 # Functions to handle the forms on the videos pages
 def get_video_management_forms(team):
-    if team.is_collab_team():
-        delete_form = forms.DeleteVideosForm
-    else:
+    if team.is_simple_team():
         delete_form = forms.DeleteVideosFormSimple
+    else:
+        delete_form = forms.DeleteVideosForm
 
     form_list = ManagementFormList([
-        # forms.DeleteVideosForm,
         delete_form,
         forms.MoveVideosForm,
         forms.EditVideosForm,
@@ -1306,6 +1305,50 @@ def settings_feeds(request, team):
     })
 
 @team_settings_view
+def settings_permissions(request, team):
+    if request.POST:
+        form = forms.NewPermissionsForm(team, data=request.POST)
+
+        if form.is_valid():
+            form.save(request.user)
+            messages.success(request, _(u'Permissions saved.'))
+            return HttpResponseRedirect(request.path)
+    else:
+        form = forms.NewPermissionsForm(team)
+
+    return render(request, "future/teams/settings/permissions.html", {
+        'team': team,
+        'form': form,
+        'team_nav': 'settings',
+        'settings_tab': 'permissions',
+        'permissions_table': make_permissions_table(form, team),
+    })
+
+def make_permissions_table(form, team):
+    management_rows = []
+    if team.is_by_invitation():
+        management_rows.append(TeamPermissionsRow.from_setting(
+            _('Invite users to join team'), form, 'membership_policy'))
+    elif team.is_by_application():
+        management_rows.append(TeamPermissionsRow(
+            _('Review team member applications'), True, False, False))
+    management_rows.extend([
+        TeamPermissionsRow(_('Change team member roles'),
+                           True, False, False),
+        TeamPermissionsRow(_('Remove users from team'),
+                           True, False, False),
+    ])
+    table = [
+        (_('Video Management'), [
+            TeamPermissionsRow.from_setting(
+                _('Add, update, or remove videos'), form, 'video_policy'),
+        ]),
+        (_('Team Management'), management_rows),
+     ]
+    team.new_workflow.customize_permissions_table(team, form, table)
+    return table
+
+@team_settings_view
 def settings_projects(request, team):
     if team.is_old_style():
         return old_views.settings_projects(request, team)
@@ -1322,6 +1365,7 @@ def settings_projects(request, team):
         'team': team,
         'projects': projects,
         'filters_form': filters_form,
+        'settings_tab': 'projects',
         'paginator': paginator,
         'page': page,
         'next': next_page,
@@ -1333,7 +1377,9 @@ def settings_projects(request, team):
         ],
     }
 
-    if form_name:
+    if form_name == 'add':
+        return settings_add_project_form(request, team)
+    elif form_name:
         return settings_projects_form(request, team, form_name, projects, page)
 
     if not form_name and request.is_ajax():
@@ -1347,11 +1393,40 @@ def settings_projects(request, team):
 
     return render(request, "future/teams/settings/projects.html", context)
 
+def settings_add_project_form(request, team):
+    response_renderer = AJAXResponseRenderer(request)
+
+    if request.method == 'POST':
+        try:
+            form = forms.ProjectForm(team, data=request.POST)
+        except Exception as e:
+            logger.error(e, exc_info=True)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _('Project added'))
+            response_renderer.reload_page()
+            return response_renderer.render()
+    else:
+        try:
+            form = forms.ProjectForm(team)
+        except Exception as e:
+            logger.error(e, exc_info=True)
+            return HttpResponseBadRequest()
+
+    template_name = 'future/teams/settings/forms/project-add.html'
+    context = {'form': form, 'team': team}
+
+    response_renderer.show_modal(template_name, context)
+    return response_renderer.render()
+
 def settings_projects_form(request, team, form_name, projects, page):
-    if form_name == 'add':
-        FormClass = forms.ProjectForm
-        form_message = _('Project added')
-    elif form_name == 'edit':
+    try:
+        selection = int(request.GET['selection'])
+        project = projects.get(id=selection)
+    except:
+        return HttpResponseBadRequest()
+
+    if form_name == 'edit':
         FormClass = forms.EditProjectForm
         form_message = _('Project updated')
     elif form_name == 'delete':
@@ -1362,7 +1437,7 @@ def settings_projects_form(request, team, form_name, projects, page):
 
     if request.method == 'POST':
         try:
-            form = FormClass(team, data=request.POST)
+            form = FormClass(team, project, data=request.POST)
         except Exception as e:
             logger.error(e, exc_info=True)
         if form.is_valid():
@@ -1372,13 +1447,12 @@ def settings_projects_form(request, team, form_name, projects, page):
             return response_renderer.render()
     else:
         try:
-            form = FormClass(team)
+            form = FormClass(team, project)
         except Exception as e:
             logger.error(e, exc_info=True)
 
-    # TODO: add modal templates, context
     template_name = 'future/teams/settings/forms/project-{}.html'.format(form_name)
-    context = {'form': form, 'team': team}
+    context = {'form': form, 'team': team, 'project': project}
 
     response_renderer.show_modal(template_name, context)
     return response_renderer.render()
