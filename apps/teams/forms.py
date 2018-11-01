@@ -1056,7 +1056,7 @@ class GeneralSettingsForm(forms.ModelForm):
             team.membership_policy = self.cleaned_data['membership_policy']
             team.save()
 
-            if self.instance.is_collab_team():
+            if self.instance.new_workflow.has_subtitle_visibility_setting:
                 if self.cleaned_data['drafts_public']:
                     self.instance.collaboration_settings.subtitle_visibility = Team.SUBTITLES_PUBLIC
                 elif self.cleaned_data['subtitles_public']:
