@@ -131,6 +131,7 @@ def team_settings_tab(request, team):
 def team_externalsites(request, team):
     form_name = request.GET.get('form', None)
     filters_form = new_forms.AccountFiltersForm(team, request.GET)
+    sync_history_filters_form = new_forms.SyncHistoryFiltersForm(request.GET)
 
     if form_name:
         return team_edit_external_account(request, team, form_name)
@@ -149,7 +150,8 @@ def team_externalsites(request, team):
     # in order to do that, need to get all external accounts of team
     # then do SyncedSubtitleVersion.objects.filter()
     sync_history = SyncHistory.objects.for_owner_latest_per_video_and_language(team)
-    sync_history_paginator = AmaraPaginatorFuture(sync_history, SUBTITLE_EXPORTS_PER_PAGE)
+    sync_history_r = sync_history_filters_form.update_results(sync_history)
+    sync_history_paginator = AmaraPaginatorFuture(sync_history_r, SUBTITLE_EXPORTS_PER_PAGE)
     sync_history_page = sync_history_paginator.get_page(request)
 
     context = {
@@ -159,6 +161,7 @@ def team_externalsites(request, team):
         'kaltura_accounts': kaltura_accounts,
         'brightcove_accounts': brightcove_accounts,
         'filters_form': filters_form,
+        'sync_history_filters_form': sync_history_filters_form,
         'team_nav': 'settings',
         'settings_tab': 'integrations',
         'add_youtube_url': add_youtube_account_url(team),
@@ -178,7 +181,11 @@ def team_externalsites(request, team):
         response_renderer.replace(
             '#integrations-list', 
             'future/teams/settings/integrations-list.html',
-            context)        
+            context)
+        response_renderer.replace(
+            '#sync-history-list',
+            'future/teams/settings/sync-history-list.html',
+            context)    
         return response_renderer.render()
 
     return render(request, 'future/teams/settings/integrations.html', context)

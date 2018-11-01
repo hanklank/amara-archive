@@ -117,3 +117,25 @@ class AccountFiltersForm(forms.Form):
             q = self.cleaned_data.get('q', '')
             qs = qs.filter(Q(publisher_id__icontains=q) | Q(client_id__icontains=q))
         return qs
+
+class SyncHistoryFiltersForm(forms.Form):
+    q2 = SearchField(label=_('Search'), required=False,
+                    widget=ContentHeaderSearchBar)
+
+    def __init__(self, get_data=None):
+        super(SyncHistoryFiltersForm, self).__init__(get_data)
+
+    # this is quite different from how we usually process search queries
+    # since we are not actually dealing with a queryset result
+    def update_results(self, results):
+        ret_results = []
+        if self.is_bound and self.is_valid():
+            q = self.cleaned_data.get('q2', '')
+            if q:
+                q = q.lower()
+                for i in results:
+                    if q in i.video_url.video.title.lower():
+                        ret_results.append(i)
+                print(ret_results)
+                return ret_results        
+        return results

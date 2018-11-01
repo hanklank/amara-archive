@@ -2,6 +2,8 @@
 {% load i18n forms modal captureas %}
 
 {% block settings_form %}
+
+<!-- integrations account list -->
 <form>
 <div class="contentHeader">
   <div class="contentHeader-title">{% trans 'Accounts' %}</div>
@@ -12,18 +14,20 @@
   </button>
 </div>
 </form>
-
 <div id="integrations-list">
 {% include "future/teams/settings/integrations-list.html" %}
 </div>
 
+<!-- subtitle export history list -->
 <form>
 <div class="contentHeader">
   <div class="contentHeader-title">{% trans 'Subtitle Export History' %}</div>
+  {{ sync_history_filters_form.q2 }}
 </div>
 </form>
+<div id="sync-history-list">
 {% include "future/teams/settings/sync-history-list.html" %}
-
+</div>
 
 <!-- modal code for adding integrations -->
 {% include "future/teams/settings/forms/integrations-add.html" %}
