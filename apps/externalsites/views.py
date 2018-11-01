@@ -47,10 +47,13 @@ from teams.new_views import team_view
 from ui import AJAXResponseRenderer
 from utils.breadcrumbs import BreadCrumb
 from utils.http import get_url_host
+from utils.pagination import AmaraPaginatorFuture
 from utils.text import fmt
 from videos.models import VideoUrl
 
 logger = logging.getLogger('amara.externalsites.views')
+
+SUBTITLE_EXPORTS_PER_PAGE = 20
 
 class AccountFormHandler(object):
     """Handles a single form for the settings tab
@@ -145,7 +148,9 @@ def team_externalsites(request, team):
     # need to get all SyncedSubtitleVersion objects of a team
     # in order to do that, need to get all external accounts of team
     # then do SyncedSubtitleVersion.objects.filter()
-    sync_history = SyncedSubtitleVersion.objects.for_owner(team)
+    sync_history = SyncHistory.objects.for_owner_latest_per_video_and_language(team)
+    sync_history_paginator = AmaraPaginatorFuture(sync_history, SUBTITLE_EXPORTS_PER_PAGE)
+    sync_history_page = sync_history_paginator.get_page(request)
 
     context = {
         'team': team,
@@ -160,7 +165,11 @@ def team_externalsites(request, team):
         'add_vimeo_url': add_vimeo_account_url(team),
         'kaltura_form': new_forms.KalturaAccountForm(team),
         'brightcove_form': new_forms.BrightcoveCMSAccountForm(team),
-        'sync_history': sync_history,
+
+        # sync history pagination -- it's okay to generically name these contexts
+        # as `paginator` and `page` since we dont paginate the accounts list
+        'paginator': sync_history_paginator,
+        'page': sync_history_page,
         'modal_tab': 'youtube',
     }
 
@@ -333,18 +342,24 @@ def team_settings_sync_errors_tab(request, team):
 
     return render(request, template_name, context)
 
-# we pass the pk of the SubtitleLanguage object to be exported inside the request
+# we pass the pk of the SyncHistory object to be exported inside the request
 def export_subtitles(request):
     try:
-        subtitle_language_pk = request.GET.get('pk')
+        sync_history_pk = request.GET.get('pk')
     except KeyError:
         return HttpResponseBadRequest()
 
-    subtitle_language = SubtitleLanguage.objects.get(pk=subtitle_language_pk)
-    if SyncHistory.objects.force_retry_language_for_user(subtitle_language, request.user):
+    try:
+        sh = SyncHistory.objects.get(pk=sync_history_pk)
+    except SyncHistory.DoesNotExist:
+        return HttpResponse(status=500)
+
+    account = sh.get_account()
+
+    if account.update_subtitles(sh.video_url, sh.language):
         return HttpResponse(status=200)
     else:
-        return HttpResponse(status=500)
+        return HttpResponse(status=500)        
 
 @login_required
 def user_profile_sync_errors_tab(request):

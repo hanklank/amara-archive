@@ -156,10 +156,12 @@ class ExternalAccount(models.Model):
             self.do_update_subtitles(video_url, language, version)
         except Exception, e:
             SyncHistory.objects.create_for_error(e, **sync_history_values)
+            return False
         else:
             SyncHistory.objects.create_for_success(**sync_history_values)
             SyncedSubtitleVersion.objects.set_synced_version(
                 self, video_url, language, version)
+            return True
 
     def delete_subtitles(self, video_url, language):
         sync_history_values = {
@@ -1077,6 +1079,29 @@ class SyncHistoryManager(models.Manager):
             item.save()
             return True
         return False
+
+    # gets the latest SyncHistory object for each video per language from `owner`
+    def for_owner_latest_per_video_and_language(self, owner):
+        accounts = []
+        for model in account_models:
+            for account in model.objects.for_owner(owner):
+                accounts.append(account)
+
+        history = {}
+
+        ret_val = []
+        for account in accounts:
+            for sh in self.filter(account_type=account.account_type,
+                                   account_id=account.id).order_by('-datetime'):
+                if (sh.video_url.pk, sh.language.language_code) in history:
+                    continue
+                else:
+                    history[(sh.video_url.pk, sh.language.language_code)] = sh
+
+        #  we need to sort again since the initial sorting will be 
+        #  latest per account type and we want to sort by most recent across all
+        #  account types
+        return [i[1] for i in sorted(history.items(), key=lambda v: v[1].datetime, reverse=True)]
 
 class SyncHistory(models.Model):
     """History of all subtitle sync attempts."""
