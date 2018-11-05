@@ -217,10 +217,10 @@ def team_edit_external_account(request, team, form_name=None):
             account = BrightcoveCMSAccount.objects.get(pk=account_pk)
             form = new_forms.BrightcoveCMSAccountForm(team, request.POST)
 
+        account_verbose_name = account._meta.verbose_name
+
         if removing:
             form = new_forms.RemoveAccountForm(account)
-
-        account_verbose_name = account._meta.verbose_name
             
         if form.is_valid():
             form.save()

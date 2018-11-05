@@ -2,7 +2,7 @@
 
 {% captureas modal_title %}
   {% blocktrans %}
-    Remove {{ title_type_label }}
+    Remove {{ account_type_display }} integration
   {% endblocktrans %}
 {% endcaptureas %}
 
@@ -11,13 +11,14 @@
   <form class="ajaxForm" method="POST" action="{% url 'externalsites:team-edit-external-account' team.slug %}">
 
     <div class="modal-content">
-        {% blocktrans %}
-          <p>Are you sure that you want to remove the {{ title_type_label }} {{ account_name }} from {{ team }}?</p>
+        {% blocktrans with name=account.readable_account_name %}
+          <p>Are you sure that you want to remove {{ name }} from {{ team }}?</p>
         {% endblocktrans %}
         {% csrf_token %}
-        <input type="hidden" value="{{ account_type }}" name="accountType"/>
-        <input type="hidden" value="{{ account_pk }}" name="accountPk"/>
-        <input type="hidden" value="1" name="remove"/> <!-- used to indicate to the view that we will delete an external account) -->
+        <input type="hidden" value="{{ account.account_type }}" name="accountType"/>
+        <input type="hidden" value="{{ account.pk }}" name="accountPk"/>
+        <input type="hidden" value="1" name="remove"/> 
+        <!-- used to indicate to the view that we will delete an external account) -->
 
     </div>
     <div class="modal-footer">

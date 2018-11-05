@@ -72,11 +72,11 @@ def find_existing_caption_id(access_token, video_id, language_code,
         except KeyError:
             pass
     return None
+
 '''
 <account_syncs_metadata> is a boolean that specifies if the YouTube account is
-set to sync metadata for its videos -- this is used for new style teams and at
-the same time we maintain the usage of the setting teams.models.Team.sync_metadata
-for old-style teams
+set to sync metadata for its videos. At the same time we maintain the usage of 
+the setting teams.models.Team.sync_metadata for old-style teams
 '''
 def update_subtitles(video_id, access_token, subtitle_version,
                      enable_language_mapping, account_syncs_metadata):

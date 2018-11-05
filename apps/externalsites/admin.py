@@ -102,6 +102,7 @@ class YoutubeAccountForm(forms.ModelForm):
             'enable_language_mapping',
             'sync_subtitles',
             'fetch_initial_subtitles',
+            'sync_metadata',
         )
 
 class YouTubeAccountAdmin(admin.ModelAdmin):

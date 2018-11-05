@@ -177,7 +177,8 @@ class YoutubeAccountForm(forms.Form):
     import_team = forms.ChoiceField(label='', required=False)
     sync_subtitles = forms.BooleanField(label=ugettext_lazy('Export subtitles from Amara to YouTube'), required=False)
     fetch_initial_subtitles = forms.BooleanField(label=ugettext_lazy('Import initial subtitles from YouTube when videos are submitted to Amara'), required=False)
-    sync_metadata = forms.BooleanField(label=ugettext_lazy('Export metadata for videos'),
+    sync_metadata = forms.BooleanField(required=False,
+                                       label=ugettext_lazy('Export metadata for videos'),
                                        help_text=ugettext_lazy('Enable to sync video main language, and localized titles and descriptions'))
 
     def __init__(self, admin_user, account, data=None, **kwargs):
