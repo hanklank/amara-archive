@@ -175,8 +175,10 @@ class YoutubeAccountForm(forms.Form):
         widget=forms.widgets.SelectMultiple,
         required=False)
     import_team = forms.ChoiceField(label='', required=False)
-    sync_subtitles = forms.BooleanField(label=ugettext_lazy('Sync subtitles from Amara to YouTube'), required=False)
-    fetch_initial_subtitles = forms.BooleanField(label=ugettext_lazy('Fetch initial subtitles from YouTube when videos are submitted to Amara'), required=False)
+    sync_subtitles = forms.BooleanField(label=ugettext_lazy('Export subtitles from Amara to YouTube'), required=False)
+    fetch_initial_subtitles = forms.BooleanField(label=ugettext_lazy('Import initial subtitles from YouTube when videos are submitted to Amara'), required=False)
+    sync_metadata = forms.BooleanField(label=ugettext_lazy('Export metadata for videos'),
+                                       help_text=ugettext_lazy('Enable to sync video main language, and localized titles and descriptions'))
 
     def __init__(self, admin_user, account, data=None, **kwargs):
         super(YoutubeAccountForm, self).__init__(data=data, **kwargs)
@@ -190,6 +192,7 @@ class YoutubeAccountForm(forms.Form):
     def setup_account_options(self):
         self['sync_subtitles'].field.initial = self.account.sync_subtitles
         self['fetch_initial_subtitles'].field.initial = self.account.fetch_initial_subtitles
+        self['sync_metadata'].field.initial = self.account.sync_metadata
 
     def setup_sync_team(self):
         choices = [ ('', _('Clear')) ]
@@ -249,6 +252,7 @@ class YoutubeAccountForm(forms.Form):
                 self.account.import_team_id = self.cleaned_data['import_team']
             self.account.sync_subtitles = self.cleaned_data['sync_subtitles']
             self.account.fetch_initial_subtitles = self.cleaned_data['fetch_initial_subtitles']
+            self.account.sync_metadata = self.cleaned_data['sync_metadata']
             self.account.save()
 
     def show_sync_teams(self):
@@ -260,8 +264,8 @@ class VimeoAccountForm(forms.Form):
     sync_teams = AmaraMultipleChoiceField(
         widget=forms.widgets.SelectMultiple,
         required=False)
-    sync_subtitles = forms.BooleanField(label=ugettext_lazy('Sync subtitles from Amara to Vimeo'), required=False)
-    fetch_initial_subtitles = forms.BooleanField(label=ugettext_lazy('Fetch initial subtitles from Vimeo when videos are submitted to Amara'), required=False)
+    sync_subtitles = forms.BooleanField(label=ugettext_lazy('Export subtitles from Amara to Vimeo'), required=False)
+    fetch_initial_subtitles = forms.BooleanField(label=ugettext_lazy('Import initial subtitles from Vimeo when videos are submitted to Amara'), required=False)
 
     def __init__(self, admin_user, account, data=None, **kwargs):
         super(VimeoAccountForm, self).__init__(data=data, **kwargs)

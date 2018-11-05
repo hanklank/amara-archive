@@ -643,6 +643,10 @@ class YouTubeAccount(ExternalAccount):
     sync_teams = models.ManyToManyField(
         Team, related_name='youtube_sync_accounts')
 
+    # this setting was originally a team-wide setting in teams.models.Team.sync_metadata
+    # the setting is now transferred here and adjustable on a per-Youtube-account basis
+    sync_metadata = models.BooleanField(default=True)
+
     objects = YouTubeAccountManager()
 
     class Meta:
@@ -729,7 +733,8 @@ class YouTubeAccount(ExternalAccount):
             access_token = google.get_new_access_token(self.oauth_refresh_token)
             syncing.youtube.update_subtitles(video_url.videoid, access_token,
                                              version,
-                                             self.enable_language_mapping)
+                                             self.enable_language_mapping,
+                                             self.sync_metadata)
 
     def do_delete_subtitles(self, video_url, language):
         access_token = google.get_new_access_token(self.oauth_refresh_token)
