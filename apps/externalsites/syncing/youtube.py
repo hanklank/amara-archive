@@ -106,7 +106,9 @@ def sync_metadata(video_id, access_token, subtitle_version,
     team_video = video.get_team_video()
     
     # support for old-style teams
-    if team_video.team.is_old_style() and not team_video.team.sync_metadata:
+    if (team_video and
+        team_video.team.is_old_style() and 
+        not team_video.team.sync_metadata):
         return
 
     if not (team_video and account_syncs_metadata and            
