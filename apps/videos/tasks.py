@@ -27,8 +27,7 @@ from babelsubs.storage import diff as diff_subtitles
 from messages.models import Message
 from messages import tasks
 from utils import send_templated_email, DEFAULT_PROTOCOL
-from videos.models import (VideoFeed, Video, VIDEO_TYPE_YOUTUBE, VideoUrl,
-                           VideoIndex)
+from videos.models import (VideoFeed, Video, VIDEO_TYPE_YOUTUBE, VideoUrl)
 from subtitles.models import (
     SubtitleLanguage, SubtitleVersion
 )
@@ -53,7 +52,7 @@ def cleanup():
         now = datetime.datetime.now()
         Session.objects.filter(expire_date__lt=now).delete()
 
-@job(timeout=20)
+@job(timeout=30)
 def save_thumbnail_in_s3(video_id):
     try:
         video = Video.objects.get(pk=video_id)

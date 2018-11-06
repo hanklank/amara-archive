@@ -20,12 +20,12 @@ from __future__ import absolute_import
 
 from django.contrib import messages
 from django.core.urlresolvers import reverse
+from django.http import Http404
 from django.shortcuts import redirect, render
 from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
 
-from collab.views import dashboard_set_languages
 from subtitles.models import SubtitleVersion
 from teams import views as old_views
 from teams import forms
@@ -204,6 +204,7 @@ def dashboard(request, team):
         raise PermissionDenied()
 
     if len(request.user.get_languages()) == 0:
+        from collab.views import dashboard_set_languages
         return dashboard_set_languages(request, team)
 
     video_qs = team.videos.all().order_by('-created')
@@ -277,7 +278,8 @@ class SimpleVideoPageCustomization(VideoPageCustomization):
 
 class SimpleSubtitlesPageCustomization(SubtitlesPageCustomization):
     def __init__(self, request, video, subtitle_language, team):
-        super(SimpleSubtitlesPageCustomization, self).__init__(request.user, video, subtitle_language)
+        super(SimpleSubtitlesPageCustomization, self).__init__(
+            request.user, video, subtitle_language, team.slug)
         self.request = request
         self.team = team
         self.setup_header()
@@ -306,28 +308,9 @@ class SimpleTeamWorkflow(TeamWorkflow):
         """Get the SubtitleWorkflow for a video with this workflow.  """
         return TeamVideoWorkflow(team_video)
 
+    # simple teams don't have a workflow settings page anymore
     def workflow_settings_view(self, request, team):
-        if request.method == 'POST':
-            form = forms.SimplePermissionsForm(instance=team,
-                                               data=request.POST)
-            if form.is_valid():
-                form.save(request.user)
-                messages.success(request, _(u'Workflow updated'))
-                return redirect('teams:settings_workflows', team.slug)
-            else:
-                messages.error(request, form.errors.as_text())
-        else:
-            form = forms.SimplePermissionsForm(instance=team)
-
-        return render(request, "new-teams/settings-simple-workflow.html", {
-            'team': team,
-            'form': form,
-            'breadcrumbs': [
-                BreadCrumb(team, 'teams:dashboard', team.slug),
-                BreadCrumb(_('Settings'), 'teams:settings_basic', team.slug),
-                BreadCrumb(_('Workflow')),
-            ],
-        })
+        raise Http404
 
     def video_page_customize(self, request, video):
         team = self.find_team_for_page(request)

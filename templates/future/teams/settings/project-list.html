@@ -1,0 +1,32 @@
+{% load i18n forms dropdown %}
+{% if page %}
+<ul class="listView projects">
+  <div class="listView-header">{% trans "Title" %}</div>
+  <div class="listView-header">{% trans "Description" %}</div>
+  <div class="listView-header"></div>
+
+  {% for project in page %}
+  <div>{{ project.name }}</div>
+  <div>{{ project.description }}</div>
+  <div class="listView-actions">
+    {% dropdown-button-icon "project-context-menu" "listView-action" data_selection=project.id %}
+  </div>
+  {% endfor %}
+
+  {% dropdown "project-context-menu" %}
+  {% dropdown-js-item _("Edit project") 'listview-form' 'edit' %}
+  {% dropdown-js-item _("Delete") 'listview-form' 'delete' %}
+  {% enddropdown %}
+</ul>
+{% include "future/paginator.html" %}
+
+<div id="projectSettings-actionBar" class="actionBar">
+  <form class="actionBar-form ajaxForm" method="GET">
+    <button class="button cta" type="submit" name="form" value="edit">{% trans "Edit project" %}</button>
+    <button class="button cta" type="submit" name="form" value="delete">{% trans "Delete" %}</button>
+    <button class="button borderless actionBar-deselect">{% trans "Deselect" %}</button>
+  </form>
+</div>
+{% else %}
+<div class="zero-state">{% trans "No projects" %}</div>
+{% endif %}

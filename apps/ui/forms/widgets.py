@@ -62,19 +62,56 @@ class AmaraProjectSelectMultiple(widgets.SelectMultiple):
     pass
 
 class AmaraRadioSelect(widgets.RadioSelect):
+    def __init__(self, inline=False, 
+                 dynamic_choice_help_text=None, dynamic_choice_help_text_initial=None, 
+                 *args, **kwargs):
+        super(AmaraRadioSelect, self).__init__(*args, **kwargs)
+        self.inline = inline
+
+        try:
+            self.widget_classes = kwargs['attrs']['class']
+        except KeyError:
+            self.widget_classes = ''
+
+        if dynamic_choice_help_text:
+            self.dynamic_choice_help_text = dict(dynamic_choice_help_text)
+            self.widget_classes += ' dynamicHelpTextRadio'
+        else:
+            self.dynamic_choice_help_text = {}
+
+        if dynamic_choice_help_text_initial:
+            self.dynamic_choice_help_text_initial = dynamic_choice_help_text_initial   
+
     def render(self, name, value, attrs=None):
+        div_class = 'radio'
+        li_class = ''
+        ul_class = ''
+        if self.inline:
+            div_class += ' div-radio-inline'
+            li_class = 'li-radio-inline'
+
+        if self.dynamic_choice_help_text:
+            ul_class = 'radio-dynamic-help-text'        
+
         if value is None:
             value = ''
-        output = [u'<ul>']
+        output = [u'<ul class="{}">'.format(ul_class)]
         for i, choice in enumerate(self.choices):
             input_id = '{}_{}'.format(attrs['id'], i)
             output.extend([
-                u'<li><div class="radio">',
+                u'<li class="{}"><div class="{}">'.format(li_class, div_class),
                 self.render_input(name, value, choice, input_id),
                 self.render_label(name, value, choice, input_id),
                 u'</div></li>',
             ])
         output.append(u'</ul>')
+
+        if self.dynamic_choice_help_text:
+            output.append(u'<div class="helpBlock dynamicHelpTextContainer">')
+            if self.dynamic_choice_help_text_initial:
+                output.append(self.dynamic_choice_help_text_initial)
+            output.append(u'</div>')
+
         return mark_safe(u''.join(output))
 
     def render_input(self, name, value, choice, input_id):
@@ -83,9 +120,14 @@ class AmaraRadioSelect(widgets.RadioSelect):
             'type': 'radio',
             'name': name,
             'value': force_unicode(choice[0]),
+            'class': self.widget_classes
         }
         if choice[0] == value:
             attrs['checked'] = 'checked'
+
+        if self.dynamic_choice_help_text:
+            attrs['data-dynamic-help-text'] = self.dynamic_choice_help_text[choice[0]]
+
         return u'<input{}>'.format(flatatt(attrs))
 
     def render_label(self, name, value, choice, input_id):
@@ -212,6 +254,18 @@ class SwitchInput(widgets.CheckboxInput):
             'attrs': flatatt(attrs),
         }))
 
+# mainly used to hack the ordered multi field in the collab workflow settings page
+class ReadOnlySpan(widgets.Widget):
+    def __init__(self, inner_text='', attrs=None):
+        super(ReadOnlySpan, self).__init__(attrs)
+        self.inner_text = inner_text
+
+    def render(self, name, value, attrs=None):
+        span_class = ''
+        if 'class' in self.attrs:
+            span_class = self.attrs['class']
+        return mark_safe(u'<span class="{}">{}</span>'.format(span_class, self.inner_text))
+
 class DependentCheckboxes(widgets.MultiWidget):
     # TODO Make this work with switches as well as checkboxes
     template_name = 'ui/dependent-choices.html'
@@ -269,5 +323,5 @@ class DependentCheckboxes(widgets.MultiWidget):
 __all__ = [
     'AmaraRadioSelect', 'SearchBar', 'ContentHeaderSearchBar',
     'AmaraFileInput', 'AmaraClearableFileInput', 'UploadOrPasteWidget',
-    'AmaraImageInput', 'SwitchInput', 'DependentCheckboxes',
+    'AmaraImageInput', 'SwitchInput', 'ReadOnlySpan', 'DependentCheckboxes'
 ]
