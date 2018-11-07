@@ -27,11 +27,11 @@
 
         <!-- not all the external account types have the same fields -->
         <!-- YouTube/Vimeo fields -->
-        <!-- TODO import metadata is in teams.models.Team.sync_metadata -->
         {% if form.sync_metadata %} {% render_field form.sync_metadata %}{% endif %}
         {% if form.sync_subtitles %} {% render_field form.sync_subtitles %}{% endif %}
         {% if form.fetch_initial_subtitles %} {% render_field form.fetch_initial_subtitles %}{% endif %}
         {% if form.sync_teams %} {% render_field form.sync_teams %}{% endif %}
+        {% if form.import_team %} {% render_field form.import_team %}{% endif %}
 
         <!-- Kaltura fields -->
         {% if form.partner_id %} {% render_field form.partner_id %}{% endif %}

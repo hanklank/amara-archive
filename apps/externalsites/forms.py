@@ -27,7 +27,7 @@ from django.utils.translation import ugettext_lazy
 from auth.models import CustomUser as User
 from teams.models import Team
 from externalsites import models
-from ui.forms import AmaraMultipleChoiceField
+from ui.forms import AmaraMultipleChoiceField, AmaraChoiceField
 from utils.forms import SubmitButtonField, SubmitButtonWidget
 from utils.text import fmt
 import videos.tasks
@@ -174,7 +174,7 @@ class YoutubeAccountForm(forms.Form):
     sync_teams = AmaraMultipleChoiceField(
         widget=forms.widgets.SelectMultiple,
         required=False)
-    import_team = forms.ChoiceField(label='', required=False)
+    import_team = AmaraChoiceField(label=ugettext_lazy('Import team'), required=False)
     sync_subtitles = forms.BooleanField(label=ugettext_lazy('Export subtitles from Amara to YouTube'), required=False)
     fetch_initial_subtitles = forms.BooleanField(label=ugettext_lazy('Import initial subtitles from YouTube when videos are submitted to Amara'), required=False)
     sync_metadata = forms.BooleanField(required=False,
@@ -188,7 +188,11 @@ class YoutubeAccountForm(forms.Form):
         self.setup_sync_team()
         self.setup_import_team()
         self.setup_account_options()
-        self.fields['sync_teams'].set_select_data('placeholder', _('Set sync teams'))
+
+        if len(self.fields['sync_teams'].choices) > 1:
+            self.fields['sync_teams'].set_select_data('placeholder', _('Set sync teams'))
+        else:
+            del self.fields['sync_teams']
 
     def setup_account_options(self):
         self['sync_subtitles'].field.initial = self.account.sync_subtitles
@@ -211,6 +215,7 @@ class YoutubeAccountForm(forms.Form):
                      .select_related('team'))
         choices.extend((member.team.id, member.team.name)
                        for member in member_qs if not member.team.deleted)
+
         self['sync_teams'].field.choices = choices
         self['sync_teams'].field.initial = initial
 
@@ -227,7 +232,7 @@ class YoutubeAccountForm(forms.Form):
                         fmt(label_template, team=self.account.team.name)))
         choices.extend(
             (team_id, fmt(label_template, team=team_name))
-            for team_id, team_name in self.fields['sync_teams'].choices
+            for team_id, team_name in self.fields['sync_teams'].choices[1:]
         )
         if (self.account.import_team_id and
             self.account.import_team_id not in [c[0] for c in choices]):
@@ -274,7 +279,11 @@ class VimeoAccountForm(forms.Form):
         self.admin_user = admin_user
         self.setup_sync_team()
         self.setup_account_options()
-        self.fields['sync_teams'].set_select_data('placeholder', _('Set sync teams'))
+
+        if len(self.fields['sync_teams'].choices) > 1:
+            self.fields['sync_teams'].set_select_data('placeholder', _('Set sync teams'))
+        else:
+            del self.fields['sync_teams']
 
 
     def setup_account_options(self):
@@ -296,7 +305,7 @@ class VimeoAccountForm(forms.Form):
                      .exclude(team_id__in=exclude_team_ids)
                      .select_related('team'))
         choices.extend((member.team.id, member.team.name)
-                       for member in member_qs)
+                       for member in member_qs if not member.team.deleted)
         self['sync_teams'].field.choices = choices
         self['sync_teams'].field.initial = initial
 
