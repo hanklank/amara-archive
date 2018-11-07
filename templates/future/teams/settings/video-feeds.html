@@ -1,0 +1,12 @@
+{% extends "future/teams/settings/base.html" %}
+{% load i18n forms %}
+
+{% block settings_form %}
+<div class="contentHeader">
+  <div class="contentHeader-title">{% trans "RSS Video Feeds" %}</div>
+  <button data-target="#add-video-feed" class="contentHeader-addButton modal-show">
+    <span class="fa fa-plus"></span>
+    <span class="contentHeader-addButtonText">{% trans "Add video feed" %}</span>
+  </button>
+</div>
+{% endblock %}

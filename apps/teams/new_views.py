@@ -1294,6 +1294,7 @@ def settings_feeds(request, team):
         add_form = forms.AddTeamVideosFromFeedForm(team, request.user)
 
     return render(request, "new-teams/settings-feeds.html", {
+    # return render(request, "future/teams/settings/video-feeds.html", {
         'team': team,
         'add_form': add_form,
         'feeds': team.videofeed_set.all(),

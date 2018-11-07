@@ -1,0 +1,33 @@
+{% load i18n %}
+
+{% if feeds %}
+<div class="listView videoFeedsList">
+  
+  <div class="listView-header videoFeedsList-title">{% trans 'Title' %}</div>
+  <div class="listView-header listView-actions"></div>
+  {% for feed in feeds %}
+    <div class="videoFeedsList-title">
+      <a href="{{ feed }}">
+        {{feed}}
+      </a>
+    </div>
+    <div class="listView-actions">
+      <!-- we put the SyncHistory primary key in the button for simplicity -->
+      <button class="listView-action syncHistoryList-action-sync"
+              data-sl-pk="{{ sh.pk }}"
+              data-ajax-url="{% url 'externalsites:export-subtitles' %}">
+        <span class="fa fa-cloud-download-alt"></span>
+      </button>
+    </div>
+  {% endfor %}  
+  
+</div>
+
+
+{% else %}
+
+<div class="zero-state">
+  {% trans 'No video feeds' %}
+</div>
+
+{% endif %}
