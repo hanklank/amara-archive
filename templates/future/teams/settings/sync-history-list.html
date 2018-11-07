@@ -25,11 +25,11 @@
     <div class="syncHistoryList-date">{{sh.datetime}}</div>
     <div class="listView-actions">
       {% if sh.result == 'S' %}
-        <span class="syncHistoryIconTooltip" data-toggle="tooltip" data-placement="top" title="Subtitle export successful">
+        <span class="syncHistoryIconTooltip" data-toggle="tooltip" data-placement="top" title="{% trans 'Subtitle export successful' %}">
           <span class="syncHistoryIcon fa fa-check text-lime"></span>
         </span>
       {% else %}
-        <span class="syncHistoryIconTooltip" data-toggle="tooltip" data-placement="top" title="Subtitle export failed">
+        <span class="syncHistoryIconTooltip" data-toggle="tooltip" data-placement="top" title="{% trans 'Subtitle export failed' %}">
           <span class="syncHistoryIcon fa fa-exclamation-triangle text-amaranth"></span>
         </span>
       {% endif %}
@@ -39,7 +39,9 @@
       <button class="listView-action syncHistoryList-action-sync"
               data-sl-pk="{{ sh.pk }}"
               data-ajax-url="{% url 'externalsites:export-subtitles' %}">
-        <span class="fa fa-cloud-upload-alt"></span>
+        <span class="syncHistoryIconTooltip" data-toggle="tooltip" data-placement="top" title="{% trans 'Export subtitles' %}">
+          <span class="fa fa-cloud-upload-alt"></span>
+        </span>
       </button>
     </div>
   {% endfor %}  
