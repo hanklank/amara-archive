@@ -73,7 +73,7 @@ from utils.pagination import AmaraPaginator, AmaraPaginatorFuture
 from utils.forms import autocomplete_user_view, FormRouter
 from utils.text import fmt
 from utils.translation import get_language_label, get_user_languages_from_cookie
-from videos.models import Video
+from videos.models import Video, VideoFeed
 
 import datetime
 
@@ -1271,16 +1271,27 @@ def settings_feeds(request, team):
     if team.is_old_style():
         return old_views.video_feeds(request, team)
 
-    action = request.POST.get('action')
+    if request.is_ajax():
+        action = request.GET.get('action')
+        pk = request.GET.get('pk')
+        feed = VideoFeed.objects.get(pk=pk)
+        if action == 'remove':
+            response_renderer = AJAXResponseRenderer(request)
+            response_renderer.show_modal(
+                'future/teams/settings/forms/video-feed-remove.html',
+                { 'feed' : feed })
+            return response_renderer.render()
+
+    action = request.POST.get('action') 
     if request.method == 'POST' and action == 'import':
         feed = get_object_or_404(team.videofeed_set, id=request.POST['feed'])
         feed.update()
-        messages.success(request, _(u'Importing videos now'))
+        messages.success(request, _(u'Started importing videos from {}'.format(feed.url) ))
         return HttpResponseRedirect(request.build_absolute_uri())
     if request.method == 'POST' and action == 'delete':
         feed = get_object_or_404(team.videofeed_set, id=request.POST['feed'])
         feed.delete()
-        messages.success(request, _(u'Feed deleted'))
+        messages.success(request, _(u'Video feed deleted'))
         return HttpResponseRedirect(request.build_absolute_uri())
 
     if request.method == 'POST' and action == 'add':
@@ -1293,8 +1304,7 @@ def settings_feeds(request, team):
     else:
         add_form = forms.AddTeamVideosFromFeedForm(team, request.user)
 
-    return render(request, "new-teams/settings-feeds.html", {
-    # return render(request, "future/teams/settings/video-feeds.html", {
+    return render(request, "future/teams/settings/video-feeds.html", {
         'team': team,
         'add_form': add_form,
         'feeds': team.videofeed_set.all(),

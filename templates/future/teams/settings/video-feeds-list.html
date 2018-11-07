@@ -2,27 +2,36 @@
 
 {% if feeds %}
 <div class="listView videoFeedsList">
-  
-  <div class="listView-header videoFeedsList-title">{% trans 'Title' %}</div>
-  <div class="listView-header listView-actions"></div>
   {% for feed in feeds %}
     <div class="videoFeedsList-title">
       <a href="{{ feed }}">
         {{feed}}
       </a>
+      <div class="listView-secondary visible">
+        <span>{% trans 'Imported videos: ' %}{{ feed.count_imported_videos }}</span><br>
+        <span>{% trans 'Last import date: ' %}{{ feed.last_update }}</span>
+      </div>
     </div>
     <div class="listView-actions">
-      <!-- we put the SyncHistory primary key in the button for simplicity -->
-      <button class="listView-action syncHistoryList-action-sync"
-              data-sl-pk="{{ sh.pk }}"
-              data-ajax-url="{% url 'externalsites:export-subtitles' %}">
-        <span class="fa fa-cloud-download-alt"></span>
+      <!-- quick hack to align this button -->
+      <form method="post" action="" style="display:inline">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="import">
+        <input type="hidden" name="feed" value="{{ feed.id }}">
+        <button name="import" class="listView-action videoFeedsList-import">
+          <span data-toggle="tooltip" data-placement="top" title="{% trans 'Import videos' %}">
+              <span class="fa fa-cloud-download-alt"></span>
+          </span>        
+        </button>
+      </form>     
+
+      <button class="listView-action ajaxLink"
+              data-href="{% url 'teams:settings_feeds' team.slug %}?action=remove&pk={{ feed.pk }}">
+        <span class="fa fa-trash"></span>
       </button>
     </div>
   {% endfor %}  
-  
 </div>
-
 
 {% else %}
 
