@@ -2798,3 +2798,13 @@ class MoveVideosForm(VideoManagementForm):
                 count=self.video_policy_errors,
                 team=self.cleaned_data['new_team']))
         return messages
+
+class SearchVideoFeedForm(forms.Form):
+    q = SearchField(label=_('Search'), required=False,
+                    widget=ContentHeaderSearchBar)
+
+    def update_qs(self, qs):
+        if self.is_bound and self.is_valid():
+            q = self.cleaned_data.get('q', '')
+            qs = qs.filter(url__icontains=q)
+        return qs

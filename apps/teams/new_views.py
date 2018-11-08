@@ -1271,16 +1271,8 @@ def settings_feeds(request, team):
     if team.is_old_style():
         return old_views.video_feeds(request, team)
 
-    if request.is_ajax():
-        action = request.GET.get('action')
-        pk = request.GET.get('pk')
-        feed = VideoFeed.objects.get(pk=pk)
-        if action == 'remove':
-            response_renderer = AJAXResponseRenderer(request)
-            response_renderer.show_modal(
-                'future/teams/settings/forms/video-feed-remove.html',
-                { 'feed' : feed })
-            return response_renderer.render()
+    filters_form = forms.SearchVideoFeedForm(request.GET)
+    feeds = filters_form.update_qs(team.videofeed_set.all())
 
     action = request.POST.get('action') 
     if request.method == 'POST' and action == 'import':
@@ -1304,16 +1296,36 @@ def settings_feeds(request, team):
     else:
         add_form = forms.AddTeamVideosFromFeedForm(team, request.user)
 
-    return render(request, "future/teams/settings/video-feeds.html", {
+    context = {
         'team': team,
+        'filters_form': filters_form,
         'add_form': add_form,
-        'feeds': team.videofeed_set.all(),
-        'breadcrumbs': [
-            BreadCrumb(team, 'teams:dashboard', team.slug),
-            BreadCrumb(_('Settings'), 'teams:settings_basic', team.slug),
-            BreadCrumb(_('Video Feeds')),
-        ],
-    })
+        'feeds': feeds,
+        'team_nav': 'settings',
+        'settings_tab': 'feeds',
+    }
+
+    if request.is_ajax():
+        action = request.GET.get('action', None)
+
+        # filter search
+        if not action:
+            response_renderer = AJAXResponseRenderer(request)
+            response_renderer.replace('#video-feeds-list', 
+                'future/teams/settings/video-feeds-list.html',
+                context)
+            return response_renderer.render()
+
+        if action and action == 'remove':
+            pk = request.GET.get('pk')
+            feed = VideoFeed.objects.get(pk=pk)
+            response_renderer = AJAXResponseRenderer(request)
+            response_renderer.show_modal(
+                'future/teams/settings/forms/video-feed-remove.html',
+                { 'feed' : feed })
+            return response_renderer.render()
+
+    return render(request, "future/teams/settings/video-feeds.html", context)
 
 @team_settings_view
 def settings_permissions(request, team):
