@@ -115,6 +115,7 @@ urlpatterns += [
     url(r'^(?P<slug>[-\w]+)/manage/videos/project/(?P<project_id>[\d]+)/$',
         new_views.manage_videos, name='manage_videos_project'),
     url(r'^(?P<slug>[-\w]+)/resources/$', new_views.resources, name='resources'),
+    url(r'^(?P<slug>[-\w]+)/set-languages/$', new_views.set_languages, name='set-languages'),
     url(r'^(?P<slug>[-\w]+)/settings/$', new_views.settings_basic, name='settings_basic'),
     url(r'^(?P<slug>[-\w]+)/settings/messages/$', new_views.settings_messages, name='settings_messages'),
     url(r'^(?P<slug>[-\w]+)/settings/lang-messages/$', new_views.settings_lang_messages, name='settings_lang_messages'),

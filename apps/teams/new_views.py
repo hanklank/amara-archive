@@ -170,6 +170,9 @@ def application_review_view(view_func):
 @with_old_view(old_views.detail)
 @team_view
 def videos(request, team):
+    if len(request.user.get_languages()) == 0:
+        return set_languages(request, slug=team.slug)
+
     filters_form = forms.VideoFiltersForm(team, request.GET)
     videos = filters_form.get_queryset().select_related('teamvideo',
                                                         'teamvideo__video')
@@ -927,6 +930,26 @@ def dashboard(request, slug):
         return welcome(request, team)
     else:
         return team.new_workflow.dashboard_view(request, team)
+
+@team_view
+def set_languages(request, team):
+    if len(request.user.get_languages()) > 0:
+        return dashboard(request, slug=team.slug)
+
+    if request.method == 'POST':
+        user_lang_form = forms.UserLanguageForm(request.user,
+                                               data=request.POST)
+        if user_lang_form.is_valid():
+            user_lang_form.save()
+            messages.success(request, _('Languages updated'))
+            return redirect('teams:dashboard', slug=team.slug)
+    else:
+        user_lang_form = forms.UserLanguageForm(request.user)
+
+    return render(request, 'future/teams/set-languages.html', {
+        'team': team,
+        'user_lang_form': user_lang_form,
+    })
 
 def welcome(request, team):
     if team.videos_public():

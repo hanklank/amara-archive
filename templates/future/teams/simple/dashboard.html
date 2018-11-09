@@ -1,11 +1,20 @@
 {% extends "future/teams/base.html" %}
-{% load i18n %}
+{% load i18n captureas %}
 {% block body-extra %} class="dashboard"{% endblock %}
 {% block content %}
 <main id="dashboard" class="pageContent">
   <section class="pageSection">
     <div class="container">
-      {% if dashboard_videos %}
+      {% if no_languages_yet %}
+        <div class="zero-state">
+          {% captureas set_languages_url %}
+            {% url 'teams:set-languages' team.slug %}
+          {% endcaptureas %}
+          {% blocktrans with uurl=set_languages_url %}
+            <span>After you <a href="{{ uurl }}">select the languages you speak</a>, you'll see suggested videos to subtitle here</span>
+          {% endblocktrans %}
+        </div>
+      {% elif dashboard_videos %}
       <div class="row">
         <div class="col-xs-12">
           <div id="" class="content">
@@ -20,7 +29,7 @@
     </div>
   </section>
 
-  {% if dashboard_history %}
+  {% if dashboard_history and not no_languages_yet %}
   <section class="pageSection">
     <div class="container">
       <div class="row">
