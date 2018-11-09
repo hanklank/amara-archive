@@ -1398,10 +1398,10 @@ class InviteForm(forms.Form):
 class ProjectForm(forms.ModelForm):
     class Meta:
         model = Project
-        fields = ('name', 'description', 'workflow_enabled')
+        fields = ('name', 'description')
 
-    def __init__(self, team, *args, **kwargs):
-        super(ProjectForm, self).__init__(*args, **kwargs)
+    def __init__(self, team, data=None, **kwargs):
+        super(ProjectForm, self).__init__(data, **kwargs)
         self.team = team
 
     def clean_name(self):
@@ -1423,29 +1423,39 @@ class ProjectForm(forms.ModelForm):
         return project
 
 class EditProjectForm(forms.Form):
-    project = forms.ChoiceField(choices=[])
-    name = forms.CharField(required=True)
-    description = forms.CharField(widget=forms.Textarea, required=False)
+    name = forms.CharField(required=True, max_length=50)
+    description = forms.CharField(widget=forms.Textarea, required=False, max_length=2048)
 
-    def __init__(self, team, *args, **kwargs):
-        super(EditProjectForm, self).__init__(*args, **kwargs)
+    def __init__(self, team, project, data=None, **kwargs):
+        super(EditProjectForm, self).__init__(data, **kwargs)
         self.team = team
-        self.fields['project'].choices = [
-            (p.id, p.id) for p in team.project_set.all()
-        ]
+        self.project = project
+        self.setup_fields()
+
+    def setup_fields(self):
+        self.fields['name'].widget.attrs.update({'value': self.project.name})
+        self.fields['description'].initial = self.project.description
 
     def clean(self):
-        if self.cleaned_data.get('name') and self.cleaned_data.get('project'):
-            self.check_duplicate_name()
+        if self.cleaned_data.get('name'):
+            self.check_name()
+        if self.cleaned_data.get('description'):
+            self.check_description()
         return self.cleaned_data
 
-    def check_duplicate_name(self):
+    def check_name(self):
         name = self.cleaned_data['name']
+
+        if len(name) > self.fields['name'].max_length:
+            self._errors['name'] = self.error_class([
+                _(u"Name is too long; Max length is 50 characters")
+            ])
+            del self.cleaned_data['name']
 
         same_name_qs = (
             self.team.project_set
             .filter(slug=pan_slugify(name))
-            .exclude(id=self.cleaned_data['project'])
+            .exclude(id=self.project.id)
         )
 
         if same_name_qs.exists():
@@ -1454,12 +1464,38 @@ class EditProjectForm(forms.Form):
             ])
             del self.cleaned_data['name']
 
+    def check_description(self):
+        description = self.cleaned_data['description']
+
+        if len(description) > self.fields['description'].max_length:
+            self._errors['description'] = self.error_class([
+                _(u"Description is too long; Max length is 2048 characters")
+            ])
+            del self.cleaned_data['description']
+
     def save(self):
-        project = self.team.project_set.get(id=self.cleaned_data['project'])
-        project.name = self.cleaned_data['name']
-        project.description = self.cleaned_data['description']
-        project.save()
-        return project
+        try:
+            self.project.name = self.cleaned_data['name']
+            self.project.description = self.cleaned_data['description']
+            self.project.save()
+        except Exception as e:
+            logger.warn(e, exc_info=True)
+
+        return self.project
+
+class DeleteProjectForm(forms.Form):
+    name = "delete_project"
+    label = _("Delete Project")
+
+    def __init__(self, team, project, data=None, **kwargs):
+        super(DeleteProjectForm, self).__init__(data, **kwargs)
+        self.project = project
+
+    def save(self):
+        try:
+            self.project.delete()
+        except Exception as e:
+            logger.warn(e, exc_info=True)
 
 class AddProjectManagerForm(forms.Form):
     member = UserAutocompleteField()
@@ -1909,6 +1945,36 @@ class ApplicationFiltersForm(forms.Form):
         if language and language != 'any':
             qs = qs.filter(user__userlanguage__language=language)
 
+        return qs
+
+class ProjectFiltersForm(forms.Form):
+    q = SearchField(label=_('Search'), required=False,
+                    widget=ContentHeaderSearchBar)
+
+    def __init__(self, get_data=None):
+        super(ProjectFiltersForm, self).__init__(
+            self.calc_data(get_data)
+        )
+
+    def calc_data(self, get_data):
+        if get_data is None:
+            return None
+        data = {k:v for k, v in get_data.items() if k != 'page'}
+        return data if data else None
+
+    def update_qs(self, qs):
+        if not (self.is_bound and self.is_valid()):
+            return qs.order_by('name')
+        else:
+            data = self.cleaned_data
+
+        q = data.get('q', '')
+
+        for term in [term.strip() for term in q.split()]:
+            if term:
+                qs = qs.filter(Q(name__icontains=term)
+                               | Q(slug__icontains=term))
+        qs = qs.order_by('name')
         return qs
 
 class ApproveApplicationForm(ManagementForm):
