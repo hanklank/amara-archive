@@ -12,7 +12,7 @@
     <ul class="bullets">
       <li>Associated actions that get hidden until the user hovers the row.</li>
       <li>A checkbox column that can get hooked up to an <a href="{% url "styleguide:section" "actionBar" %}">action bar</a></li>
-      <li>Extra information that gets show when you expand the item.  Click the (i) icon below to see.</li>
+      <li>Extra information that gets show when you expand the item.  Click anywhere on a row to expand it.</li>
     </ul>
   </div>
 
@@ -50,7 +50,6 @@
     <div class="styleguideExample-title">{% lorem 20 w random %}<div class="listView-secondary">Some extra info</div></div>
     <div class="styleguideExample-language">{% cycle "English" "French" "Spanish" "Japanese" %}<div class="listView-secondary">Some extra info</div></div>
     <div class="listView-actions">
-      <button class="listView-action listView-expand"><span class="fa fa-info-circle"></span></button>
       {% dropdown-button-icon menu_id "listView-action" %}
       {% dropdown menu_id %}
       {% dropdown-js-item _('Show Details') 'expand' class="listView-showDetails" icon="fa-info-circle" %}
