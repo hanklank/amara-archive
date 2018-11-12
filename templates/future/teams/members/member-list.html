@@ -42,7 +42,7 @@
   <div class="listView-actions">
     <button class="listView-action listView-expand"><span class="fa fa-info-circle"></span></button>
     {% if member.user != request.user  %}
-    {% dropdown-button-icon "member-context-menu" "listView-action" %}
+    {% dropdown-button-icon "member-context-menu" "listView-action" data_selection=member.id %}
     {% endif %}
   </div>
   {% endif %}

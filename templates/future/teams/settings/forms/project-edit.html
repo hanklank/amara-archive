@@ -2,7 +2,7 @@
 {% captureas title %}{% trans "Edit Project" %}{% endcaptureas %}
 {% startmodal "edit-project-dialog" title %}
 <form class="ajaxForm" method="POST" action="{{ request.get_full_path }}" enctype="multipart/form-data">
-  <h4 class="modal-header">{% trans "Editing {{ project }}" %}</h4>
+  <h4 class="modal-header">{% blocktrans %}Editing {{ project }}{% endblocktrans %}</h4>
   <div class="modal-content">
     {% csrf_token %}
     {% include "future/forms/non-field-errors.html" %}

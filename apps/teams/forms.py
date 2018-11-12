@@ -1398,7 +1398,7 @@ class InviteForm(forms.Form):
 class ProjectForm(forms.ModelForm):
     class Meta:
         model = Project
-        fields = ('name', 'description', 'workflow_enabled')
+        fields = ('name', 'description')
 
     def __init__(self, team, data=None, **kwargs):
         super(ProjectForm, self).__init__(data, **kwargs)
@@ -1423,31 +1423,39 @@ class ProjectForm(forms.ModelForm):
         return project
 
 class EditProjectForm(forms.Form):
-    name = forms.CharField(required=True)
-    description = forms.CharField(widget=forms.Textarea, required=False)
-    workflow_enabled = forms.BooleanField()
+    name = forms.CharField(required=True, max_length=50)
+    description = forms.CharField(widget=forms.Textarea, required=False, max_length=2048)
 
-    def __init__(self, team, data=None, **kwargs):
+    def __init__(self, team, project, data=None, **kwargs):
         super(EditProjectForm, self).__init__(data, **kwargs)
         self.team = team
-        if data:
-            self.project = data['project']
-            self.name = self.project.name
-            self.description = self.project.description
-            self.workflow_enabled = self.project.workflow_enabled
+        self.project = project
+        self.setup_fields()
+
+    def setup_fields(self):
+        self.fields['name'].widget.attrs.update({'value': self.project.name})
+        self.fields['description'].initial = self.project.description
 
     def clean(self):
-        if self.cleaned_data.get('name') and self.cleaned_data.get('project'):
-            self.check_duplicate_name()
+        if self.cleaned_data.get('name'):
+            self.check_name()
+        if self.cleaned_data.get('description'):
+            self.check_description()
         return self.cleaned_data
 
-    def check_duplicate_name(self):
+    def check_name(self):
         name = self.cleaned_data['name']
+
+        if len(name) > self.fields['name'].max_length:
+            self._errors['name'] = self.error_class([
+                _(u"Name is too long; Max length is 50 characters")
+            ])
+            del self.cleaned_data['name']
 
         same_name_qs = (
             self.team.project_set
             .filter(slug=pan_slugify(name))
-            .exclude(id=self.cleaned_data['project'])
+            .exclude(id=self.project.id)
         )
 
         if same_name_qs.exists():
@@ -1456,21 +1464,32 @@ class EditProjectForm(forms.Form):
             ])
             del self.cleaned_data['name']
 
-    def save(self, project):
-        project.name = self.cleaned_data['name']
-        project.description = self.cleaned_data['description']
-        project.workflow_enabled = self.cleaned_data['workflow_enabled']
-        project.save()
+    def check_description(self):
+        description = self.cleaned_data['description']
+
+        if len(description) > self.fields['description'].max_length:
+            self._errors['description'] = self.error_class([
+                _(u"Description is too long; Max length is 2048 characters")
+            ])
+            del self.cleaned_data['description']
+
+    def save(self):
+        try:
+            self.project.name = self.cleaned_data['name']
+            self.project.description = self.cleaned_data['description']
+            self.project.save()
+        except Exception as e:
+            logger.warn(e, exc_info=True)
+
         return self.project
 
 class DeleteProjectForm(forms.Form):
     name = "delete_project"
     label = _("Delete Project")
 
-    def __init__(self, team, data=None, **kwargs):
+    def __init__(self, team, project, data=None, **kwargs):
         super(DeleteProjectForm, self).__init__(data, **kwargs)
-        if data:
-            self.project = data['project']
+        self.project = project
 
     def save(self):
         try:
