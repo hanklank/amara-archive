@@ -249,9 +249,10 @@ class YoutubeAccountForm(forms.Form):
         if self.cleaned_data['remove_button']:
             self.account.delete()
         else:
-            self.account.sync_teams = Team.objects.filter(
-                id__in=self.cleaned_data['sync_teams']
-            )
+            if self.cleaned_data.get('sync_teams', None):
+                self.account.sync_teams = Team.objects.filter(
+                    id__in=self.cleaned_data['sync_teams']
+                )
             if self.cleaned_data['import_team'] == '':
                 self.account.import_team = None
             else:
