@@ -11,10 +11,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(
+        migrations.RunSQL([
             'UPDATE videos_video '
             'SET search_text = '
             '(SELECT text FROM videos_videoindex '
             'WHERE videos_video.id = videos_videoindex.video_id)'
-        )
+        ])
     ]
