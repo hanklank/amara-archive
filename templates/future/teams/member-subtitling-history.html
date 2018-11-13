@@ -1,19 +1,13 @@
 {% load i18n ui %}
 {% if member_history %}
-<div class="listView memberSubtitlesCompleted">
-  {% if show_history_headers %}
-  <div class="listView-header memberSubtitlesCompleted-video">{% trans "Video" %}</div>
-  <div class="listView-header memberSubtitlesCompleted-language">{% trans "Language" %}</div>
-  <div class="listView-header memberSubtitlesCompleted-date">{% trans "Completed" %}</div>
-  {% endif %}
-  {% for completed_subtitles in member_history %}
-  <div class="memberSubtitlesCompleted-video">
-    <a href="{{ completed_subtitles.video.get_absolute_url }}?team={{ team.slug }}">{{ completed_subtitles.video.title_display }}</a>
-  </div>
-  <div class="memberSubtitlesCompleted-language"><a href="{{ completed_subtitles.get_language_url }}?team={{ team.slug }}">{{ completed_subtitles.get_language_code_display }}</a></div>
-  <div class="memberSubtitlesCompleted-date">{{ completed_subtitles.created|date }}</div>
-  {% endfor %}
-</div>
+<table class="table align-middle">
+  {% for record in member_history %}
+    <tr>
+      <td>{{ record.get_message|safe }}</td>
+      <td class="text-gray">{{ record.created|datetime }}</td>
+    </tr>
+    {% endfor %}
+</table>
 {% else %}
 <div class="zero-state">{% trans "No subtitling history yet." %}</div>
 {% endif %}

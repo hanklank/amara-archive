@@ -48,6 +48,7 @@ from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.utils.translation import ungettext, ugettext as _, ugettext_lazy
 
+from activity.models import ActivityRecord
 from videos.models import Video
 from subtitles.models import SubtitleLanguage
 from teams import experience
@@ -263,8 +264,10 @@ class TeamWorkflow(object):
         can be any django model.  They will get rendered by the template in
         the member_history_template attribute.
         """
-        member = self.team.get_member(user)
-        qs = member.teamsubtitlescompleted_set.all().order_by('-id')
+        qs = (ActivityRecord.objects
+              .for_team(self.team)
+              .filter(user=user)
+              .order_by('-created'))
         if query:
             qs = qs.filter(video__in=Video.objects.search(query))
         return qs
@@ -278,7 +281,7 @@ class TeamWorkflow(object):
         - member_history: Single page from the queryset returned by fetch_member_history()
     """
 
-    member_history_header = ugettext_lazy('Completed Subtitles')
+    member_history_header = ugettext_lazy('Recent activity')
 
     def get_experience_column_label(self):
         """
