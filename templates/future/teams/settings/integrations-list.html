@@ -7,9 +7,11 @@
   <div class="listView-header listView-actions integrationList-actions"></div>
   {% for yt in yt_accounts %}
     <div class="integrationList-channel">
-      <a class="ajaxLink" data-href="{% url 'teams:settings_externalsites' team.slug %}?form=edit-youtube&selection={{ yt.pk }}">
+
+      <a href="{{ yt.channel_url }}">
         {{ yt.username }}
       </a>
+
       <div class="listView-secondaryRow visible">
         <ul>
           {% if yt.sync_subtitles %}
