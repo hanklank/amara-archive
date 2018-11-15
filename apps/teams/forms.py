@@ -1853,7 +1853,9 @@ class MemberFiltersForm(forms.Form):
     ] + get_language_choices()
 
     q = SearchField(label=_('Search'), required=False,
-                    widget=ContentHeaderSearchBar)
+                    widget=ContentHeaderSearchBar(attrs={
+                        'autocomplete': 'off',
+                    }))
 
     role = AmaraChoiceField(label=_('Select role'), choices=[
         ('any', _('All roles')),
@@ -1865,7 +1867,7 @@ class MemberFiltersForm(forms.Form):
     language = AmaraChoiceField(choices=LANGUAGE_CHOICES,
                                  label=_('Select language'),
                                  initial='any', required=False, filter=True)
-    sort = AmaraChoiceField(label=_('Change sort'), choices=[
+    sort = AmaraChoiceField(label=_('Sort'), choices=[
         ('recent', _('Newest joined')),
         ('oldest', _('Oldest joined')),
     ], initial='recent', required=False)
@@ -2800,12 +2802,12 @@ class MoveVideosForm(VideoManagementForm):
         return messages
 
 class UserLanguageForm(forms.Form):
-    language1 = AmaraChoiceField(choices=[], required=True, label='')
-    language2 = AmaraChoiceField(choices=[], required=False, label='')
-    language3 = AmaraChoiceField(choices=[], required=False, label='')
-    language4 = AmaraChoiceField(choices=[], required=False, label='')
-    language5 = AmaraChoiceField(choices=[], required=False, label='')
-    language6 = AmaraChoiceField(choices=[], required=False, label='')
+    language1 = forms.ChoiceField(choices=[], required=True, label='')
+    language2 = forms.ChoiceField(choices=[], required=False, label='')
+    language3 = forms.ChoiceField(choices=[], required=False, label='')
+    language4 = forms.ChoiceField(choices=[], required=False, label='')
+    language5 = forms.ChoiceField(choices=[], required=False, label='')
+    language6 = forms.ChoiceField(choices=[], required=False, label='')
 
     def __init__(self, user, *args, **kwargs):
         super(UserLanguageForm, self).__init__(*args, **kwargs)

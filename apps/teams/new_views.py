@@ -931,26 +931,6 @@ def dashboard(request, slug):
     else:
         return team.new_workflow.dashboard_view(request, team)
 
-@team_view
-def set_languages(request, team):
-    if len(request.user.get_languages()) > 0:
-        return dashboard(request, slug=team.slug)
-
-    if request.method == 'POST':
-        user_lang_form = forms.UserLanguageForm(request.user,
-                                               data=request.POST)
-        if user_lang_form.is_valid():
-            user_lang_form.save()
-            messages.success(request, _('Languages updated'))
-            return redirect('teams:dashboard', slug=team.slug)
-    else:
-        user_lang_form = forms.UserLanguageForm(request.user)
-
-    return render(request, 'future/teams/set-languages.html', {
-        'team': team,
-        'user_lang_form': user_lang_form,
-    })
-
 def welcome(request, team):
     if team.videos_public():
         videos = team.videos.order_by('-id')
