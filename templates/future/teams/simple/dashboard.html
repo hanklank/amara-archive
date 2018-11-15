@@ -8,7 +8,7 @@
       {% if no_languages_yet %}
         <div class="zero-state">
           {% captureas set_languages_url %}
-            {% url 'teams:set-languages' team.slug %}
+            {% url 'profiles:edit' %}
           {% endcaptureas %}
           {% blocktrans with uurl=set_languages_url %}
             <span>After you <a href="{{ uurl }}">select the languages you speak</a>, you'll see suggested videos to subtitle here</span>

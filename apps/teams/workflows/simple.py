@@ -30,7 +30,6 @@ from subtitles.models import SubtitleVersion
 from teams import views as old_views, forms as teams_forms
 from teams.behaviors import get_main_project
 from teams.models import Project, Team
-from teams.new_views import set_languages
 from teams.workflows import TeamWorkflow
 from ui import CTA, SplitCTA, Link
 from utils.memoize import memoize
