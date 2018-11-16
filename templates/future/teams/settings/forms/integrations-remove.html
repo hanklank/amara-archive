@@ -12,7 +12,7 @@
 
     <div class="modal-content">
         {% blocktrans with name=account.readable_account_name %}
-          <p>Are you sure that you want to remove {{ name }} from {{ team }}?</p>
+          <p>Are you sure that you want to unlink {{ name }} from {{ team }}?</p>
         {% endblocktrans %}
         {% csrf_token %}
         <input type="hidden" value="{{ account.account_type }}" name="accountType"/>

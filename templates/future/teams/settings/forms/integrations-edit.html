@@ -31,7 +31,7 @@
         {% if form.sync_subtitles %} {% render_field form.sync_subtitles %}{% endif %}
         {% if form.fetch_initial_subtitles %} {% render_field form.fetch_initial_subtitles %}{% endif %}
         {% if form.sync_teams %} {% render_field form.sync_teams %}{% endif %}
-        {% if form.import_team %} {% render_field form.import_team %}{% endif %}
+        {% if form.import_team %} {% render_field form.import_team reverse_required=True %}{% endif %}
 
         <!-- Kaltura fields -->
         {% if form.partner_id %} {% render_field form.partner_id %}{% endif %}

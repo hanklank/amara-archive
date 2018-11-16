@@ -1,7 +1,7 @@
 {% load i18n dropdown %}
 
 {% if page %}
-<div class="listView syncHistoryList">
+<div class="listView expandable syncHistoryList">
   
   <div class="listView-header syncHistoryList-title">{% trans 'Title' %}</div>
   <div class="listView-header syncHistoryList-channel">{% trans 'Channel' %}</div>
@@ -29,7 +29,7 @@
           <span class="syncHistoryIcon fa fa-check text-lime"></span>
         </span>
       {% else %}
-        <span class="syncHistoryIconTooltip" data-toggle="tooltip" data-placement="top" title="{% trans 'Subtitle export failed' %}">
+        <span class="syncHistoryIconTooltip" data-toggle="tooltip" data-placement="top" title="{% trans 'Subtitle export failed. Expand to see details' %}">
           <span class="syncHistoryIcon fa fa-exclamation-triangle text-amaranth"></span>
         </span>
       {% endif %}
@@ -44,6 +44,9 @@
         </span>
       </button>
     </div>
+    {% if sh.result == 'E' %}
+    <div class="listView-secondaryRow">{% trans 'Subtitle export error: ' %}{{ sh.details }}</div>
+    {% endif %}
   {% endfor %}  
   
 </div>
