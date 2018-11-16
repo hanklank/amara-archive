@@ -1,5 +1,5 @@
 {% extends "future/teams/settings/base.html" %}
-{% load i18n forms modal captureas %}
+{% load i18n forms modal captureas dropdown %}
 
 {% block settings_form %}
 
@@ -24,6 +24,15 @@
   <div class="contentHeader-title">{% trans 'Subtitle Export History' %}</div>
   {{ sync_history_filters_form.q2 }}
 </div>
+<div class="filterBox">
+    {% filterbox-dropdown-button "sync-history-filters" _("Filter") %}
+    {% dropdown "sync-history-filters" %}
+    {% dropdown-js-item _('Export result') 'result' %}
+    {% enddropdown %}
+    <div class="filterBox-fields">
+      {% render_filter_field sync_history_filters_form.result %}
+    </div>
+  </div>
 </form>
 <div id="sync-history-list">
 {% include "future/teams/settings/sync-history-list.html" %}

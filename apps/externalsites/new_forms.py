@@ -23,7 +23,7 @@ from django.utils.translation import ugettext as _, ugettext_lazy
 from auth.models import CustomUser as User
 from teams.models import Team
 from externalsites import models
-from ui.forms import SearchField, ContentHeaderSearchBar
+from ui.forms import SearchField, ContentHeaderSearchBar, AmaraChoiceField
 
 import logging
 logger = logging.getLogger("forms")
@@ -122,17 +122,35 @@ class SyncHistoryFiltersForm(forms.Form):
     q2 = SearchField(label=_('Search'), required=False,
                     widget=ContentHeaderSearchBar)
 
+    result = AmaraChoiceField(label=_('Select export result'), choices=[
+            ('any', _('Any')),
+            ('S', _('Success')),
+            ('E', _('Error')),
+        ], filter=True, required=False, initial='any')
+
     # this is quite different from how we usually process search queries
     # since we are not actually dealing with a queryset result
-    def update_results(self, results):
-        ret_results = []
+    def update_results(self, sync_histories):
+        ret_val = []
+        ret_val2 = []
         if self.is_bound and self.is_valid():
             q = self.cleaned_data.get('q2', '')
             if q:
                 q = q.lower()
                 for i in results:
                     if q in i.video_url.video.title.lower():
-                        ret_results.append(i)
-                print(ret_results)
-                return ret_results        
-        return results
+                        ret_val.append(i)
+            else:
+                ret_val = sync_histories
+
+            q_result = self.cleaned_data.get('result', 'any')
+            if q_result and q_result != 'any':
+                for i in ret_val:
+                    if i.result == q_result:
+                        ret_val2.append(i)
+            else:
+                ret_val2 = ret_val
+
+            return ret_val2
+        else:
+            return sync_histories
