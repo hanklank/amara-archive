@@ -1,27 +1,10 @@
-{% extends "future/teams/base.html" %}
+{% load i18n captureas %}
 
-{% load i18n forms %}
-
-{% block content %}
-<div class="container">
-  <div class="content">
-    <form action="{% url "teams:set-languages" team.slug %}" method="POST">
-      <fieldset>
-        <legend><h3>{% trans "Select Your Languages" %}</h3></legend>
-        <p>{% trans "To begin subtitling videos, please select the languages you speak" %}</p>
-    
-        {% csrf_token %}
-        {% render_field user_lang_form.language1 %}
-        {% render_field user_lang_form.language2 %}
-        {% render_field user_lang_form.language3 %}
-        {% render_field user_lang_form.language4 %}
-        {% render_field user_lang_form.language5 %}
-        {% render_field user_lang_form.language6 %}
-      </fieldset>
-      <div class="form-actions fieldset-footer">
-        <button type="submit" class="button cta">{% trans "Set Languages" %}</button>
-      </div>
-    </form>
-  </div>
+<div class="zero-state">
+  {% captureas set_languages_url %}
+    {% url 'profiles:edit' %}
+  {% endcaptureas %}
+  {% blocktrans with uurl=set_languages_url %}
+    <span><a href="{{ uurl }}">Select the languages you can caption or translate</a> to see available videos for subtitling</span>
+  {% endblocktrans %}
 </div>
-{% endblock %}

@@ -6,14 +6,7 @@
   <section class="pageSection">
     <div class="container">
       {% if no_languages_yet %}
-        <div class="zero-state">
-          {% captureas set_languages_url %}
-            {% url 'profiles:edit' %}
-          {% endcaptureas %}
-          {% blocktrans with uurl=set_languages_url %}
-            <span>After you <a href="{{ uurl }}">select the languages you speak</a>, you'll see suggested videos to subtitle here</span>
-          {% endblocktrans %}
-        </div>
+        {% include "future/teams/set-languages.html" %}
       {% elif dashboard_videos %}
       <div class="row">
         <div class="col-xs-12">

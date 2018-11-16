@@ -170,9 +170,6 @@ def application_review_view(view_func):
 @with_old_view(old_views.detail)
 @team_view
 def videos(request, team):
-    if len(request.user.get_languages()) == 0:
-        return set_languages(request, slug=team.slug)
-
     filters_form = forms.VideoFiltersForm(team, request.GET)
     videos = filters_form.get_queryset().select_related('teamvideo',
                                                         'teamvideo__video')
@@ -190,6 +187,7 @@ def videos(request, team):
         'filters_form': filters_form,
         'team_nav': 'videos',
         'current_tab': 'videos',
+        'no_languages_yet': len(request.user.get_languages()) == 0,
     }
     if request.is_ajax():
         response_renderer = AJAXResponseRenderer(request)
