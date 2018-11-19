@@ -1094,7 +1094,6 @@ class SyncHistoryManager(models.Manager):
 
         history = {}
 
-        ret_val = []
         for account in accounts:
             for sh in self.filter(account_type=account.account_type,
                                    account_id=account.id).order_by('-datetime'):
@@ -1107,6 +1106,26 @@ class SyncHistoryManager(models.Manager):
         #  latest per account type and we want to sort by most recent across all
         #  account types
         return [i[1] for i in sorted(history.items(), key=lambda v: v[1].datetime, reverse=True)]
+
+    # gets the latest SyncHistory object for each team video per language for all team videos
+    # that have an existing SyncHistory
+    def get_latest_sync_history_per_team_video(self, team):
+        history = {}
+        for tv in team.teamvideo_set.all():
+            vid_urls = tv.video.videourl_set.all()
+
+            for vu in vid_urls:
+                if not vu.synchistory_set.exists():
+                    continue
+
+                for sh in vu.synchistory_set.order_by('-datetime'):
+                    if (sh.video_url.pk, sh.language.language_code) in history:
+                        continue
+                    else:
+                        history[(sh.video_url.pk, sh.language.language_code)] = sh
+
+        return [i[1] for i in sorted(history.items(), key=lambda v: v[1].datetime, reverse=True)]
+
 
 class SyncHistory(models.Model):
     """History of all subtitle sync attempts."""

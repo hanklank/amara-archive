@@ -137,7 +137,7 @@ class SyncHistoryFiltersForm(forms.Form):
             q = self.cleaned_data.get('q2', '')
             if q:
                 q = q.lower()
-                for i in results:
+                for i in sync_histories:
                     if q in i.video_url.video.title.lower():
                         ret_val.append(i)
             else:

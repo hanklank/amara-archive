@@ -69,7 +69,7 @@
         <div id="brightcove" class="tab-pane
           {% if modal_tab == 'brightcove' %}active{% endif %}">
           <p>
-            <span class="h4">{% trans "Brightcove account details" %}</span>
+            <span class="h4">{% trans "Brightcove CMS account details" %}</span>
           </p>
           <form class="ajaxForm" method="POST" action="{% url 'externalsites:team-add-external-account' team.slug %}">
             {% csrf_token %}
