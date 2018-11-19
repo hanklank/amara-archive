@@ -357,6 +357,7 @@ def video(request, video_id, video_url=None, title=None):
             (vurl, get_sync_account(video, vurl))
             for vurl in video.get_video_urls()
         ],
+        'no_languages_yet': len(request.user.get_languages()) == 0,
     })
 
 def create_subtitles(request, video_id):

@@ -1,10 +1,14 @@
 {% load i18n captureas %}
 
 <div class="zero-state">
-  {% captureas set_languages_url %}
-    {% url 'profiles:edit' %}
-  {% endcaptureas %}
-  {% blocktrans with uurl=set_languages_url %}
-    <span><a href="{{ uurl }}">Select the languages you can caption or translate</a> to see available videos for subtitling</span>
-  {% endblocktrans %}
+  <span>
+    <a href="{% url 'profiles:edit' %}">
+        {% trans 'Select the languages you can caption or translate ' %}
+    </a> 
+    {% if custom_text %}
+        {{ custom_text }}
+    {% else %}
+        {% trans 'to see available videos for subtitling' %}
+    {% endif %}
+    </span>
 </div>
