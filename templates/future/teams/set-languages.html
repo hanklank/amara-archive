@@ -1,21 +1,13 @@
 {% load i18n captureas %}
 
 <div class="zero-state">
-  <span>
-    {% captureas uurl %}
-        {% url 'profiles:edit' %}?next=/teams/{{ team.slug }}
-    {% endcaptureas %}
-
-    {% if custom_text %}
-        {% blocktrans with url=uurl %}
-            <a href="{{ url }}">Select the languages you can caption or translate</a> 
-            <span> {{ custom_text }}</span>
-        {% endblocktrans %}
-    {% else %}    
-        {% blocktrans with url=uurl %}
-            <a href="{{ url }}">Select the languages you can caption or translate</a> 
-            <span> to see available videos for subtitling</span>
-        {% endblocktrans %}
-    {% endif %}    
-    </span>
+    <a href="{% url 'profiles:edit' %}?next=/teams/{{ team.slug }}">
+        {% if custom_text %}
+            {% blocktrans %}
+                Select the languages you can caption or translate {{ custom_text }}
+            {% endblocktrans %}
+        {% else %}
+            {% trans 'Select the languages you can caption or translate to see available videos for subtitling' %}
+        {% endif %}
+    </a>
 </div>
