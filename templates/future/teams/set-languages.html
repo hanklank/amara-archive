@@ -2,13 +2,20 @@
 
 <div class="zero-state">
   <span>
-    <a href="{% url 'profiles:edit' %}">
-        {% trans 'Select the languages you can caption or translate ' %}
-    </a> 
+    {% captureas uurl %}
+        {% url 'profiles:edit' %}?next=/teams/{{ team.slug }}
+    {% endcaptureas %}
+
     {% if custom_text %}
-        {{ custom_text }}
-    {% else %}
-        {% trans 'to see available videos for subtitling' %}
-    {% endif %}
+        {% blocktrans with url=uurl %}
+            <a href="{{ url }}">Select the languages you can caption or translate</a> 
+            <span> {{ custom_text }}</span>
+        {% endblocktrans %}
+    {% else %}    
+        {% blocktrans with url=uurl %}
+            <a href="{{ url }}">Select the languages you can caption or translate</a> 
+            <span> to see available videos for subtitling</span>
+        {% endblocktrans %}
+    {% endif %}    
     </span>
 </div>

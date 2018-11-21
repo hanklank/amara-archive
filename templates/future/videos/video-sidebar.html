@@ -2,10 +2,7 @@
 {% with complete_languages=video.complete_languages_sorted incomplete_languages=video.incomplete_languages_sorted %}
 
 {% if no_languages_yet %}
-    {% captureas text  %}
-      {% trans 'to begin subtitling videos' %}
-    {% endcaptureas %}
-    {% include "future/teams/set-languages.html" with custom_text=text %}
+    {% include "future/teams/set-languages.html" with custom_text=_('to begin subtitling videos') %}
 {% elif create_subtitles_form and not no_languages_yet %}
 <div class="content videoSubtitleList">
     <h2 class="videoSubtitlesList-item">{% trans 'Contribute' %}</h2>

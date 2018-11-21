@@ -209,6 +209,7 @@ def edit(request):
         if form.is_valid():
             form.save()
             messages.success(request, _('Your profile has been updated.'))
+
             return redirect('profiles:edit')
     else:
         form = EditUserForm(instance=request.user, label_suffix="")
@@ -216,7 +217,8 @@ def edit(request):
     context = {
         'form': form,
         'user_info': request.user,
-        'edit_profile_page': True
+        'edit_profile_page': True,
+        'redirect': request.GET.get('next', None)
     }
     return render(request, 'profiles/edit.html', context)
 
