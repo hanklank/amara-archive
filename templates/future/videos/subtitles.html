@@ -137,7 +137,7 @@
             {% endif %}
             {% if cta %}
               {% if no_languages_yet %}
-                {% include "future/teams/set-languages.html" with custom_text=_(' to begin working on these subtitles') %}
+                {% include "future/teams/set-languages.html" with custom_text=_('Select the languages you can caption or translate to begin working on these subtitles') %}
               {% else %}
                 <div class="videoSubtitles-cta">{{ cta.as_block }}</div>
               {% endif %}
