@@ -14,6 +14,13 @@
 
       <div class="listView-secondaryRow visible">
         <ul>
+          {% if yt.team != team %}
+            <li>
+              {% blocktrans with link_team=yt.team %}
+                Synced from {{ link_team }}
+              {% endblocktrans %}
+            </li>
+          {% endif %}
           {% if yt.sync_subtitles %}
             <li>{% trans 'Exports subtitles from Amara to YouTube' %} </li>
           {% endif %}
@@ -36,7 +43,7 @@
       </div>
     </div>
     
-    {% include 'future/teams/settings/_integrations_actions.html' with menu_id="context-menu-youtube" form_name="edit-youtube" remove_form_name="remove-youtube" pk=yt.pk %}
+    {% include 'future/teams/settings/_integrations_actions.html' with menu_id="context-menu-youtube" form_name="edit-youtube" remove_form_name="remove-youtube" account=yt %}
   {% endfor %}  
   {% endif %}
 
@@ -46,11 +53,22 @@
 
   {% for vimeo in vimeo_accounts %}
     <div class="integrationList-channel">
-      <a class="ajaxLink" data-href="{% url 'teams:settings_externalsites' team.slug %}?form=edit-vimeo&selection={{ vimeo.pk }}">
-        {{ vimeo.username }}
-      </a>
+      {% if vimeo.team == team %}
+        <a class="ajaxLink" data-href="{% url 'teams:settings_externalsites' team.slug %}?form=edit-vimeo&selection={{ vimeo.pk }}">
+          {{ vimeo.username }}
+        </a>
+      {% else %}
+        <span class="text-teal" style="font-weight:600">{{ vimeo.username }}</span>
+      {% endif %}
       <div class="listView-secondaryRow visible">
         <ul>
+          {% if vimeo.team != team %}
+            <li>
+              {% blocktrans with link_team=vimeo.team %}
+                Synced from {{ link_team }}
+              {% endblocktrans %}
+            </li>
+          {% endif %}
           {% if vimeo.sync_subtitles %}
             <li>{% trans 'Exports subtitles from Amara to Vimeo' %} </li>
           {% endif %}
@@ -64,7 +82,7 @@
       </div>
     </div>
 
-    {% include 'future/teams/settings/_integrations_actions.html' with menu_id="context-menu-vimeo" form_name="edit-vimeo" remove_form_name="remove-vimeo" pk=vimeo.pk %}
+    {% include 'future/teams/settings/_integrations_actions.html' with menu_id="context-menu-vimeo" form_name="edit-vimeo" remove_form_name="remove-vimeo" account=vimeo %}
   {% endfor %}
   {% endif %}  
 
@@ -80,7 +98,7 @@
       <!-- no secondary info for Kaltura accounts -->
     </div>
 
-    {% include 'future/teams/settings/_integrations_actions.html' with menu_id="context-menu-kaltura" form_name="edit-kaltura" remove_form_name="remove-kaltura" pk=kaltura.pk %}   
+    {% include 'future/teams/settings/_integrations_actions.html' with menu_id="context-menu-kaltura" form_name="edit-kaltura" remove_form_name="remove-kaltura" account=kaltura %}   
   {% endfor %}
   {% endif %}
 
@@ -96,7 +114,7 @@
       <!-- no secondary info for BrightcoveCMS accounts -->
     </div>
 
-    {% include 'future/teams/settings/_integrations_actions.html' with menu_id="context-menu-brightcove" form_name="edit-brightcove" remove_form_name="remove-brightcove" pk=brightcove.pk %}     
+    {% include 'future/teams/settings/_integrations_actions.html' with menu_id="context-menu-brightcove" form_name="edit-brightcove" remove_form_name="remove-brightcove" account=brightcove %}     
   {% endfor %}
   {% endif %}
   

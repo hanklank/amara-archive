@@ -21,24 +21,24 @@
       <div class="tab-content">
         <div id="youtube" class="tab-pane
           {% if modal_tab == 'youtube' %}active{% endif %}">
-          <p>{% trans "Click the button below to start the authentication process for adding a YouTube account to your team." %}</p>
+          <p>{% trans 'Click the "Add YouTube account" button below to start the authentication process for adding a YouTube account to your team.' %}</p>
           <form method="POST">
             {% csrf_token %}
-            <a href="{{ add_youtube_url }}" class="button cta">{% trans 'Add YouTube account' %}</a>
             <div class="text-right">
               <button class="button borderless modal-close">{% trans "Cancel" %}</button>
+              <a href="{{ add_youtube_url }}" class="button cta">{% trans 'Add YouTube account' %}</a>
             </div>
           </form>
         </div>
 
         <div id="vimeo" class="tab-pane
           {% if modal_tab == 'vimeo' %}active{% endif %}">
-          <p>{% trans "Click the button below to start the authentication process for adding a Vimeo account to your team." %}</p>
+          <p>{% trans 'Click the "Add Vimeo account" button below to start the authentication process for adding a Vimeo account to your team.' %}</p>
           <form method="POST">
             {% csrf_token %}
-            <a href="{{ add_vimeo_url }}" class="button cta">{% trans 'Add Vimeo account' %}</a>
             <div class="text-right">
               <button class="button borderless modal-close">{% trans "Cancel" %}</button>
+              <a href="{{ add_vimeo_url }}" class="button cta">{% trans 'Add Vimeo account' %}</a>
             </div>
           </form>
         </div>
@@ -80,7 +80,7 @@
             <div class="text-right">
               <button class="button borderless modal-close">{% trans "Cancel" %}</button>
               <button type="submit" class="button cta">
-                {% if kaltura_form.has_existing_account %} 
+                {% if brightcove_form.has_existing_account %} 
                   {% trans 'Update Brightcove account' %}
                 {% else %}
                   {% trans 'Add Brightcove account' %}

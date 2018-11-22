@@ -1126,7 +1126,6 @@ class SyncHistoryManager(models.Manager):
 
         return [i[1] for i in sorted(history.items(), key=lambda v: v[1].datetime, reverse=True)]
 
-
 class SyncHistory(models.Model):
     """History of all subtitle sync attempts."""
 
