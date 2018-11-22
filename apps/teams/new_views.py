@@ -187,7 +187,8 @@ def videos(request, team):
         'filters_form': filters_form,
         'team_nav': 'videos',
         'current_tab': 'videos',
-        'no_languages_yet': len(request.user.get_languages()) == 0,
+        'no_languages_yet': (False if request.user.is_anonymous 
+                             else len(request.user.get_languages()) == 0),
     }
     if request.is_ajax():
         response_renderer = AJAXResponseRenderer(request)
