@@ -12,20 +12,24 @@
         {{ yt.username }}
       </a>
 
-      <div class="listView-secondaryRow visible">
+      <div class="listView-secondaryRow visible" style="white-space: normal">
         <ul>
           {% if yt.team != team %}
             <li>
-              {% blocktrans with link_team=yt.team %}
-                Synced from {{ link_team }}
-              {% endblocktrans %}
+              {% trans 'Synced from ' %}<a href="{{ yt.team.get_absolute_url }}">{{ yt.team }}</a>
             </li>
           {% endif %}
           {% if yt.sync_subtitles %}
             <li>{% trans 'Exports subtitles from Amara to YouTube' %} </li>
           {% endif %}
-          {% if yt.sync_teams.count %}
-            <li>{% trans 'Exports subtitles from Amara to YouTube for other teams' %} </li>
+          {% if yt.team == team and yt.sync_teams.count %}
+            <li>
+              {% trans 'Exports subtitles from Amara to YouTube for other teams: ' %}
+              {% for team in yt.sync_teams.all %}
+                <a href="{{ team.get_absolute_url }}">{{ team }}</a>
+                {% if forloop.last %}{% else %}, {% endif %}
+              {% endfor %}
+            </li>
           {% endif %}
           {% if yt.fetch_initial_subtitles %}
             <li>{% trans 'Imports subtitles from YouTube when videos are added to Amara' %} </li>
@@ -60,20 +64,24 @@
       {% else %}
         <span class="text-teal" style="font-weight:600">{{ vimeo.username }}</span>
       {% endif %}
-      <div class="listView-secondaryRow visible">
+      <div class="listView-secondaryRow visible" style="white-space: normal">
         <ul>
           {% if vimeo.team != team %}
             <li>
-              {% blocktrans with link_team=vimeo.team %}
-                Synced from {{ link_team }}
-              {% endblocktrans %}
+                {% trans 'Synced from ' %}<a href="{{ vimeo.team.get_absolute_url }}">{{ vimeo.team }}</a>
             </li>
           {% endif %}
           {% if vimeo.sync_subtitles %}
             <li>{% trans 'Exports subtitles from Amara to Vimeo' %} </li>
           {% endif %}
-          {% if vimeo.sync_teams.count %}
-            <li>{% trans 'Exports subtitles from Amara to Vimeo for other teams' %} </li>
+          {% if vimeo.team == team and vimeo.sync_teams.count %}
+            <li>
+              {% trans 'Exports subtitles from Amara to Vimeo for other teams: ' %}
+              {% for team in vimeo.sync_teams.all %}
+                <a href="{{ team.get_absolute_url }}">{{ team }}</a>
+                {% if forloop.last %}{% else %}, {% endif %}
+              {% endfor %}
+            </li>
           {% endif %}
           {% if vimeo.fetch_initial_subtitles %}
             <li>{% trans 'Imports subtitles from Vimeo when videos are added to Amara' %} </li>

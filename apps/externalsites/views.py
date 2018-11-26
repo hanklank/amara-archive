@@ -136,8 +136,8 @@ def team_externalsites(request, team):
     if form_name:
         return team_edit_external_account(request, team, form_name)
 
-    yt_accounts = YouTubeAccount.objects.for_team_or_synced_with_team(team)
-    vimeo_accounts = VimeoSyncAccount.objects.for_team_or_synced_with_team(team)
+    yt_accounts = YouTubeAccount.objects.for_team_or_synced_with_team(team).distinct()
+    vimeo_accounts = VimeoSyncAccount.objects.for_team_or_synced_with_team(team).distinct()
     kaltura_accounts = KalturaAccount.objects.for_owner(team)
     brightcove_accounts = BrightcoveCMSAccount.objects.for_owner(team)
 
