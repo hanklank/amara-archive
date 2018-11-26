@@ -1,7 +1,8 @@
 {% load i18n %}
 
 {% if feeds %}
-<div class="listView videoFeedsList">
+<!-- added some padding since this listView does not use any column header -->
+<div class="listView videoFeedsList" style="margin-top: 15px">
   {% for feed in feeds %}
     <div class="videoFeedsList-title">
       <a href="{{ feed }}">
