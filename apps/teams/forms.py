@@ -1853,9 +1853,7 @@ class MemberFiltersForm(forms.Form):
     ] + get_language_choices()
 
     q = SearchField(label=_('Search'), required=False,
-                    widget=ContentHeaderSearchBar(attrs={
-                        'autocomplete': 'off',
-                    }))
+                    widget=ContentHeaderSearchBar())
 
     role = AmaraChoiceField(label=_('Select role'), choices=[
         ('any', _('All roles')),
@@ -2804,3 +2802,31 @@ class MoveVideosForm(VideoManagementForm):
 class MemberProfileSearch(FiltersForm):
     q = SearchField(label=_('Search by video'), required=False,
                     widget=ContentHeaderSearchBar)
+
+class UserLanguageForm(forms.Form):
+    language1 = forms.ChoiceField(choices=[], required=True, label='')
+    language2 = forms.ChoiceField(choices=[], required=False, label='')
+    language3 = forms.ChoiceField(choices=[], required=False, label='')
+    language4 = forms.ChoiceField(choices=[], required=False, label='')
+    language5 = forms.ChoiceField(choices=[], required=False, label='')
+    language6 = forms.ChoiceField(choices=[], required=False, label='')
+
+    def __init__(self, user, *args, **kwargs):
+        super(UserLanguageForm, self).__init__(*args, **kwargs)
+        self.user = user
+        user_lang_iter = iter(user.get_languages())
+        for i in xrange(1, 7):
+            field = self.fields['language{}'.format(i)]
+            field.choices = get_language_choices(with_empty=True)
+            try:
+                field.initial = user_lang_iter.next()
+            except StopIteration:
+                pass
+
+    def save(self):
+        languages = []
+        for i in xrange(1, 7):
+            value = self.cleaned_data['language{}'.format(i)]
+            if value:
+                languages.append({"language": value, "priority": i})
+        self.user.set_languages(languages)
