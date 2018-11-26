@@ -500,10 +500,10 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
     def set_languages(self, languages):
         with transaction.atomic():
             self.userlanguage_set.set([
-                UserLanguage.objects.create(
-                    user=self, language=l["language"], priority=l["priority"])
+                UserLanguage.objects.get_or_create(
+                    user=self, language=l["language"], priority=l["priority"])[0]
                 for l in languages
-            ])
+            ], clear=True)
         self.cache.invalidate()
         signals.user_profile_changed.send(self)
 
