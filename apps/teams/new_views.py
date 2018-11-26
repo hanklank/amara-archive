@@ -614,6 +614,7 @@ def member_profile(request, team, username):
         'paginator': paginator,
         'page': paginator.get_page(request),
         'history_filters': history_form,
+        'team_nav': 'member_directory',
     }
 
     if request.is_ajax():
