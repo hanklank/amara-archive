@@ -506,7 +506,7 @@ class CustomUser(BaseUser, secureid.SecureIDMixin):
                 UserLanguage.objects.create(
                     user=self, language=l["language"], priority=l["priority"])
                 for l in languages
-            ], clear=True)
+            ])
         self.cache.invalidate()
         signals.user_profile_changed.send(self)
 
