@@ -175,7 +175,10 @@ class YoutubeAccountForm(forms.Form):
         widget=forms.widgets.SelectMultiple,
         required=False)
     import_team = AmaraChoiceField(label=ugettext_lazy('Import videos to team'), required=False)
-    sync_subtitles = forms.BooleanField(label=ugettext_lazy('Export subtitles from Amara to YouTube'), required=False)
+    sync_subtitles = forms.BooleanField(
+        label=ugettext_lazy('Export subtitles from Amara to YouTube'), 
+        required=False,
+        widget=forms.CheckboxInput(attrs={ 'class': 'syncSubtitlesYoutube' }))
     fetch_initial_subtitles = forms.BooleanField(label=ugettext_lazy('Import initial subtitles from YouTube when videos are submitted to Amara'), required=False)
     sync_metadata = forms.BooleanField(
        required=False,
