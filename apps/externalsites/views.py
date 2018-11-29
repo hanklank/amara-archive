@@ -146,7 +146,7 @@ def team_externalsites(request, team):
     kaltura_accounts = filters_form.kaltura_accounts(kaltura_accounts)
     brightcove_accounts = filters_form.brightcove_accounts(brightcove_accounts)
 
-    sync_history = SyncHistory.objects.get_latest_sync_history_per_team_video(team)
+    sync_history = SyncHistory.objects.for_owner_latest_per_video_and_language(team)
     sync_history_r = sync_history_filters_form.update_results(sync_history)
     sync_history_paginator = AmaraPaginatorFuture(sync_history_r, SUBTITLE_EXPORTS_PER_PAGE)
     sync_history_page = sync_history_paginator.get_page(request)

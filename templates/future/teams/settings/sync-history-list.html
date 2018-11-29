@@ -44,9 +44,12 @@
         </span>
       </button>
     </div>
-    {% if sh.result == 'E' %}
-    <div class="listView-secondaryRow">{% trans 'Subtitle export error: ' %}{{ sh.details }}</div>
-    {% endif %}
+    <div class="listView-secondaryRow">
+      {% trans 'Team: ' %}{{ sh.get_team }}
+      {% if sh.result == 'E' %}
+        {% trans 'Subtitle export error: ' %}{{ sh.details }}
+      {% endif %}
+    </div>
   {% endfor %}  
   
 </div>

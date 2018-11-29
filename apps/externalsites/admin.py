@@ -38,6 +38,7 @@ class SyncHistoryAdmin(admin.ModelAdmin):
         'result',
         'details',
         'retry',
+        'is_latest',
     )
     readonly_fields = (
         'video_url',
@@ -52,6 +53,8 @@ class SyncHistoryAdmin(admin.ModelAdmin):
         'video_url',
         'language',
         'retry',
+        'datetime',
+        'is_latest',
     )
     list_filter = (
         'result',

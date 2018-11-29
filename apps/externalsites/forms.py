@@ -257,6 +257,8 @@ class YoutubeAccountForm(forms.Form):
                 self.account.sync_teams = Team.objects.filter(
                     id__in=self.cleaned_data['sync_teams']
                 )
+            else:
+                self.account.sync_teams = []
             if self.cleaned_data['import_team'] == '':
                 self.account.import_team = None
             else:

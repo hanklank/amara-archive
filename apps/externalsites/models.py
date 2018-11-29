@@ -1185,6 +1185,13 @@ class SyncHistory(models.Model):
     def cache_account(self, account):
         self._account = account
 
+    def get_team(self):
+        tv = self.video_url.video.get_team_video()
+        if tv:
+            return tv.team
+        else:
+            return None
+
 class CreditedVideoUrl(models.Model):
     """Track videos that we have added our amara credit to.
 

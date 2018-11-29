@@ -16,7 +16,9 @@
         <ul>
           {% if yt.team != team %}
             <li>
-              {% trans 'Synced from ' %}<a href="{{ yt.team.get_absolute_url }}">{{ yt.team }}</a>
+              {% blocktrans with team_url=yt.team.get_absolute_url team_name=yt.team %}
+                Synced from&nbsp; <a href="{{ team_url }}">{{ team_name }}</a>
+              {% endblocktrans %}
             </li>
           {% endif %}
           {% if yt.sync_subtitles %}
@@ -62,13 +64,15 @@
           {{ vimeo.username }}
         </a>
       {% else %}
-        <span class="text-teal" style="font-weight:600">{{ vimeo.username }}</span>
+        <span class="a-tag-font">{{ vimeo.username }}</span>
       {% endif %}
       <div class="listView-secondaryRow visible" style="white-space: normal">
         <ul>
           {% if vimeo.team != team %}
             <li>
-                {% trans 'Synced from ' %}<a href="{{ vimeo.team.get_absolute_url }}">{{ vimeo.team }}</a>
+                {% blocktrans with team_url=vimeo.team.get_absolute_url team_name=vimeo.team %}
+                  Synced from&nbsp; <a href="{{ team_url }}">{{ team_name }}</a>
+                {% endblocktrans %}
             </li>
           {% endif %}
           {% if vimeo.sync_subtitles %}
