@@ -1100,7 +1100,8 @@ class SyncHistoryManager(models.Manager):
 
         for account in accounts:
             for sh in self.filter(account_type=account.account_type,
-                                   account_id=account.id).order_by('-datetime'):
+                                  account_id=account.id,
+                                  is_latest=True).order_by('-datetime'):
                 if (sh.video_url.pk, sh.language.language_code) in history:
                     continue
                 else:
