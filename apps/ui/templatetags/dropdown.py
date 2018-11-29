@@ -105,13 +105,24 @@ def dropdown_js_item(label, *data, **kwargs):
         'data-activate-args': json.dumps(data),
     }, link_tag='button')
 
+@register.simple_tag(name='dropdown-header-item')
+def dropdown_header_item(label, **kwargs):
+    options = extra_dropdown_item_options(kwargs)
+
+    return make_dropdown_item(label, options, {
+        'href': '#',
+        'class': 'header',
+    }, link_tag='button')
 
 def make_dropdown_item(label, options, link_attrs, link_tag='a'):
     link_attrs.update({
         'tabindex': -1,
         'role': 'menuitem',
-        'class': 'dropdownMenu-link',
     })
+    if 'class' in link_attrs:
+        link_attrs['class'] += ' dropdownMenu-link'
+    else:
+        link_attrs['class'] = 'dropdownMenu-link'
 
     classes = ['dropdownMenu-item']
     if options.separator:
@@ -125,9 +136,10 @@ def make_dropdown_item(label, options, link_attrs, link_tag='a'):
         else:
             icon_class="icon icon-{}".format(options.icon)
 
-        label_html = format_html(u'<span class="dropdownMenu-text">{}</span> '
-                                 '<span class="{} dropdownMenu-extra"></span>',
-                                 unicode(label), icon_class)
+        label_html = format_html(
+            u'<span class="{} dropdownMenu-icon"></span>'
+            u'<span class="dropdownMenu-text">{}</span> ',
+            icon_class, unicode(label))
     elif options.count:
         label_html = format_html(u'<span class="dropdownMenu-text">{}</span> <span class="dropdownMenu-extra">{}</span>',
                                  unicode(label), options.count)
