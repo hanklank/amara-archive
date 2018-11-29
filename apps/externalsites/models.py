@@ -953,12 +953,14 @@ class SyncHistoryManager(models.Manager):
         return self.filter(language=language).order_by('-id')
 
     def create_for_success(self, **kwargs):
-        sh = self.create(result=SyncHistory.RESULT_SUCCESS, **kwargs)
+        sh = self.create(result=SyncHistory.RESULT_SUCCESS, 
+                         is_latest=True,
+                         **kwargs)
         # clear the retry flag for this account/language since we just
         # successfully synced.
         self.filter(account_type=sh.account_type, account_id=sh.account_id,
                     video_url=sh.video_url, language=sh.language,
-                    retry=True).update(retry=False)
+                    retry=True).update(retry=False, is_latest=False)
         return sh
 
     def create_for_error(self, e, **kwargs):
@@ -971,7 +973,9 @@ class SyncHistoryManager(models.Manager):
             details = str(e)
         if 'retry' not in kwargs:
             kwargs['retry'] = isinstance(e, RetryableSyncingError)
-        return self.create(result=SyncHistory.RESULT_ERROR, details=details,
+        return self.create(result=SyncHistory.RESULT_ERROR, 
+                           details=details,
+                           is_latest=True,
                            **kwargs)
 
     def create(self, *args, **kwargs):
@@ -1109,6 +1113,8 @@ class SyncHistoryManager(models.Manager):
 
     # gets the latest SyncHistory object for each team video per language for all team videos
     # that have an existing SyncHistory
+    # we don't actually use this but let's keep this as reference
+    # for when we restructure how we track SyncHistory
     def get_latest_sync_history_per_team_video(self, team):
         history = {}
         for tv in team.teamvideo_set.all():
@@ -1156,6 +1162,7 @@ class SyncHistory(models.Model):
     details = models.CharField(max_length=255, blank=True, default='')
     # should we try to resync these subtitles?
     retry = models.BooleanField(default=False)
+    is_latest = models.BooleanField(default=False)
 
     objects = SyncHistoryManager()
 
