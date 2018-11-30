@@ -114,6 +114,18 @@ def dropdown_header_item(label, **kwargs):
         'class': 'header',
     }, link_tag='button')
 
+@register.simple_tag(name='dropdown-update-filter-items')
+def dropdown_update_filter_items(bound_field, header=True):
+    field_name = bound_field.name
+    field = bound_field.field
+    parts = []
+    for choice in field.choices:
+        args = [ choice[1], "update-filter", field_name, choice[0] ]
+        if choice[0] == field.initial:
+            args.append('default')
+        parts.append(dropdown_js_item(*args))
+    return mark_safe('\n'.join(parts))
+
 def make_dropdown_item(label, options, link_attrs, link_tag='a'):
     link_attrs.update({
         'tabindex': -1,

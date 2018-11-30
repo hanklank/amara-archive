@@ -3,16 +3,7 @@
 <ul class="listView projectList">
   <div class="listView-header projectList-title">{% trans "Title" %}</div>
   <div class="listView-header projectList-description">{% trans "Description" %}</div>
-  <div class="listView-header listView-actions">
-      {% dropdown-button-icon "project-sort" "listView-action" %}
-      {% dropdown "project-sort" %}
-      {% dropdown-header-item _("Sort") %}
-      {% dropdown-js-item _("a-z") "update-filter" "sort" "name" "default" %}
-      {% dropdown-js-item _("z-a") "update-filter" "sort" "-name" %}
-      {% dropdown-js-item _("newest first") "update-filter" "sort" "-created" %}
-      {% dropdown-js-item _("oldest first") "update-filter" "sort" "created" %}
-      {% enddropdown %}
-  </div>
+  <div class="listView-header listView-actions"></div>
 
   {% for project in page %}
   <div class="projectList-title">{{ project.name }}</div>
