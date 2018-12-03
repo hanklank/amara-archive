@@ -1949,10 +1949,10 @@ class ApplicationFiltersForm(forms.Form):
 
 class ProjectFiltersForm(forms.Form):
     SORT_CHOICES = [
-        ('name', _('a-z')),
-        ('-name', _('z-a')),
-        ('-created', _('newest first')),
-        ('created', _('oldest first')),
+        ('name', _('A-Z')),
+        ('-name', _('Z-A')),
+        ('-created', _('Newest first')),
+        ('created', _('Oldest first')),
     ]
     q = SearchField(label=_('Search'), required=False,
                     widget=ContentHeaderSearchBar)
