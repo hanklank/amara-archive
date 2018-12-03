@@ -27,11 +27,8 @@ from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
 
 from subtitles.models import SubtitleVersion
-from teams import views as old_views
-from teams import new_views as views
-from teams import forms
+from teams import views as old_views, forms as teams_forms
 from teams.behaviors import get_main_project
-from teams import forms as teams_forms
 from teams.models import Project, Team
 from teams.workflows import TeamWorkflow
 from ui import CTA, SplitCTA, Link
@@ -158,9 +155,6 @@ def dashboard(request, team):
     if not member:
         raise PermissionDenied()
 
-    if len(request.user.get_languages()) == 0:
-        return views.dashboard_set_languages(request, team)
-
     video_qs = team.videos.all().order_by('-created')
     if main_project:
         video_qs = video_qs.filter(teamvideo__project=main_project)
@@ -191,10 +185,8 @@ def dashboard(request, team):
         'member_profile_url': member.get_absolute_url(),
         'member_history': member_history,
         'member_history_template': team.new_workflow.member_history_template,
-        'breadcrumbs': [
-            BreadCrumb(team),
-        ],
-
+        'no_languages_yet': (False if request.user.is_anonymous 
+                             else len(request.user.get_languages()) == 0),
         'dashboard_videos': get_dashboard_videos(team, request.user, main_project),
     }
     
@@ -265,7 +257,4 @@ class SimpleTeamWorkflow(TeamWorkflow):
                 team = Team.objects.get(slug=slug)
             except Team.DoesNotExist:
                 return None
-        if team.user_is_member(request.user):
-            return team
-        else:
-            return None
+        return team
