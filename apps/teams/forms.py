@@ -2825,6 +2825,10 @@ class MoveVideosForm(VideoManagementForm):
                 team=self.cleaned_data['new_team']))
         return messages
 
+class MemberProfileSearch(FiltersForm):
+    q = SearchField(label=_('Search by video'), required=False,
+                    widget=ContentHeaderSearchBar)
+
 class SearchVideoFeedForm(forms.Form):
     q = SearchField(label=_('Search'), required=False,
                     widget=ContentHeaderSearchBar)

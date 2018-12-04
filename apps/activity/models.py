@@ -1143,6 +1143,7 @@ class ActivityRecord(models.Model):
             # Team activity stream.  There's often lots of activity per-team,
             # so we add some extra indexes here
             ('team', 'created'),
+            ('team', 'user', 'created'),
             ('team', 'type', 'created'),
             ('team', 'language_code', 'created'),
             ('team', 'type', 'video_language_code', 'created'),
