@@ -155,6 +155,8 @@ current status of work on the issue.  We use the following pipelines:
   - ``Needs PR`` -- Issue that has been verified by tester, waiting for developer to make PR
   - ``Needs Review`` -- Issues with pull requests made that need to be reviewed by another developer
   - ``Dev`` -- issues that have been merged to the dev.amara.org branch 
+  - ``Ready to Deploy``-- issues on dev.amara.org are moved here by QA once dev branch has been smoke tested and is ready to deploy to production
+  - ``Closed`` -- QA moves issues here once production is deployed, and shares release notes with copywriter who creates an entry for the Changelog
 
 Here's the workflow for a typical issue:
 
