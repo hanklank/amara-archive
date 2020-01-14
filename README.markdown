@@ -1,3 +1,9 @@
+**NOTE: This is an archival repo of Amara that is no longer open, [see Amara blog]
+(https://blog.amara.org/2020/01/13/why-we-are-closing-amaras-source-code).**
+
+
+**DO NOT CONTACT PCF FOR SUPPORT, NOR submit patches there for this code base.**
+
 This repository is the code for the [Amara](http://amara.org) project.
 
 The full documentation can be found at
